@@ -11300,6 +11300,10 @@ test('7.23a · (a) the first three rows expanded — the schematic thumbnail (ar
   // the two Roll backs as drawn: coral-outline vs the quiet hairline (D2 :89, :98)
   const [loud, quiet] = await Promise.all([actOf(page, 'v4'), actOf(page, 'v3')].map((b) => b.evaluate((e) => getComputedStyle(e).borderTopColor)))
   expect(loud).not.toBe(quiet)
+  // and the undo's row raised, as S8e draws it (`S8 Deploy.dc.html:308`, the `shadow-md` token); the next row is not
+  const [raised, flat] = await Promise.all([historyRow(page, 'v4'), historyRow(page, 'v3')].map((r) => r.evaluate((e) => getComputedStyle(e).boxShadow)))
+  expect(raised).toContain('rgba(28, 27, 26, 0.08) 0px 4px 16px 0px')
+  expect(flat).not.toContain('16px')
   // R-189: the frame's "by Maya" is not drawn — nothing in the drawer names a person
   expect(await drawer(page).evaluate((d) => /\bby [A-Z]/.test(d.innerText))).toBe(false)
   // the rows' time is when Ghost accepted the version (DW-400)
@@ -11327,8 +11331,8 @@ test('7.23a · (b) Enter on a Roll back opens S8e\'s confirm on Cancel (UX-DR14)
   await expect(historyConfirm(page)).toHaveAttribute('open', '')
   await expect(historyConfirm(page).locator('[data-cancel]'), 'focus on the cancelling action').toBeFocused()
   await expect(historyConfirm(page).locator('#history-confirm-title')).toHaveText(HW.confirmTitle(4))
-  await expect(historyConfirm(page).locator('#history-confirm-body')).toHaveText(HW.confirmBody(4, 5, false))
-  expect(HW.confirmBody(4, 5, false)).toBe('Your live site switches to v4 instantly. v5 stays in history — nothing is lost.')
+  await expect(historyConfirm(page).locator('#history-confirm-body')).toHaveText(HW.confirmBody(4, 5, []))
+  expect(HW.confirmBody(4, 5, [])).toBe('Your live site switches to v4 instantly. v5 stays in history — nothing is lost.')
   const summary = historyConfirm(page).locator('[data-history-confirm-row]')
   await expect(summary).toContainText('v4')
   await expect(summary).toContainText('Nov 4 · ')
@@ -11416,9 +11420,15 @@ test('7.23a · (d) D2d\'s row: "Uploaded, not live" in sky, the wizard\'s own li
   await expect(button).toHaveAttribute('aria-busy', 'true')
   await expect(actOf(page, 'v2'), 'every action waits').toHaveAttribute('aria-disabled', 'true')
   await expect(historyConfirm(page), 'Re-activate asks nothing').not.toHaveAttribute('open', '')
+  // once it starts, it finishes (S8c's rule): Esc twice changes nothing — the drawer stays, and R-192's sweep passes it by
+  await page.keyboard.press('Escape')
+  await page.keyboard.press('Escape')
+  await expect(drawer(page)).toHaveAttribute('open', '')
+  await expect(drawer(page)).toHaveAttribute('data-unstoppable', 'true')
   release()
   await expect(page.locator('#deploy-history-close')).toBeFocused({ timeout: 15_000 })
   await expect.poll(() => historySaid(page)).toBe('v3 is live on harness.example.')
+  await expect(drawer(page).locator('[data-history-note]:not(:empty)'), 'said once — in the drawer\'s region, not under a row').toHaveCount(0)
 })
 
 test('7.23a · (e) refusals, each said under its row: Ghost\'s own check refusing a Roll back (its detail in mono, focus back on that Roll back, nothing said in the drawer\'s region); `busy` (a ship of the site under way); another site\'s row drawing no Roll back at all', async ({ page }) => {
@@ -11466,13 +11476,13 @@ test('7.23a · (f) Ghost will forget a setting: the confirm adds Pre-flight\'s o
   await expect(drops).toContainText(PFW.dropped(1, 'harness.example'))
   await expect(drops).toContainText(PFW.droppedBody)
   await expect(drops.locator('li')).toHaveText(['Accent label'])
-  await expect(historyConfirm(page).locator('#history-confirm-body')).toHaveText(HW.confirmBody(1, 5, true))
-  expect(HW.confirmBody(1, 5, true)).toBe('Your live site switches to v1 instantly. v5 stays in history.')
+  await expect(historyConfirm(page).locator('#history-confirm-body')).toHaveText(HW.confirmBody(1, 5, ['Accent label']))
+  expect(HW.confirmBody(1, 5, ['Accent label'])).toBe('Your live site switches to v1 instantly. v5 stays in history.')
   await page.keyboard.press('Escape')
   await tabToRow(page, actOf(page, 'v4'))
   await page.keyboard.press('Enter')
   await expect(historyConfirm(page).locator('[data-history-drops]')).toHaveCount(0)
-  await expect(historyConfirm(page).locator('#history-confirm-body')).toHaveText(HW.confirmBody(4, 5, false))
+  await expect(historyConfirm(page).locator('#history-confirm-body')).toHaveText(HW.confirmBody(4, 5, []))
 })
 
 /** a put-back pressed through the keyboard: Tab to the row's Roll back, Enter (the confirm opens on Cancel), Tab, Enter */
@@ -11530,10 +11540,22 @@ test('7.23a · (h) reading along (R-192): while another session holds the lock t
   await expect.poll(() => historySaid(page)).toBe('v3 is live on harness.example.')
 })
 
-test('7.23a · (i) the request fails (the network drops it): the row unchanged, one sentence under it, focus back on its Roll back; nothing said in the drawer\'s region', async ({ page }) => {
-  await openHistory(page, 'rollback')
+test('7.23a · (i) the request fails (the network drops it): its fate unknown, the list is read again; the row unchanged, one sentence under it, focus back on its Roll back; nothing said in the drawer\'s region', async ({ page }) => {
   // the put-back's own request — a server action whose arguments carry v4's id — never arrives
   const v4 = '00000000-0000-4000-8000-000000072204'
+  // each history read answered — the harness's read is a server action, and only its answer carries `liveVersion` — and how many
+  // had been when the put-back failed (opening reads once, or twice under `next dev`'s StrictMode: never a number written here)
+  let reads = 0
+  let atFailure = null
+  page.on('response', async (r) => {
+    if (r.request().method() !== 'POST' || !r.request().headers()['next-action']) return
+    if ((await r.text().catch(() => '')).includes('"liveVersion"')) reads++
+  })
+  page.on('requestfailed', (r) => {
+    if ((r.postData() ?? '').includes(v4)) atFailure = reads
+  })
+  await openHistory(page, 'rollback')
+  await expect.poll(() => reads, 'the drawer read its list, opening').toBeGreaterThan(0)
   await page.route((url) => url.pathname.startsWith(HARNESS), (route) => {
     const r = route.request()
     return r.method() === 'POST' && r.headers()['next-action'] && (r.postData() ?? '').includes(v4) ? route.abort('connectionreset') : route.fallback()
@@ -11541,6 +11563,8 @@ test('7.23a · (i) the request fails (the network drops it): the row unchanged, 
   await rollBackByKeys(page, 'v4')
   await expect(historyConfirm(page)).not.toHaveAttribute('open', '', { timeout: 15_000 })
   await expect(historyRow(page, 'v4').locator('[data-history-note]')).toHaveText(HW.actFailed(4))
+  await expect.poll(() => atFailure, 'the put-back\'s request failed').not.toBeNull()
+  await expect.poll(() => reads, 'a request whose fate is unknown reads the list again, once (a timeout may have landed)').toBe(atFailure + 1)
   await expect(actOf(page, 'v4')).toBeFocused()
   await expect(historyRow(page, 'v5'), 'the list unchanged: v5 still live').toContainText(HW.live)
   await expect(drawer(page).locator('[data-history-row]')).toHaveCount(5)
@@ -11589,7 +11613,7 @@ test('7.23a · (k) nothing live on the site: the confirm\'s body is the switch a
   await page.keyboard.press('Enter')
   await expect(historyConfirm(page).locator('[data-cancel]')).toBeFocused()
   await expect(historyConfirm(page).locator('#history-confirm-body')).toHaveText('Your live site switches to v2 instantly.')
-  expect(HW.confirmBody(2, null, false)).toBe('Your live site switches to v2 instantly.')
+  expect(HW.confirmBody(2, null, [])).toBe('Your live site switches to v2 instantly.')
   await expect(historyConfirm(page).locator('[data-history-drops]')).toHaveCount(0)
 })
 

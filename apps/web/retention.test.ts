@@ -9,7 +9,7 @@ import { nextVersion, shipStateOf } from './lib/deploy.ts'
 import { PLANS, type PlanId } from './lib/plan.ts'
 import {
   actionOf, actOutcomeOf, actSaid, changedLine, chipTone, EXPANDED, FEWEST_KEPT, heavyIds, historyAnswer, historyCap, historyRows, HISTORY_WORDS, isStoredVersion,
-  newestAccepted, pinOutcomeOf, pinSaid, prunable, timeLabel, type AcceptedRow, type HistoryAnswer, type Stored,
+  newestAccepted, pinOutcomeOf, pinSaid, prunable, timeLabel, type AcceptedRow, type HeavyRow, type HistoryAnswer, type Stored,
 } from './lib/retention.ts'
 import { droppedKeys } from './lib/preflight.ts'
 import { PREFLIGHT_WORDS } from './lib/preflight.ts'
@@ -365,6 +365,47 @@ test('7.23a: the emphasised Roll back is the row right after the linked site\'s 
   assert.deepEqual(historyRows(answerOf([{ action: 'rollback' }, { status: 'live', siteId: B }])).map((r) => r.emphasis), [false, false])
 })
 
+test('7.23a: the undo is the linked site\'s NEXT row after its Live row — another site\'s rows between are skipped — and only as a Roll back; the control: with none between, the row right after', () => {
+  const between = historyRows(answerOf([{ action: 'rollback' }, { siteId: B, host: 'b.com' }, { status: 'live' }]))
+  assert.deepEqual(between.map((r) => [r.n, r.emphasis]), [[3, false], [2, false], [1, true]], 'v2 is another site\'s: v1 is the undo')
+  const none = historyRows(answerOf([{ action: 'rollback' }, { status: 'live' }]))
+  assert.deepEqual(none.map((r) => [r.n, r.emphasis]), [[2, false], [1, true]])
+})
+
+test('7.23a: D2d\'s row is drawn expanded wherever it falls — below three newer rows of another site it keeps its chip and line; the control: a Roll back row in the same place is compact', () => {
+  const newer = [{ siteId: B, host: 'b.com' }, { siteId: B, host: 'b.com' }, { siteId: B, host: 'b.com' }]
+  const d2d = historyRows(answerOf([{ action: 'reactivate' }, ...newer]))
+  assert.deepEqual(d2d.map((r) => [r.n, r.expanded]), [[4, true], [3, true], [2, true], [1, true]])
+  const rollback = historyRows(answerOf([{ action: 'rollback' }, ...newer]))
+  assert.deepEqual(rollback.map((r) => [r.n, r.expanded]), [[4, true], [3, true], [2, true], [1, false]])
+})
+
+test('7.23a: the confirm never promises "nothing is lost" when nobody knows — a row (or the Live row) kept before Story 7.18b has no Pre-flight facts, so its drops are UNKNOWN (null) and the body stops at "stays in history."; the control: facts that declare no settings are known, and nothing is lost', () => {
+  const rows = [accepted(1), accepted(2, { status: 'live' })]
+  const listed = rows.map((r) => ({ id: r.id, pinned: false, errors: 0, warnings: 0, host: 'a.com' }))
+  const drops = (v1: HeavyRow['preflight'], v2: HeavyRow['preflight']) =>
+    historyAnswer({ linkedSiteId: A, listed, rows, heavy: new Map([['v1', { content_manifest: null, preflight: v1 }], ['v2', { content_manifest: null, preflight: v2 }]]) }).rows.find((r) => r.id === 'v1')?.drops
+  assert.equal(drops(null, { custom: { accent_label: 'x' } }), null, 'v1 kept before 7.18b: unknown')
+  assert.equal(drops({ custom: {} }, null), null, 'the Live row kept before 7.18b: unknown')
+  const unknown = historyRows(historyAnswer({ linkedSiteId: A, listed, rows, heavy: new Map([['v1', { content_manifest: null, preflight: null }], ['v2', { content_manifest: null, preflight: { custom: {} } }]]) })).find((r) => r.n === 1)
+  assert.ok(unknown)
+  assert.equal(unknown.drops, null, 'drawn as unknown, never as an empty list')
+  assert.equal(HISTORY_WORDS.confirmBody(1, 2, unknown.drops), 'Your live site switches to v1 instantly. v2 stays in history.')
+  // the control: `custom` null is known — the theme declares none
+  assert.deepEqual(drops({ custom: null }, { custom: null }), [])
+  assert.equal(HISTORY_WORDS.confirmBody(1, 2, drops({ custom: null }, { custom: null }) ?? null), 'Your live site switches to v1 instantly. v2 stays in history — nothing is lost.')
+  assert.deepEqual(drops({ custom: null }, { custom: { accent_label: 'x' } }), ['accent_label'], 'a theme declaring none drops every key the Live one declares')
+  // the Live row itself drops nothing, whatever its facts
+  assert.deepEqual(historyAnswer({ linkedSiteId: A, listed, rows, heavy: new Map() }).rows.find((r) => r.id === 'v2')?.drops, [])
+})
+
+test('7.23a: "v{n} stays in history" only of a version that IS kept — a Live row since pruned answers no live version; the control: the same Live row stored', () => {
+  const listed = [{ id: 'v1', pinned: false, errors: 0, warnings: 0, host: 'a.com' }]
+  const heavy = new Map<string, HeavyRow>()
+  assert.equal(historyAnswer({ linkedSiteId: A, listed, rows: [accepted(1), accepted(2, { status: 'live', artifact_path: null })], heavy }).liveVersion, null)
+  assert.equal(historyAnswer({ linkedSiteId: A, listed, rows: [accepted(1), accepted(2, { status: 'live' })], heavy }).liveVersion, '2.0.0')
+})
+
 test('7.23a: the put-back\'s outcome from the route\'s answer — 200 live/uploaded, 404 gone, 409 its four codes, 422 Ghost\'s check with its detail, 502 the code and message — and anything else a request that failed; each said once in its own words', () => {
   assert.deepEqual(actOutcomeOf(200, { outcome: 'live' }), { kind: 'live' })
   assert.deepEqual(actOutcomeOf(200, { outcome: 'uploaded' }), { kind: 'uploaded' })
@@ -390,9 +431,9 @@ test('7.23a: the words — S8e\'s tooltip and S4d\'s caption whole, the confirm\
   assert.equal(HISTORY_WORDS.menuCaption, 'Versions, gscan reports, rollback')
   assert.equal(HISTORY_WORDS.open, 'History', 'the clock\'s name stays')
   assert.equal(HISTORY_WORDS.confirmTitle(4), 'Roll back to v4?')
-  assert.equal(HISTORY_WORDS.confirmBody(4, 5, false), 'Your live site switches to v4 instantly. v5 stays in history — nothing is lost.')
-  assert.equal(HISTORY_WORDS.confirmBody(4, 5, true), 'Your live site switches to v4 instantly. v5 stays in history.')
-  assert.equal(HISTORY_WORDS.confirmBody(4, null, false), 'Your live site switches to v4 instantly.')
+  assert.equal(HISTORY_WORDS.confirmBody(4, 5, []), 'Your live site switches to v4 instantly. v5 stays in history — nothing is lost.')
+  assert.equal(HISTORY_WORDS.confirmBody(4, 5, ['Accent label']), 'Your live site switches to v4 instantly. v5 stays in history.')
+  assert.equal(HISTORY_WORDS.confirmBody(4, null, []), 'Your live site switches to v4 instantly.')
   assert.equal(HISTORY_WORDS.uploadedChip, 'Uploaded, not live')
   assert.equal(HISTORY_WORDS.notLive, DEPLOY_WORDS.notLiveTitle)
   assert.equal(HISTORY_WORDS.activating, DEPLOY_WORDS.activating)

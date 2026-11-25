@@ -6,8 +6,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { deployError, nextVersion } from './lib/deploy.ts'
-import { actionOf, newestAccepted } from './lib/retention.ts'
+import { DEPLOY_WORDS, deployError, nextVersion } from './lib/deploy.ts'
+import { actionOf, HISTORY_WORDS, newestAccepted } from './lib/retention.ts'
 import { putBack, type PutBackIo, type PutBackOutcome } from './server/deploy/put-back.ts'
 import { STALLED_MS } from './server/deploy/run.ts'
 
@@ -36,14 +36,17 @@ function world(over: {
   linked?: { siteId: string; url: string; disconnected: boolean } | null
   moving?: boolean
   getFails?: number
+  updateFails?: number
 } = {}) {
   const rows = new Map((over.rows ?? [row(1), row(2), row(3, { status: 'live' })]).map((r) => [r.id, { ...r }]))
   const bucket = new Map([...rows.values()].flatMap((r) => (r.artifact_path ? [[r.artifact_path, new TextEncoder().encode(`zip of ${r.id}`)] as const] : [])))
   const calls: { method?: string; path: string; item?: string; body?: unknown; route: string }[] = []
   const reads: string[] = []
+  const logs: [string, unknown][] = []
   const upload = [...(over.upload ?? [ok()])]
   const activations = [...(over.activate ?? [ok()])]
   let getFails = over.getFails ?? 0
+  let updateFails = over.updateFails ?? 0
   const io: PutBackIo = {
     row: async ({ deployId, userId }) => {
       reads.push('row')
@@ -63,7 +66,10 @@ function world(over: {
       return over.moving ?? false
     },
     deploys: {
-      update: async (id, _u, patch) => void rows.set(id, { ...(rows.get(id) as Row), ...(patch as Partial<Row>) }),
+      update: async (id, _u, patch) => {
+        if (updateFails-- > 0) throw Object.assign(new Error('database'), { infra: true, code: 'PGRST000' })
+        rows.set(id, { ...(rows.get(id) as Row), ...(patch as Partial<Row>) })
+      },
       demote: async ({ siteId, except }) => {
         for (const [k, r] of rows) if (k !== except && r.site_id === siteId && r.status === 'live') rows.set(k, { ...r, status: 'uploaded' })
       },
@@ -80,10 +86,10 @@ function world(over: {
       if (next instanceof Error) throw next
       return next ?? ok()
     },
-    log: () => undefined,
+    log: (message, fields) => void logs.push([message, fields]),
   }
   const put = (deployId: string): Promise<PutBackOutcome> => putBack(io, { userId: U, projectId: P, deployId, now: NOW })
-  return { io, rows, bucket, calls, reads, put }
+  return { io, rows, bucket, calls, reads, logs, put }
 }
 
 const snapshotOf = (w: ReturnType<typeof world>) => JSON.stringify([...w.rows.values()])
@@ -152,6 +158,33 @@ test('Re-activate: v3 `uploaded` and the newest accepted — `PUT activate` only
   }
 })
 
+test('Re-activate when Ghost no longer holds the theme — its activation refused with a `ValidationError` (`activate.js:46-54`, both majors): the stored zip is uploaded under the frozen name, then activated, and the row goes live with accepted_at stamped; a 429/5xx is Ghost unavailable; the control: a `ThemeValidationError` is still Ghost\'s check refusing, with its detail', async () => {
+  const rows = () => [row(1), row(2, { status: 'live', accepted_at: '2026-11-02T09:00:00.000Z' }), row(3, { activated: false, activated_at: null })]
+  const missing = bad(422, { errors: [{ type: 'ValidationError', message: 'inflozo-notes cannot be activated because it was not found in the theme directory.' }] })
+  const w = world({ rows: rows(), activate: [missing, ok()], upload: [ok(false)] })
+  assert.equal(await w.put('v3'), 'live')
+  assert.deepEqual(w.calls.map((c) => `${c.method} ${c.path}`), ['PUT themes/inflozo-notes/activate/', 'POST themes/upload/', 'PUT themes/inflozo-notes/activate/'], 'one upload after the refused activation, then the activation')
+  const file = (w.calls[1]?.body as FormData).get('file') as File
+  assert.equal(new TextDecoder().decode(new Uint8Array(await file.arrayBuffer())), 'zip of v3', 'the stored artefact, under the frozen name')
+  const v3 = w.rows.get('v3') as Row
+  assert.deepEqual([v3.status, v3.activated, v3.accepted_at, v3.activated_at], ['live', true, NOW.toISOString(), NOW.toISOString()])
+  assert.equal(w.rows.get('v2')?.status, 'uploaded', 'the site\'s other live row demoted')
+
+  for (const answer of [bad(503), bad(429), bad(500, {}, 'Internal Server Error')]) {
+    const busy = world({ rows: rows(), activate: [answer] })
+    const before = snapshotOf(busy)
+    const out = await busy.put('v3')
+    assert.equal(typeof out === 'object' ? out.refused.code : out, 'ghost_unavailable', `${answer.status} on Re-activate`)
+    assert.equal(busy.calls.length, 1, 'nothing uploaded')
+    assert.equal(snapshotOf(busy), before)
+  }
+
+  // the control: Ghost's own check refusing (a `ThemeValidationError`) is never a re-upload
+  const check = world({ rows: rows(), activate: [bad(422, { errors: [{ type: 'ThemeValidationError', message: 'Theme is not compatible or contains errors.' }] })] })
+  assert.deepEqual(await check.put('v3'), { refused: deployError('ghost_theme_refused', { host: 'ghost6.inflozo.com', siteId: S, detail: 'Theme is not compatible or contains errors.' }) })
+  assert.equal(check.calls.length, 1, 'no upload')
+})
+
 test('Ghost refuses the upload — 422 `ThemeValidationError`: nothing recorded, the site untouched, never retried, Ghost\'s detail kept (VERIFY 10); the control: the same Roll back accepted goes live', async () => {
   const w = world({ upload: [bad(422, { errors: [{ type: 'ThemeValidationError', message: 'Theme is not compatible or contains errors.', context: 'Missing template index.hbs' }] })] })
   const before = snapshotOf(w)
@@ -197,18 +230,26 @@ test('the undo: after rolling back to v2, Roll back v3 puts v3 live again — th
 test('the refusals that send nothing to Ghost: gone (not the user\'s, another project\'s, pruned, failed), elsewhere (another site\'s row, or no link), live (the Live row), disconnected, busy (a ship moving within STALLED_MS) — in that order', async () => {
   const gone = world({ rows: [row(1, { project_id: OTHER }), row(2, { artifact_path: null }), row(3, { status: 'failed' })] })
   for (const id of ['v1', 'v2', 'v3', 'v9']) assert.equal(await gone.put(id), 'gone', id)
-  assert.equal(await world().io.row({ deployId: 'v1', userId: 'someone-else' }), null)
+  // not the user's: the fake scopes `row` by the user, as the real io's `.eq('user_id', userId)` does (the source test below)
+  const someoneElse = world()
+  assert.equal(await putBack(someoneElse.io, { userId: 'someone-else', projectId: P, deployId: 'v2', now: NOW }), 'gone', 'another user\'s row')
   const other = world({ rows: [row(1, { site_id: OTHER }), row(2, { status: 'live' })] })
   assert.equal(await other.put('v1'), 'elsewhere')
-  assert.equal(await world({ linked: null }).put('v2'), 'elsewhere', 'a project linked to no site')
-  assert.equal(await world().put('v3'), 'live-already')
+  const unlinked = world({ linked: null })
+  assert.equal(await unlinked.put('v2'), 'elsewhere', 'a project linked to no site')
+  const live = world()
+  assert.equal(await live.put('v3'), 'live-already')
   // the order: the Live row on a disconnected site is still `live`; another site's row on one is still `elsewhere`
-  assert.equal(await world({ linked: { siteId: S, url: 'https://ghost6.inflozo.com', disconnected: true } }).put('v3'), 'live-already')
-  assert.equal(await world({ linked: { siteId: S, url: 'https://ghost6.inflozo.com', disconnected: true } }).put('v2'), 'disconnected')
+  const disconnected = () => world({ linked: { siteId: S, url: 'https://ghost6.inflozo.com', disconnected: true } })
+  const liveOff = disconnected()
+  assert.equal(await liveOff.put('v3'), 'live-already')
+  const off = disconnected()
+  assert.equal(await off.put('v2'), 'disconnected')
   const busy = world({ moving: true })
   assert.equal(await busy.put('v2'), 'busy')
   assert.ok(busy.reads.includes(`moving:${new Date(NOW.getTime() - STALLED_MS).toISOString()}`), 'moving within STALLED_MS of now')
-  for (const w of [gone, other, busy]) assert.equal(w.calls.length, 0, 'nothing sent to Ghost')
+  const worlds = { gone, someoneElse, other, unlinked, live, liveOff, off, busy }
+  for (const [name, w] of Object.entries(worlds)) assert.equal(w.calls.length, 0, `${name}: nothing sent to Ghost`)
 })
 
 test('the server decides the action: a press on a row that is no longer the newest accepted is a Roll back (an upload), never the activation the drawer drew', async () => {
@@ -223,9 +264,38 @@ test('an infrastructure failure (the store, twice) is ours, said as such — not
   const out = await w.put('v2')
   assert.ok(typeof out === 'object')
   assert.equal(out.refused.code, 'deploy_infrastructure')
+  assert.equal(out.refused.message, DEPLOY_WORDS.infrastructure, 'before Ghost acted: "before anything reached your site" is true')
   assert.equal(w.calls.length, 0)
+  assert.deepEqual(w.logs.at(-1), ['put-back: infrastructure failed', { code: undefined, acted: 'no' }])
   // AD-20's rule: once is retried
   assert.equal(await world({ getFails: 1 }).put('v2'), 'live')
+})
+
+test('a record failing AFTER Ghost acted (the accepted active upload, then the row\'s update refused twice) says the version reached the site and History could not record it — never "before anything reached your site"', async () => {
+  const w = world({ upload: [ok(true)], updateFails: 2 })
+  const out = await w.put('v2')
+  assert.ok(typeof out === 'object')
+  assert.equal(out.refused.code, 'deploy_infrastructure')
+  assert.equal(out.refused.message, HISTORY_WORDS.unrecorded(2, 'ghost6.inflozo.com'))
+  assert.equal(HISTORY_WORDS.unrecorded(2, 'ghost6.inflozo.com'), "v2 reached ghost6.inflozo.com, but History couldn't record it. Try again.")
+  assert.equal(w.calls.length, 1, 'Ghost took the upload')
+  assert.deepEqual(w.logs.at(-1), ['put-back: infrastructure failed', { code: undefined, acted: 'yes' }])
+  // and after a Re-activate Ghost made: the same
+  const re = world({ rows: [row(2, { status: 'live', accepted_at: '2026-11-02T09:00:00.000Z' }), row(3)], updateFails: 2 })
+  const after = await re.put('v3')
+  assert.equal(typeof after === 'object' ? after.refused.message : after, HISTORY_WORDS.unrecorded(3, 'ghost6.inflozo.com'))
+})
+
+test('Ghost\'s refusals are logged by code — the code alone, never Ghost\'s detail or the host (the I/O matrix); the control: a Roll back that lands logs no refusal', async () => {
+  const w = world({ upload: [bad(422, { errors: [{ type: 'ThemeValidationError', message: 'Theme is not compatible or contains errors.' }] })] })
+  await w.put('v2')
+  assert.deepEqual(w.logs, [['put-back: Ghost refused', { code: 'ghost_theme_refused' }]])
+  const unavailable = world({ upload: [bad(503)] })
+  await unavailable.put('v2')
+  assert.deepEqual(unavailable.logs, [['put-back: Ghost refused', { code: 'ghost_unavailable' }]])
+  const landed = world({ upload: [ok(true)] })
+  assert.equal(await landed.put('v2'), 'live')
+  assert.deepEqual(landed.logs, [])
 })
 
 // ── the source rules ─────────────────────────────────────────────────────────────────────────────────────────────────
@@ -271,7 +341,9 @@ test('the real io\'s shared members query as `deploy-io.ts`\' own do — the row
   }
   // each table query, up to its `ok()` label
   const queries = io.split('supabaseAdmin().from(').slice(1).map((q) => q.slice(0, q.indexOf("), '") + 1))
-  assert.ok(queries.length >= 5)
+  // every `supabaseAdmin()` in the io is one of the queries checked — none escapes the split — and there is at least one
+  assert.equal(queries.length + (io.match(/supabaseAdmin\(\)\.storage\./g) ?? []).length, (io.match(/supabaseAdmin\(\)/g) ?? []).length, 'every service-role call is checked')
+  assert.ok(queries.length > 0)
   for (const q of queries) assert.match(q, /\.eq\('user_id', userId\)/, q.slice(0, 80))
   // the newest accepted is the drift baseline's order
   assert.match(io, /\.order\('accepted_at', \{ ascending: false, nullsFirst: false \}\)\.order\('created_at', \{ ascending: false \}\)\.limit\(1\)/)

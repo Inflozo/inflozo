@@ -111,7 +111,8 @@ export function changedLine(manifest: ContentManifest | null, prev: { version: s
 // ── the History drawer ──────────────────────────────────────────────────────────────────────────────────────────────
 
 /** GET `projects/[id]/history`'s answer: the project's stored versions on every site, newest accepted first, the project's link,
- *  and the version live on the linked site (the Roll back confirm's "v{n} stays in history"; null when nothing is) */
+ *  and the version live on the linked site (the Roll back confirm's "v{n} stays in history"; null when nothing is, or when that
+ *  version is no longer kept — the body never says a pruned version stays) */
 export type HistoryAnswer = {
   linkedSiteId: string | null
   liveVersion: string | null
@@ -131,8 +132,9 @@ export type HistoryAnswer = {
     host: string
     /** Story 7.23a — `changedLine`'s, or null */
     changed: string | null
-    /** Story 7.23a — the custom settings Ghost forgets if this version goes live (`droppedKeys` against the site's Live row) */
-    drops: readonly string[]
+    /** Story 7.23a — the custom settings Ghost forgets if this version goes live (`droppedKeys` against the site's Live row); null
+     *  when nobody can say — either row's Pre-flight facts are missing (a deploy kept before Story 7.18b) */
+    drops: readonly string[] | null
     /** Story 7.23a — `actionOf`'s */
     action: PutBack | null
   }[]
@@ -189,28 +191,30 @@ export function historyAnswer(read: {
   const live = linkedSiteId === null ? null : liveOn(linkedSiteId, rows)
   return {
     linkedSiteId,
-    liveVersion: live?.version ?? null,
+    liveVersion: live !== null && isStoredVersion(live) ? live.version : null,
     rows: [...read.listed].sort((x, y) => newestFirst(byId.get(x.id) ?? NONE, byId.get(y.id) ?? NONE)).flatMap((l) => {
       const r = byId.get(l.id)
       if (r === undefined || !isStoredVersion(r)) return []
       const prev = predecessorOf(r, rows)
       const own = heavy.get(r.id)
       const liveHere = liveOn(r.site_id, rows)
-      const liveCustom = liveHere === null || liveHere.id === r.id ? null : (heavy.get(liveHere.id)?.preflight?.custom ?? null)
-      const ownCustom = own?.preflight === null || own?.preflight === undefined ? undefined : (own.preflight.custom ?? null)
+      // the Live row's facts: undefined where nothing else is live on the site (nothing is dropped), null where they are unknown
+      const liveFacts = liveHere === null || liveHere.id === r.id ? undefined : (heavy.get(liveHere.id)?.preflight ?? null)
+      const ownFacts = own?.preflight ?? null
       return [{
         id: r.id, version: r.version, status: r.status, pinned: l.pinned, createdAt: r.created_at, acceptedAt: r.accepted_at ?? r.created_at,
         errors: l.errors, warnings: l.warnings, siteId: r.site_id, host: l.host,
         changed: changedLine(own?.content_manifest ?? null, prev === null ? null : { version: prev.version, manifest: heavy.get(prev.id)?.content_manifest ?? null }),
-        // Pre-flight's own rule: only where both versions carry their facts (a deploy kept before Story 7.18b lists none)
-        drops: liveCustom === null || ownCustom === undefined ? [] : droppedKeys(liveCustom, ownCustom),
+        // Pre-flight's own rule, where both versions carry their facts. `preflight` null (a deploy kept before Story 7.18b) is
+        // UNKNOWN, never "nothing is lost"; `custom` null is known — the theme declares none
+        drops: liveFacts === undefined ? [] : liveFacts === null || ownFacts === null ? null : droppedKeys(liveFacts.custom ?? {}, ownFacts.custom ?? null),
         action: actionOf(r, { linkedSiteId, newest: newestOn(r.site_id) }),
       }]
     }),
   }
 }
 
-/** one row as the drawer draws it: compact (D2a `:101-150`) or, for the first three, expanded (S8e `:300-323`) */
+/** one row as the drawer draws it: compact (D2a `:101-150`) or, for the first three and D2d's row, expanded (S8e `:300-323`) */
 export type HistoryRow = {
   id: string
   n: number
@@ -225,12 +229,12 @@ export type HistoryRow = {
   /** the row's site's host, for the outcome's words */
   host: string
   changed: string | null
-  /** the dropped settings, named as Ghost names them (`ghostName`, Pre-flight's) */
-  drops: readonly string[]
+  /** the dropped settings, named as Ghost names them (`ghostName`, Pre-flight's); null when unknown */
+  drops: readonly string[] | null
   action: PutBack | null
-  /** S8e `:313`: the row right after the linked site's Live row draws the coral-outline Roll back — the undo */
+  /** S8e `:313`: the linked site's next row after its Live row draws the coral-outline Roll back — the undo */
   emphasis: boolean
-  /** the first three rows are drawn expanded (S8e `:300-323`, D2a `:75-100`) */
+  /** the first three rows are drawn expanded (S8e `:300-323`, D2a `:75-100`), and D2d's row wherever it falls (D2 `:194-201`) */
   expanded: boolean
 }
 
@@ -252,15 +256,17 @@ export function historyRows(answer: HistoryAnswer): HistoryRow[] {
         elsewhere: r.siteId === answer.linkedSiteId ? null : r.host,
         host: r.host,
         changed: r.changed ?? null,
-        drops: (r.drops ?? []).map(ghostName),
+        drops: r.drops === null ? null : (r.drops ?? []).map(ghostName),
         action: r.action ?? null,
         emphasis: false,
         expanded: false,
       }]
     })
+  // the undo is the linked site's own next row — another site's rows between are skipped — and only as a Roll back
   const live = rows.findIndex((r) => r.live && r.elsewhere === null)
-  const next = live < 0 ? undefined : rows[live + 1]
-  return rows.map((r, i) => ({ ...r, expanded: i < EXPANDED, emphasis: r === next && r.action === 'rollback' }))
+  const next = live < 0 ? undefined : rows.slice(live + 1).find((r) => r.elsewhere === null)
+  // D2d's row keeps its chip and line wherever it falls: a compact row draws neither
+  return rows.map((r, i) => ({ ...r, expanded: i < EXPANDED || r.action === 'reactivate', emphasis: r === next && r.action === 'rollback' }))
 }
 
 /** a pin's outcome, as the route answers it: 200 pinned or unpinned, 409 `cap`, 404 `gone`, anything else `failed` */
@@ -346,13 +352,13 @@ export const HISTORY_WORDS = {
   reactivate: 'Re-activate',
   reactivateName: (n: number) => DEPLOY_WORDS.reactivate(n),
   activating: DEPLOY_WORDS.activating,
-  /** S8e `:338-344` — the body stops at "stays in history." where Ghost will forget a setting (Design Notes), and says only the
-   *  switch where nothing is live on the site */
+  /** S8e `:338-344` — the body stops at "stays in history." where Ghost will forget a setting, or nobody can say whether it will
+   *  (Design Notes), and says only the switch where nothing is live on the site */
   confirmTitle: (n: number) => `Roll back to ${versionLabel(n)}?`,
-  confirmBody: (n: number, live: number | null, drops: boolean) =>
+  confirmBody: (n: number, live: number | null, drops: readonly string[] | null) =>
     live === null
       ? `Your live site switches to ${versionLabel(n)} instantly.`
-      : `Your live site switches to ${versionLabel(n)} instantly. ${versionLabel(live)} stays in history${drops ? '.' : ' — nothing is lost.'}`,
+      : `Your live site switches to ${versionLabel(n)} instantly. ${versionLabel(live)} stays in history${drops === null || drops.length > 0 ? '.' : ' — nothing is lost.'}`,
   cancel: DEPLOY_WORDS.cancel,
   /** the Changed line (`changedLine`) — the frame's shape */
   changed: 'Changed: ',
@@ -370,6 +376,9 @@ export const HISTORY_WORDS = {
     busy: (host: string) => `A deploy to ${host} is under way. Try again when it ends.`,
   },
   actFailed: (n: number) => `${versionLabel(n)} didn't go back on your site. Try again.`,
+  /** Ghost took the version (an upload accepted or an activation made) and the record then failed, twice: never "nothing reached
+   *  your site" (`DEPLOY_WORDS.infrastructure`) */
+  unrecorded: (n: number, host: string) => `${versionLabel(n)} reached ${host}, but History couldn't record it. Try again.`,
 } as const
 
 /** what the polite region says for a pin's outcome (the refusal is D2b's own sentence) */

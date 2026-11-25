@@ -10767,6 +10767,12 @@ owner: Story 7.32 (Partial success — uploaded, not activated), which reads wha
   lost: a found drift that matches a newer `failed` row's manifest exactly reads as clean against that version.
 location: `apps/web/server/deploy/deploy-io.ts` (`deploys.baseline`) · `apps/web/server/deploy/run.ts` (`driftStep`)
 reason: needs Ghost to keep an upload whose answer is lost, and the false report it makes is undone by the button beside it.
+  Story 7.23a's Review (2026-11-25) adds two of the same class. (1) The History drawer's put-back: when Ghost has accepted the
+  upload or the activation and the record write then fails twice, the row keeps no `accepted_at` (the drift baseline stays the
+  older version) or, when only the demote fails, the site has two `live` rows. The put-back now says so truthfully
+  (`HISTORY_WORDS.unrecorded`, "Try again" — a second press records it), so only the record is left (`server/deploy/put-back.ts`).
+  (2) Ship it's `failInfra` (`server/deploy/run.ts`) answers `DEPLOY_WORDS.infrastructure`, "…before anything reached your site",
+  for a record write that fails after Ghost accepted the upload — untrue at that point. 7.32 reads what Ghost holds and owns both.
 
 ### DW-398: after a kept token, focus goes to the page body when the row that opened Add token is gone
 
@@ -10832,3 +10838,37 @@ owner: Story 7.23a (Roll back, and another site's rows; split from Story 7.23 by
 location: `apps/web/lib/retention.ts` (`newestFirst`, `prunable`) · `apps/web/components/editor/deploy-history.tsx` (the row's time)
 reason: the frozen rule names `created_at`; changing what "newest" means is a rule change (the spec's Ask First), and the path
   that reaches it is a re-link, a ship elsewhere and a re-link back inside a day.
+
+## Deferred from: code review of spec-7-23a-roll-back-and-re-activate-from-history (2026-11-25)
+
+### DW-401: a version compiled for a Ghost major the site has since left is put back without a check
+
+plain: Inflozo builds each theme for the Ghost version your site runs (5 or 6). If your site later moves from Ghost 5 to Ghost 6,
+  the versions kept in History were built for Ghost 5, and Roll back puts one back without asking. Ghost's own check still blocks
+  a theme that cannot work at all; one that works less well would go live quietly.
+status: open
+severity: low
+origin: Story 7.23a's Review (2026-11-25), the Blind Hunter and Edge Case Hunter layers. Ship it reads the site's major before it
+  compiles (`run.ts` `shipsTo`, FR-J8's version mismatch); the put-back (`server/deploy/put-back.ts`) uploads a stored artefact and
+  reads no version, and no `deploys` row records the major it was compiled for.
+owner: Story 15.7 (the Ghost(Pro) launch gate), whose Ghost 5 pass (DW-326) runs a site on both majors: it records the compiled
+  major per deploy, and decides whether a put-back across majors is refused, warned or allowed.
+location: `apps/web/server/deploy/put-back.ts` · `apps/web/server/deploy/run.ts` (`shipsTo`) · `deploys`
+reason: needs a site that changed major between a ship and a Roll back, and the Ghost 5 half of every check is postponed to
+  DW-326's pass (R-238).
+
+### DW-402: the keyboard journey "choosing a Layers row scrolls the canvas…" failed once in CI, settling at 111 instead of 24
+
+plain: An automatic test of the editor failed once on GitHub while passing every time on this machine. It checks that choosing a
+  layer scrolls the page to that section with a little space above it. Nothing in the product changed; the test read the page
+  before its smooth scroll had settled.
+status: open
+severity: low
+origin: Story 7.23a's Review (2026-11-25): CI run 45616356749 on the Dev head `1e706298`, `check` red at "Run pnpm keyboard" —
+  `journey.spec.mjs:2382`, `expect.poll(topOf(walk.far)).toBe(GAP)` received 111 for 24 within 5 s, 355 passed beside it, so
+  `deploy` was skipped. The story touches no Layers or canvas-scroll code. Re-run cold here (`run-keyboard-gate.sh -g "choosing a
+  Layers row scrolls the canvas" --repeat-each 5`): 5 of 5 passed.
+owner: Story 15.1 (the E2E suite, including the keyboard-only journey): if it recurs, give the poll the settle rule DW-222's
+  scroll checks use (two reads 200 ms apart agreeing) and a longer budget on CI.
+location: `tools/keyboard/journey.spec.mjs` (the Layers-row reveal journey)
+reason: one sighting; a red CI run publishes nothing (DW-7), so it costs a re-run, never a bad deploy.

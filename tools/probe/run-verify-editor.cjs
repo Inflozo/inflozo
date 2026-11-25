@@ -448,7 +448,11 @@
 // (d) the undo; (e) T1's own theme activated, v3's row `uploaded` (as a Deploy only leaves it), D2d's Re-activate; (f) v1's zip
 // swapped for one the pinned gscan blocks (asserted locally first): Ghost's 422 said under v1 and nothing changed, the real zip
 // the control; (g) a Roll back from a second session reading along; (h) `busy` and `elsewhere` 409s through the route, each with
-// its control. Its finally removes the plants, puts T1 back, removes L's objects, disconnects and deletes L, and counts back.
+// its control. The code review adds: (c) the dropped settings through the REAL route (v3's `preflight.custom` planted with one
+// key, restored after (c)) and the prune's REAL read (`retention-io.ts`' own select: v2 the oldest accepted goes, never v1);
+// (e2) Re-activate when Ghost no longer holds the theme (deleted on T1 with the staff token): the stored zip goes up again; and
+// (h) the cross-account door — the walk's account A POSTs L's version to L's route, 404. Its finally removes the plants, puts T1
+// back, removes L's objects, disconnects and deletes L, and counts back.
 // `STEP121_PLANT=<address>` is Deploy's plant for the owner's test instead: it stops after (a) and the D2d state with v1 refused.
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
@@ -14762,6 +14766,12 @@ async function main() {
            then T1's active theme, downloaded with the staff token, compares at ZERO differences with v1's `content_manifest`
            (the drift check's own `liveManifest`/`compareManifests`) and `/` says "Version 1"; the records: v1's own row live with
            the newest `accepted_at`, v3 `uploaded`, no row added, v1's object still stored; and the next Run checks is D3c "since v1".
+           THE CODE REVIEW'S: before the route is first read, v3's (the Live row's) `preflight.custom` gains one key,
+           `walk121_probe` (a planted record only: no theme on T1 declares it), so the route answers v2 and v1 dropping it and the
+           confirm draws Pre-flight's marigold block with Ghost's name for it, its body stopping at "stays in history."; restored
+           exactly after (c). And the prune's REAL read: `server/retention-io.ts`' own select of `versions`, run with its filters
+           over L's project, prunes v2 — the oldest ACCEPTED — at a cap one below what is stored, never v1 (created first,
+           accepted newest by the Roll back); the same rows with no `accepted_at` would prune v1 (the control).
        (d) THE UNDO: Roll back v3 — live, "Version 3".
        (e) D2d: T1's own theme activated with the staff token (what Ghost Admin's switch does), and v3's row written `uploaded` with
            `activated` false through the service key — what a Deploy only leaves. A REAL Deploy only cannot make this state: R-264
@@ -14769,6 +14779,10 @@ async function main() {
            after a switch in Ghost Admin the record still says so. The drawer: v3's chip, line and Re-activate, nothing Live;
            Re-activate — "Activating…" — v3 live with its `accepted_at` unchanged, T1's active theme Inflozo's again holding v3's
            files, "Version 3", and v2's Roll back the emphasised one.
+       (e2) RE-ACTIVATE WHEN GHOST NO LONGER HOLDS THE THEME: (e)'s D2d state again, then the theme under the frozen name DELETED on
+           T1 with the staff token (read back absent). Re-activate: Ghost refuses the activation as not found (`ValidationError`),
+           so the stored zip goes up again — v3 live with a NEWER `accepted_at`, T1's active theme Inflozo's holding v3's files at
+           zero differences, "Version 3". (f) starts from v3 live.
        (f) GHOST REFUSES: v1's stored zip swapped (removed, then stored again under its key) for itself plus one template Handlebars
            cannot parse — asserted HERE as blocked on the pinned v6 gscan (GS005-TPL-ERR fatal; §91 executed Ghost's 422 for it), the
            real zip clean (the control) — then Roll back v1: Ghost's 422 said under v1 with its detail, v1's row unchanged, T1's
@@ -14777,8 +14791,9 @@ async function main() {
        (g) A SECOND SESSION of L whose editor reads along (`[data-readonly]`; the first holds the lock): Roll back v2 from its drawer.
        (h) 409s through the route on L's session: `busy` with a `deploy_jobs` row of P × T1 at `uploading`, fresh; `elsewhere` for a
            stored version of P on another (planted, disconnected) site of L's; the controls — that row moved onto the linked site
-           answers `busy`, not `elsewhere`, and with the busy row removed the same POST is accepted (v3 live).
-       FINALLY: (h)'s plants removed; every job at rest; T1 put back (its own theme active, every inflozo- theme uploaded deleted,
+           answers `busy`, not `elsewhere`, and with the busy row removed the same POST is accepted (v3 live). Before that control,
+           the cross-account door: the walk's own account A (step 1's page) POSTs v3 to L's project's route — 404, T1 untouched.
+       FINALLY: (h)'s plants and (c)'s planted key removed; every job at rest; T1 put back (its own theme active, every inflozo- theme uploaded deleted,
        routes.yaml byte for byte) and read back; L's objects removed; T1 disconnected through the product; L deleted; users and
        projects counted back. `STEP121_PLANT=<address>` is Deploy's plant for the owner's test instead (see PLANT121). Keys are read
        in-process by NAME and scrubbed; never printed. SELF-CONTAINED, as 120 is. */
@@ -14786,10 +14801,11 @@ async function main() {
       note('step 121 — NOT RUN', 'it writes to T1 (three ships and the put-backs through the product, one activation of T1\'s own theme, and the put-back) and to production (planted rows and one swapped object): set T1_WRITES=1 on the owner\'s in-session go')
     } else {
       const imp121 = (f) => import(require('node:url').pathToFileURL(path.join(REPO, f)).href)
-      const [DEP121, RET121, DR121, CR121, PR121, AR121, RU121, ZIP121, GATE121, GS121] = await Promise.all([
+      const [DEP121, RET121, DR121, CR121, PR121, AR121, RU121, ZIP121, GATE121, GS121, CS121] = await Promise.all([
         imp121('apps/web/lib/deploy.ts'), imp121('apps/web/lib/retention.ts'), imp121('apps/web/lib/drift.ts'), imp121('apps/web/lib/connect-rule.ts'),
         imp121('apps/web/lib/probe-rule.ts'), imp121('apps/web/server/ghost-admin/admin-rule.ts'), imp121('apps/web/lib/routes-upload.ts'),
         imp121('apps/web/server/deploy/zip.ts'), imp121('apps/web/lib/backup-gate.ts'), imp121('packages/theme-compiler/gate/index.ts'),
+        imp121('packages/section-runtime/src/custom-settings.ts'),
       ])
       const HW121 = RET121.HISTORY_WORDS
       const DW121 = DR121.DRIFT_WORDS
@@ -14907,6 +14923,9 @@ async function main() {
       let busy121 = null
       let otherSite121 = null
       let otherDeploy121 = null
+      /** (c)'s planted key: v3's id and its `preflight` as read, put back after (c) or by the finally should it die between */
+      let probe121 = null
+      const PROBE121 = 'walk121_probe'
       const ctxs121 = []
       const csp121 = []
 
@@ -15117,6 +15136,7 @@ async function main() {
           asked = await p.evaluate(() => ({
             title: document.querySelector('#history-confirm-title')?.textContent ?? null,
             body: document.querySelector('#history-confirm-body')?.textContent ?? null,
+            drops: [...document.querySelectorAll('dialog[data-history-confirm] [data-history-drops] li')].map((li) => li.textContent),
             onCancel: document.activeElement?.hasAttribute('data-cancel') === true && document.activeElement.closest('dialog[data-history-confirm]') !== null,
           }))
           busy = busyFrom('#history-confirm-go', HW121.rollingBack, false)
@@ -15161,6 +15181,15 @@ async function main() {
         const shipped = []
         for (let n = 1; n <= 3; n++) shipped.push(await shipOne121(pg, n))
         const [v1, v2, v3] = shipped.map((s) => s.row)
+        // (c)'s plant, before the route is first read: v3 — the Live row — declares one custom key more than v2 and v1
+        let probed121 = null
+        if (!PLANT121) {
+          const read = (await call('/rest/v1', `/deploys?id=eq.${v3.id}&select=preflight`)).body?.[0]?.preflight ?? null
+          if (read !== null && typeof read === 'object') {
+            probe121 = { id: v3.id, preflight: read }
+            probed121 = await call('/rest/v1', `/deploys?id=eq.${v3.id}`, { method: 'PATCH', body: JSON.stringify({ preflight: { ...read, custom: { ...(read.custom ?? {}), [PROBE121]: { type: 'text', default: '' } } } }) })
+          }
+        }
         const answerA = await history121(pg)
         const wantA = rowsOf121(answerA)
         const HOST121 = wantA[0]?.host ?? CR121.hostOf(ENV121.GHOST6_URL)
@@ -15211,12 +15240,18 @@ async function main() {
           JSON.stringify(rowsB.map((r) => r.act)))
 
         // ── 121c — Roll back to v1 by the keyboard ──
+        const dropsOf121 = (id) => answerA.body?.rows?.find((r) => r.id === id)?.drops
+        check(`step 121c — the dropped settings through the REAL route: v3 (Live) planted with one custom key more, ${PROBE121} (a record only — no theme on T1 declares it), read back; the route answers v2 and v1 each dropping exactly it, v3 nothing`,
+          probe121 !== null && [200, 204].includes(probed121?.status) && same121(dropsOf121(v2.id), [PROBE121]) && same121(dropsOf121(v1.id), [PROBE121]) && same121(dropsOf121(v3.id), []),
+          JSON.stringify({ planted: probed121?.status ?? null, drops: [v3, v2, v1].map((r) => dropsOf121(r.id) ?? 'absent') }))
         const beforeC = await rows121()
         const liveC = DEP121.versionNumber(answerA.body?.liveVersion ?? '')
+        const dropsC = wantA[2] === undefined ? [] : wantA[2].drops
         const c = await putBack121(pg, 1, true)
         const shownC = await drawer121(pg)
-        check(`step 121c — Roll back to v1 by the keyboard: Enter on its Roll back opens "${HW121.confirmTitle(1)}" — "${HW121.confirmBody(1, liveC, (wantA[2]?.drops ?? []).length > 0)}" — with focus on ${HW121.cancel}; Tab reaches its Roll back and Enter says "${HW121.rollingBack}"; then "${HW121.said.live(1, HOST121)}", v1 Live first and focus on ✕`,
-          c.asked?.title === HW121.confirmTitle(1) && c.asked.body === HW121.confirmBody(1, liveC, (wantA[2]?.drops ?? []).length > 0) && c.asked.onCancel === true && c.asked.tab === 'history-confirm-go' &&
+        check(`step 121c — Roll back to v1 by the keyboard: Enter on its Roll back opens "${HW121.confirmTitle(1)}" — "${HW121.confirmBody(1, liveC, dropsC)}", stopping at "stays in history." over Pre-flight's block naming "${CS121.ghostName(PROBE121)}" — with focus on ${HW121.cancel}; Tab reaches its Roll back and Enter says "${HW121.rollingBack}"; then "${HW121.said.live(1, HOST121)}", v1 Live first and focus on ✕`,
+          c.asked?.title === HW121.confirmTitle(1) && c.asked.body === HW121.confirmBody(1, liveC, dropsC) && c.asked.body.endsWith(' stays in history.') && same121(c.asked.drops, [CS121.ghostName(PROBE121)]) &&
+          c.asked.onCancel === true && c.asked.tab === 'history-confirm-go' &&
           c.busy === true && c.ended?.said === HW121.said.live(1, HOST121) && c.ended.focus === 'deploy-history-close' && shownC?.rows[0]?.v === 'v1' && shownC.rows[0].live === true,
           JSON.stringify({ asked: c.asked, busy: c.busy, ended: c.ended, first: shownC?.rows[0] ?? null }))
         const activeC = await active121()
@@ -15233,6 +15268,16 @@ async function main() {
           byId(afterC, v3.id)?.status === 'uploaded' && byId(afterC, v2.id)?.status === 'uploaded' && afterC.filter((r) => r.status === 'live').length === 1 &&
           afterC.map((r) => r.id).join(',') === beforeC.map((r) => r.id).join(',') && (await object121(v1.artifact_path)) !== null,
           JSON.stringify({ rows: `${beforeC.length} → ${afterC.length}`, statuses: afterC.map((r) => `${r.version}:${r.status}`), newest: accepted[0]?.version ?? null }))
+        // the prune's REAL read: `server/retention-io.ts`' own select of `versions` (read from the file, never retyped), run with its
+        // filters over L's project; at a cap one below what is stored the rule prunes the oldest ACCEPTED — the control, the same rows
+        // with no accepted_at, the oldest made (DW-400)
+        const select121 = /async versions\([^)]*\)\s*\{[^]*?\.select\('([^']+)'\)/.exec(fs.readFileSync(path.join(REPO, 'apps/web/server/retention-io.ts'), 'utf8'))?.[1] ?? null
+        const keptC = select121 === null ? [] : ((await call('/rest/v1', `/deploys?project_id=eq.${P121}&user_id=eq.${id121}&status=in.(uploaded,live)&artifact_path=not.is.null&select=${select121.replace(/\s+/g, '')}`)).body ?? [])
+        const prunedC = Array.isArray(keptC) ? RET121.prunable(keptC, keptC.length - 1).map((r) => r.id) : []
+        const controlC = Array.isArray(keptC) ? RET121.prunable(keptC.map(({ accepted_at: _, ...r }) => r), keptC.length - 1).map((r) => r.id) : []
+        check(`step 121c — the prune's REAL read (retention-io.ts' select of versions${select121 === null ? ': NOT FOUND in the file' : `, "${select121}"`}, with its filters, over L's project): at a cap one below the stored, v2 — the oldest ACCEPTED — is prunable, never v1 (made first, accepted newest by the Roll back); the control: the same rows with no accepted_at prune v1`,
+          select121 !== null && Array.isArray(keptC) && keptC.length === shipped.length && same121(prunedC, [v2.id]) && same121(controlC, [v1.id]),
+          JSON.stringify({ select: select121, stored: Array.isArray(keptC) ? keptC.length : keptC, pruned: prunedC.map((id) => byId(afterC, id)?.version ?? id), control: controlC.map((id) => byId(afterC, id)?.version ?? id) }))
         await closed121(pg)
         await pg.locator('#editor-ship').click()
         await until121(() => wiz121(pg), (w) => w?.at === 'destination', 20000)
@@ -15241,6 +15286,13 @@ async function main() {
           preC?.stage === 'awaiting_ship' && same121(preC.stage_timings?.drift, { kind: 'clean', since: 1 }) && (wizC?.passes ?? []).some((p) => p.clean && p.text.includes(DW121.clean(1))),
           JSON.stringify({ stage: preC?.stage ?? null, drift: preC?.stage_timings?.drift ?? null }))
         await closed121(pg)
+        if (probe121 !== null) {
+          const back = await call('/rest/v1', `/deploys?id=eq.${probe121.id}`, { method: 'PATCH', body: JSON.stringify({ preflight: probe121.preflight }) })
+          const read = (await call('/rest/v1', `/deploys?id=eq.${probe121.id}&select=preflight`)).body?.[0]?.preflight ?? null
+          const restored = [200, 204].includes(back.status) && same121(read, probe121.preflight)
+          check(`step 121c — the planted key restored: v3's preflight exactly as read before it (compared by fields), ${PROBE121} gone`, restored, `HTTP ${back.status}`)
+          if (restored) probe121 = null
+        }
 
         // ── 121d — the undo ──
         const d = await putBack121(pg, 3)
@@ -15273,6 +15325,26 @@ async function main() {
           e.busy === true && e.asked === null && e.ended?.said === HW121.said.live(3, HOST121) && v3E?.status === 'live' && v3E.activated === true && v3E.accepted_at === v3E0?.accepted_at &&
           activeE === theme121 && none121(diffE) && (await homeSays121(3)) === 'Version 3' && shownE2?.rows[0]?.v === 'v3' && shownE2.rows[0].live && shownE2.rows[1]?.v === 'v2' && shownE2.rows[1].act?.emphasis === true,
           JSON.stringify({ busy: e.busy, ended: e.ended, row: kept121(v3E), active: activeE, diff: diffE }))
+
+        // ── 121e2 — Re-activate when Ghost no longer holds the theme: its activation refused as not found, the stored zip goes up ──
+        await closed121(pg)
+        const ownE2 = await staff121('PUT', `themes/${encodeURIComponent(prev121)}/activate/`)
+        const writtenE2 = await call('/rest/v1', `/deploys?id=eq.${v3.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'uploaded', activated: false }) })
+        const deletedE2 = ownE2.ok ? await staff121('DELETE', `themes/${encodeURIComponent(theme121)}/`) : null
+        const themesE2 = await themes121()
+        const v3E20 = await deploy121(v3.id)
+        check(`step 121e2 — ${prev121} activated with the staff token and v3's row written \`uploaded\`, \`activated\` false (as 121e), then ${theme121} DELETED on T1 with the staff token — read back absent`,
+          ownE2.ok && [200, 204].includes(writtenE2.status) && deletedE2?.ok === true && themesE2 !== null && !themesE2.some((t) => t.name === theme121) &&
+          themesE2.find((t) => t.active)?.name === prev121 && v3E20?.status === 'uploaded' && v3E20.activated === false,
+          JSON.stringify({ activate: ownE2.status, row: writtenE2.status, deleted: deletedE2?.status ?? null, themes: (themesE2 ?? []).map((t) => `${t.name}${t.active ? '*' : ''}`) }))
+        const e2 = await putBack121(pg, 3)
+        const v3E2 = await deploy121(v3.id)
+        const activeE2 = await active121()
+        const diffE2 = await liveDiff121(v3.content_manifest)
+        check(`step 121e2 — Re-activate on v3 with ${theme121} gone from T1: Ghost refuses the activation as not found, so the stored zip goes up again — "${HW121.activating}", then "${HW121.said.live(3, HOST121)}"; v3's own row live with a NEWER accepted_at (an upload happened); T1's active theme ${theme121} again, holding v3's files at zero differences; ${ORIGIN121}/ "Version 3"`,
+          e2.busy === true && e2.asked === null && e2.ended?.said === HW121.said.live(3, HOST121) && v3E2?.status === 'live' && v3E2.activated === true &&
+          Date.parse(v3E2.accepted_at) > Date.parse(v3E20?.accepted_at ?? '') && activeE2 === theme121 && none121(diffE2) && (await homeSays121(3)) === 'Version 3',
+          JSON.stringify({ busy: e2.busy, ended: e2.ended, row: kept121(v3E2), was: kept121(v3E20), active: activeE2, diff: diffE2 }))
 
         // ── 121f — a stored zip Ghost refuses ──
         await closed121(pg)
@@ -15337,6 +15409,12 @@ async function main() {
         await call('/rest/v1', `/deploy_jobs?id=eq.${busy121}`, { method: 'DELETE' })
         const busyGone = ((await call('/rest/v1', `/deploy_jobs?id=eq.${busy121}&select=id`)).body ?? []).length === 0
         if (busyGone) busy121 = null
+        // the cross-account door: the walk's own account A — step 1's page, signed in as A — sends L's v3 to L's project's route
+        await page.goto(at('/'), { waitUntil: 'load' })
+        const crossH = await post121(page, v3.id)
+        await page.goto('about:blank')
+        check(`step 121h — another account's door: the walk's account A POSTs { deploy: v3, act: 'live' } to L's project's history route → 404, and nothing reaches Ghost (T1's themes as they were); the control is the next check, L's own POST of the same row`,
+          crossH.status === 404 && JSON.stringify(await themes121()) === themesH0, JSON.stringify(crossH))
         const freeH = await post121(pg, v3.id)
         check(`step 121h — the control: the planted rows removed (read back), the same POST is accepted — 200 { outcome: live }, v3 live, ${ORIGIN121}/ "Version 3"`,
           plantsGone && busyGone && freeH.status === 200 && freeH.body?.outcome === 'live' && (await deploy121(v3.id))?.status === 'live' && (await homeSays121(3)) === 'Version 3',
@@ -15350,6 +15428,8 @@ async function main() {
         if (busy121 !== null) await call('/rest/v1', `/deploy_jobs?id=eq.${busy121}`, { method: 'DELETE' }).catch(() => {})
         if (otherDeploy121 !== null) await call('/rest/v1', `/deploys?id=eq.${otherDeploy121}`, { method: 'DELETE' }).catch(() => {})
         if (otherSite121 !== null) await call('/rest/v1', `/sites?id=eq.${otherSite121}`, { method: 'DELETE' }).catch(() => {})
+        // (c)'s planted key, should the step have died between planting and restoring it
+        if (probe121 !== null) await call('/rest/v1', `/deploys?id=eq.${probe121.id}`, { method: 'PATCH', body: JSON.stringify({ preflight: probe121.preflight }) }).catch(() => {})
         if (P121 !== null) await until121(job121, atRest121, 330000).catch(() => {})
         if (planted121) {
           note('step 121 — the plant is left in place', `T1 shows ${prev121} and still holds ${theme121}; ${PLANT121} keeps the site and "Rollback test"; the owner's test ends with T1 put back on his go`)

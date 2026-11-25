@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { LiveBadge, ResultChip } from '@/components/kit/badge'
 import { Button, IconButton } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel } from '@/components/kit/dialog'
@@ -41,6 +42,8 @@ import {
  * ("Once it starts, it finishes", S8c's rule) and the confirm and the drawer carry `data-unstoppable`, so R-192's lost-lock sweep
  * cannot close them. Re-activate needs no confirm: "Activating…" on the button. An ending is said once in the drawer's region, the
  * list is read again, and focus goes to ✕; a refusal is said under its row, in its own `role="status"` line, Ghost's detail in mono.
+ * A refusal that proves the list stale (409 `live` or `elsewhere`) and a request whose fate is unknown read the list again first,
+ * then say their sentence once: under the row while it still has an action, else in the drawer's region with focus on ✕.
  *
  * THE LIST IS EXACTLY WHAT IS KEPT. The route lists stored versions only (`isStoredVersion`), so a pruned version is absent —
  * never a greyed row with a dead Restore (the epic's criterion). Every word is `HISTORY_WORDS`' (R-170), its numbers `PLANS`'.
@@ -95,15 +98,18 @@ export function DeployHistory({ projectName, read, pin, act, onClose }: {
   const [note, setNote] = useState<{ id: string; words: string; detail?: string } | null>(null)
   const confirm = useRef<HTMLDialogElement>(null)
 
-  const load = async (): Promise<void> => {
+  /** the list, read and DRAWN before it returns (`flushSync`), so focus lands on what it drew — its rows, or null when it failed */
+  const load = async (): Promise<HistoryRow[] | null> => {
     const answer = await read().catch(() => null)
     if (answer === null) {
       setShown({ kind: 'failed' })
       say(HW.readFailed)
-      return
+      return null
     }
     const live = answer.liveVersion === null ? Number.NaN : versionNumber(answer.liveVersion)
-    setShown({ kind: 'rows', rows: historyRows(answer), live: Number.isFinite(live) ? live : null })
+    const rows = historyRows(answer)
+    flushSync(() => setShown({ kind: 'rows', rows, live: Number.isFinite(live) ? live : null }))
+    return rows
   }
 
   useEffect(() => {
@@ -155,7 +161,25 @@ export function DeployHistory({ projectName, read, pin, act, onClose }: {
       document.getElementById('deploy-history-close')?.focus()
       return
     }
-    setNote({ id: row.id, words, ...(outcome.kind === 'refused' && outcome.detail !== undefined ? { detail: outcome.detail } : {}) })
+    const noted = { id: row.id, words, ...(outcome.kind === 'refused' && outcome.detail !== undefined ? { detail: outcome.detail } : {}) }
+    // the list is stale (409 `live` or `elsewhere`), or the request's fate is unknown (a timeout may have landed): read it again,
+    // then say the sentence once — under the row while it is still drawn with an action, else in the region with focus on ✕.
+    // Ghost's refusals, `busy`, `disconnected` and ours changed nothing, so they read nothing again
+    if (outcome.kind === 'failed' || (outcome.kind === 'refused' && (outcome.code === 'live' || outcome.code === 'elsewhere'))) {
+      if (back !== null) confirm.current?.close()
+      const rows = await load()
+      const now = rows?.find((r) => r.id === row.id)
+      if (now?.action == null) {
+        // a request whose answer was lost but which landed: the re-read shows it live, and that is what is said
+        say(outcome.kind === 'failed' && now?.live === true && now.elsewhere === null ? HW.said.live(row.n, row.host) : words)
+        document.getElementById('deploy-history-close')?.focus()
+        return
+      }
+      setNote(noted)
+      actOf(row.id)?.focus()
+      return
+    }
+    setNote(noted)
     if (back !== null) confirm.current?.close()
     else actOf(row.id)?.focus()
   }
@@ -206,6 +230,9 @@ export function DeployHistory({ projectName, read, pin, act, onClose }: {
     ) : null
   const time = (r: HistoryRow) => <span data-history-time className="ml-auto shrink-0 text-[11px] text-ink-soft">{timeLabel(r.acceptedAt, now)}</span>
   const elsewhere = (r: HistoryRow) => (r.elsewhere === null ? null : <span data-history-site className="min-w-0 truncate text-[11px] text-ink-soft">{HW.on(r.elsewhere)}</span>)
+  /** the undo's row is raised: S8e's drawer draws it (`S8 Deploy.dc.html:308`) at exactly the `shadow-md` token (`globals.css`'
+   *  `--shadow-md`); D2a `:84` and D2c `:265` draw the same row at a lighter .06, and S8e's drawer frame decides */
+  const raised = (r: HistoryRow) => (r.emphasis ? 'shadow-md' : '')
 
   /** THE ROW'S ACTION (S8e `:313`, `:321`; D2d `:199`): Re-activate on D2d's row, else Roll back — coral-outline on the row right
    *  after the Live one (the undo), quiet elsewhere — each naming its version; while its request is out, its present tense (R-98) */
@@ -239,7 +266,7 @@ export function DeployHistory({ projectName, read, pin, act, onClose }: {
         weight={r.emphasis ? 'font-semibold' : 'font-medium'}
         data-history-act={r.id}
         data-emphasis={r.emphasis || undefined}
-        aria-label={`${HW.rollBackName(r.n)}${r.elsewhere === null ? '' : ` ${HW.on(r.elsewhere)}`}`}
+        aria-label={HW.rollBackName(r.n)}
         aria-haspopup="dialog"
         aria-disabled={waiting}
         onClick={() => {
@@ -324,7 +351,7 @@ export function DeployHistory({ projectName, read, pin, act, onClose }: {
           data-history-expanded
           data-pinned={r.pinned || undefined}
           data-history-uploaded={reactivate || undefined}
-          className={`relative flex gap-3 rounded border px-[14px] py-[13px] ${tone}`}
+          className={`relative flex gap-3 rounded border px-[14px] py-[13px] ${tone} ${raised(r)}`}
         >
           <Thumb />
           <div className="flex min-w-0 flex-1 flex-col gap-[5px]">
@@ -363,7 +390,7 @@ export function DeployHistory({ projectName, read, pin, act, onClose }: {
         key={r.id}
         data-history-row={versionLabel(r.n)}
         data-pinned={r.pinned || undefined}
-        className={`relative flex flex-wrap items-center gap-x-2 gap-y-[6px] rounded border px-3 py-[9px] ${r.pinned ? 'border-marigold-line bg-marigold-tint-soft' : 'border-line'}`}
+        className={`relative flex flex-wrap items-center gap-x-2 gap-y-[6px] rounded border px-3 py-[9px] ${r.pinned ? 'border-marigold-line bg-marigold-tint-soft' : 'border-line'} ${raised(r)}`}
       >
         {chip(r, r.pinned)}
         {r.live ? <LiveBadge label={HW.live} /> : null}
@@ -495,7 +522,7 @@ export function DeployHistory({ projectName, read, pin, act, onClose }: {
             <div className="flex flex-col gap-[5px]">
               <h3 id="history-confirm-title" className="m-0 font-display text-[19px] font-bold tracking-[-0.01em] text-ink">{HW.confirmTitle(asking.n)}</h3>
               <p id="history-confirm-body" className="m-0 text-ui-dense leading-[1.5] text-ink-soft">
-                {HW.confirmBody(asking.n, shown.kind === 'rows' ? shown.live : null, asking.drops.length > 0)}
+                {HW.confirmBody(asking.n, shown.kind === 'rows' ? shown.live : null, asking.drops)}
               </p>
             </div>
             <div data-history-confirm-row className="flex items-center gap-2 rounded-thumb border border-line px-3 py-[9px]">
@@ -503,7 +530,7 @@ export function DeployHistory({ projectName, read, pin, act, onClose }: {
               <span className="text-[12px] text-ink-soft">{timeLabel(asking.acceptedAt, now)}</span>
               <span className="ml-auto">{gscanChip(asking)}</span>
             </div>
-            {asking.drops.length === 0 ? null : (
+            {asking.drops === null || asking.drops.length === 0 ? null : (
               <div data-history-drops className="flex gap-[9px] rounded border border-marigold-line bg-marigold-tint-soft px-[13px] py-[11px]">
                 <AlertTriangle size={14} strokeWidth={1.8} className="mt-px shrink-0 text-marigold-text" />
                 <div className="flex min-w-0 flex-1 flex-col gap-[3px]">

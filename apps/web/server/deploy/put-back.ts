@@ -1,6 +1,6 @@
 import { hostOf } from '../../lib/connect-rule.ts'
-import { activateAnswer, deployError, uploadAnswer, type DeployCode, type DeployError } from '../../lib/deploy.ts'
-import { actionOf, isStoredVersion } from '../../lib/retention.ts'
+import { activateAnswer, deployError, themeNotHeld, uploadAnswer, versionNumber, type DeployCode, type DeployError } from '../../lib/deploy.ts'
+import { actionOf, HISTORY_WORDS, isStoredVersion } from '../../lib/retention.ts'
 import { sendActivate, sendUpload, STALLED_MS, twice, type Called, type DeployIo } from './run.ts'
 
 /**
@@ -27,9 +27,8 @@ import { sendActivate, sendUpload, STALLED_MS, twice, type Called, type DeployIo
  * nothing. No row is inserted, copied or deleted, and nothing is pruned — a put-back adds no object.
  *
  * NO JOB ROW AND NO LOCK OF ITS OWN. A put-back is one request: at most two uploads of 120 s and an activation of 15 s, inside the
- * route's 300 s. It refuses while a ship of the same project × site is moving. ponytail: a ship that starts DURING a put-back can
- * still race it, and Ghost answers `EEXIST` (`deploy_running`) to one of them — AD-19's per-site advisory lock, Story 7.25's, closes
- * that race, and this function joins it when it lands.
+ * route's 300 s. It refuses while a ship of the same project × site is moving; the races that leaves open, and the story that
+ * closes them, are named at that refusal (`busy`, below).
  */
 
 /** what the put-back reads of the version's row */
@@ -64,6 +63,9 @@ const ROUTE = 'projects/history'
 
 export async function putBack(io: PutBackIo, a: { userId: string; projectId: string; deployId: string; now: Date }): Promise<PutBackOutcome> {
   let host = ''
+  /** the version Ghost has acted on — an upload accepted or an activation made — once it has: a record failing after that is not
+   *  "nothing reached your site" (`DEPLOY_WORDS.infrastructure`) but History failing to note what did */
+  let acted: number | null = null
   try {
     // 1. the row, the user's own — and this project's stored version, else it is gone (pruned, failed, or never theirs)
     const row = await twice(io, 'put-back row', () => io.row({ deployId: a.deployId, userId: a.userId }))
@@ -75,13 +77,21 @@ export async function putBack(io: PutBackIo, a: { userId: string; projectId: str
     if (linked.disconnected) return 'disconnected'
     const at = { projectId: a.projectId, siteId: row.site_id, userId: a.userId }
     const since = new Date(a.now.getTime() - STALLED_MS).toISOString()
+    // ponytail: refusing while a ship MOVES leaves two races open — a ship that starts DURING a put-back, and two put-backs at once
+    // (two tabs, or a reader, whom R-192 lets act) — and of two uploads of one name Ghost answers `EEXIST` (`deploy_running`) to
+    // one. Story 7.25's per-site advisory lock (AD-19) closes both, and this function joins it when it lands
     if (await twice(io, 'moving jobs', () => io.moving({ ...at, since }))) return 'busy'
     host = hostOf(linked.url)
     const ctx = { host, siteId: row.site_id }
     const now = a.now.toISOString()
     const action = actionOf(row, { linkedSiteId: linked.siteId, newest: await twice(io, 'newest accepted', () => io.newest(at)) })
-    const ghostSaid = (code: DeployCode, detail?: string) => ({ refused: deployError(code, { ...ctx, ...(detail === undefined ? {} : { detail }) }) })
-    /** live: this row live, activated and stamped (and accepted, after an upload); every other row live on the site demoted */
+    // the I/O matrix's "logged by code": the code alone — never Ghost's detail or the host
+    const ghostSaid = (code: DeployCode, detail?: string) => {
+      io.log('put-back: Ghost refused', { code })
+      return { refused: deployError(code, { ...ctx, ...(detail === undefined ? {} : { detail }) }) }
+    }
+    /** live: this row live, activated and stamped (and accepted, after an upload); every other row live on the site demoted. Every
+     *  caller `return await`s it: a bare `return goLive()` leaves the `try` before its writes fail, and the catch never hears them */
     const goLive = async (accepted: boolean): Promise<PutBackOutcome> => {
       await twice(io, 'put-back live', () => io.deploys.update(row.id, a.userId, { status: 'live', activated: true, activated_at: now, ...(accepted ? { accepted_at: now } : {}) }))
       await twice(io, 'demote', () => io.deploys.demote({ siteId: row.site_id, userId: a.userId, except: row.id }))
@@ -95,9 +105,16 @@ export async function putBack(io: PutBackIo, a: { userId: string; projectId: str
       if ('thrown' in answer) return ghostSaid(answer.thrown)
       const activated = activateAnswer(answer)
       if ('failed' in activated) return ghostSaid(activated.failed)
-      // activation runs Ghost's own theme check too (`activate.js:55-60`): its refusal is said with Ghost's detail, never retried
-      if ('notLive' in activated) return ghostSaid('ghost_theme_refused', activated.detail)
-      return goLive(false)
+      if ('ok' in activated) {
+        acted = versionNumber(row.version)
+        return await goLive(false)
+      }
+      // busy or down, as `uploadAnswer` reads the same statuses
+      if (answer.status === 429 || answer.status >= 500) return ghostSaid('ghost_unavailable')
+      // activation runs Ghost's own theme check too (`activate.js:55-60`): its refusal is said with Ghost's detail, never retried —
+      // unless Ghost no longer holds the theme at all (`themeNotHeld`): then the spec's own rule, "otherwise re-upload", and the
+      // Roll back below sends the stored zip
+      if (!themeNotHeld(answer)) return ghostSaid('ghost_theme_refused', activated.detail)
     }
 
     // 4. ROLL BACK: the stored zip, uploaded again under the frozen name — exactly what Ship it sends
@@ -107,17 +124,20 @@ export async function putBack(io: PutBackIo, a: { userId: string; projectId: str
     const upload = uploadAnswer(posted)
     // Ghost said no (its 422 `ThemeValidationError` among them): nothing recorded, the site untouched — never retried (VERIFY 10)
     if ('failed' in upload) return ghostSaid(upload.failed, upload.detail)
+    acted = versionNumber(row.version)
     // R-264: an upload under the ACTIVE name is live at once — no activation is sent
-    if (upload.active) return goLive(true)
+    if (upload.active) return await goLive(true)
     // accepted, under an inactive name: Ghost holds these files now (DW-400), then the activation
     await twice(io, 'put-back uploaded', () => io.deploys.update(row.id, a.userId, { status: 'uploaded', accepted_at: now }))
     const answer = await activation()
-    if (!('thrown' in answer) && 'ok' in activateAnswer(answer)) return goLive(false)
+    if (!('thrown' in answer) && 'ok' in activateAnswer(answer)) return await goLive(false)
     // the theme is on the site whatever the activation answered: D2d's row, Re-activate from there
     return 'uploaded'
   } catch (e) {
-    // a database or store answer, twice (AD-20's rule): ours, said as such
-    io.log('put-back: infrastructure failed', { code: (e as { code?: string } | null)?.code })
-    return { refused: deployError('deploy_infrastructure', { host }) }
+    // a database or store answer, twice (AD-20's rule): ours, said as such — and once Ghost has acted, said as what it is: the
+    // version reached the site and History could not record it
+    io.log('put-back: infrastructure failed', { code: (e as { code?: string } | null)?.code, acted: acted === null ? 'no' : 'yes' })
+    const ours = deployError('deploy_infrastructure', { host })
+    return { refused: acted === null ? ours : { ...ours, message: HISTORY_WORDS.unrecorded(acted, host) } }
   }
 }

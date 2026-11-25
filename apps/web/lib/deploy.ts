@@ -221,6 +221,12 @@ export function activateAnswer(answer: GhostAnswer): { ok: true } | { failed: De
   return { notLive: true, ...(detail === undefined ? {} : { detail }) }
 }
 
+/** STORY 7.23a — GHOST NO LONGER HOLDS THE THEME: its refusal of `PUT themes/{name}/activate/` for a name not in its theme
+ *  directory is a `ValidationError` ("{themeName} cannot be activated because it was not found in the theme directory." —
+ *  `core/server/services/themes/activate.js` `:46-54`, 6.58.0 and 5.130.6 alike, read in source); a fatal theme check is a
+ *  `ThemeValidationError`, another type. The History drawer's Re-activate uploads the stored zip again on it (`put-back.ts`). */
+export const themeNotHeld = (answer: GhostAnswer): boolean => !answer.ok && ghostError(answer.body)?.type === 'ValidationError'
+
 /** A thrown chokepoint error, read by its code: no answer is Ghost unreachable, an off-list write is its own code (DW-54's
  *  denied row), and anything else — the store, a missing key, a bad address — is infrastructure, which AD-20 retries once. */
 export function thrownCode(thrown: unknown): 'ghost_unreachable' | 'write_not_allowed' | 'deploy_infrastructure' {

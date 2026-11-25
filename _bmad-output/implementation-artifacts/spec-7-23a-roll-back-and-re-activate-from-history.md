@@ -2,7 +2,7 @@
 title: 'Story 7.23a — Roll back and Re-activate from History (split from Story 7.23 by R-290)'
 type: 'feature'
 created: '2026-11-25'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: 'e3ea8624b9bf53b9d06b4aff50aec7ad648c2781'
 owner_test: pending
 review_loop_iteration: 0
@@ -430,6 +430,78 @@ original is Story 7.23b and the phone's Deploy history card is Story 7.23c, each
   active theme is unchanged, and Ghost's detail is said under the row.
 - **DW-400.** Given a version accepted after newer-checked versions, when the prune runs, then it is kept as the newest.
 
+### Review Findings
+
+Story 7.23a's Review, 2026-11-25: five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, the read-only
+Real-infra verifier), then walk step 121 on production and T1 on the owner's in-session go. Every patch below is applied; one
+decision is the owner's (Question 2, open); three items are deferred to the stories that own them; the rest are dismissed below.
+
+- [ ] [Review][Decision] **Roll back replaces the theme on the site without FR-J16's drift check** — FR-J16 runs the check "before
+  every deploy after the first", and the spec never says whether a Roll back is one. Question 2 below.
+- [x] [Review][Patch] **Every failed Re-activate was "Ghost's own theme check refused vN"** — `activateAnswer`'s `notLive` covers a
+  5xx, a 429 and Ghost saying it does not hold the theme. A 429/5xx is now `ghost_unavailable`; Ghost's `ValidationError` "…cannot
+  be activated because it was not found in the theme directory" (`activate.js:46-54`, read in source in 6.58.0 and 5.130.6) falls
+  through to the Roll back path — the spec's own "otherwise re-upload" — so a theme deleted in Ghost Admin is no dead end; a
+  `ThemeValidationError` stays Ghost's check with its detail [`put-back.ts`, `lib/deploy.ts` `themeNotHeld`, `put-back.test.ts`,
+  walk 121e2]
+- [x] [Review][Patch] **A record write that failed after Ghost acted was said as "…before anything reached your site"** — and,
+  found by the new test, never reached the catch at all: `return goLive(…)` without `await` threw out of `putBack` (a 500). Every
+  call is `return await` now, and once Ghost accepted the upload or the activation the refusal says
+  `HISTORY_WORDS.unrecorded` ("v2 reached {host}, but History couldn't record it. Try again.") [`put-back.ts`, `lib/retention.ts`,
+  `put-back.test.ts`]. The stale record itself is DW-397's class (below)
+- [x] [Review][Patch] Ghost's refusals on the put-back path were not logged (the matrix's "logged by code"); `ghostSaid` logs the
+  code alone [`put-back.ts`, `put-back.test.ts`]
+- [x] [Review][Patch] D2d's row lost its chip and line past the first three rows (three newer rows of another site above it); it is
+  always drawn expanded [`lib/retention.ts` `historyRows`, `retention.test.ts`]
+- [x] [Review][Patch] The undo row's raised shadow was not drawn (S8e `:308`, exactly `shadow-md`; D2a `:84` and D2c `:265` draw
+  .06 on the same row, and S8e's drawer frame decides) [`deploy-history.tsx`, journey (a)]
+- [x] [Review][Patch] The undo was "the row after Live" even when that row was another site's; it is the next row on the linked
+  site [`lib/retention.ts`, `retention.test.ts`]
+- [x] [Review][Patch] **"— nothing is lost." was promised when the dropped settings were unknown** (a row kept before Story 7.18b's
+  facts). `drops` is tri-state — `[]` known, `null` unknown — and the body stops at "stays in history." unless it is known empty;
+  `confirmBody` takes the drops themselves [`lib/retention.ts`, `deploy-history.tsx`, `retention.test.ts`, journeys (b)(f)(k)]
+- [x] [Review][Patch] "v{n} stays in history" was said of a Live row whose zip was pruned; `liveVersion` is null unless the Live row
+  is a stored version [`lib/retention.ts`, `retention.test.ts`]
+- [x] [Review][Patch] Only an ending read the list again: a 409 `live`/`elsewhere` (another tab acted) and a request whose fate is
+  unknown now re-read, then say the sentence once — under the row while it still has an action, else in the drawer's region with
+  focus on ✕; a lost answer whose re-read shows the row live says it is live [`deploy-history.tsx`, journey (i)]. *The "landed"
+  branch is not walked: the harness answers every read alike.*
+- [x] [Review][Patch] The drawer's own Esc guard during a Re-activate (no confirm on top) was never pressed; journey (d) presses Esc
+  twice while it is held [`journey.spec.mjs`]
+- [x] [Review][Patch] Executed checks where only source text held: the prune's REAL `versions` select run on production after the
+  Roll back to v1 (v2 pruned, never v1; the control without `accepted_at` prunes v1 — walk 121c); another account's POST to this
+  project's version → 404 with T1 untouched (121h); the confirm's dropped-settings block fed by the real route (v3's planted
+  `walk121_probe`, restored — 121b/c) [`run-verify-editor.cjs`]
+- [x] [Review][Patch] `put-back.test.ts`: zero Ghost calls asserted for every refusal (it was three of eight), the fake-only
+  assertion replaced by `putBack` itself, and `queries.length >= 5` derived from the file's own `supabaseAdmin()` calls
+- [x] [Review][Patch] `harnessAct` sat between `harnessPin`'s doc and `harnessPin`; the Roll back's dead "on {host}" branch is gone
+  (another site's row has no action); the `ponytail:` moved to the `busy` refusal and names both races (a ship during a put-back,
+  two put-backs at once); a `ponytail:` at the History GET's one light read names PostgREST's `max_rows` = 1000 ceiling and the
+  upgrade path; `deploy-io.ts`' comment says rows of R-99's window carry a null `accepted_at` too [`actions.ts`,
+  `deploy-history.tsx`, `put-back.ts`, `history/route.ts`, `deploy-io.ts`]
+- [x] [Review][Patch] The manifest bound is "twice the cap and one Live row per site", not "twice the cap" — recorded in the Spec
+  Change Log
+- [x] [Review][Defer] A record write failing twice after Ghost acted leaves `accepted_at` unstamped (the drift baseline wrong) or,
+  when only the demote fails, two `live` rows; Ship it's `failInfra` says the same false "before anything reached your site"
+  [`put-back.ts`, `run.ts` `failInfra`] — added to DW-397, owner Story 7.32
+- [x] [Review][Defer] Two put-backs at once, or a ship starting during one, can race (Ghost's `EEXIST` to one) [`put-back.ts`] —
+  Story 7.25's card, which already carried the ship's half, gains the two-put-backs half
+- [x] [Review][Defer] A version compiled for a Ghost major the site has since left is put back unchecked (Ship it reads the site's
+  major; no deploy records the one it compiled for) [`put-back.ts`] — DW-401, owner Story 15.7
+
+**Dismissed, each in one line:** Re-activate without a dropped-settings warning (while a row is the newest accepted, no other
+upload happened on the site since, so Pre-flight or the Roll back confirm already warned of exactly this pair) · a job resting at
+`awaiting_ship` not blocking a put-back (refusing would hold every Roll back behind a resting check; Ship it after one still ships
+what the customer pressed) · `elsewhere` naming three states (only a stale drawer meets the other two, and it now re-reads) · the
+prune deleting the zip between the row read and the download (a polite "ours" sentence on a window of milliseconds) · a
+re-read failing right after a success (its sentence is true) · the harness lacking `uploaded`, 502-with-message and 409-`live`
+answers (the same branches journeys (c), (e) and (l) walk; the sentences are `retention.test.ts`') · an empty host on an early
+failure (the infrastructure sentence names none) · a Live row stale after a switch in Ghost Admin drawing no action (the spec's
+frozen rule; any other row's Roll back, or Ship it, reaches the site) · the activation refusal after a Roll back's accepted upload
+said as D2d's (the matrix's row and the Change Log; Re-activate then says Ghost's reason) · the confirm's 38px buttons and the
+native-title tooltip (the switch-site confirm's shape and the task's `title`, as the spec asked) · the four ACs not yet proven
+through the product (the walk is this Review's, below).
+
 ## Spec Change Log
 
 - **2026-11-25, Dev — what landed beside the plan, each a routine call.**
@@ -460,6 +532,15 @@ original is Story 7.23b and the phone's Deploy history card is Story 7.23c, each
     and say so; the owner's "Before you start" now describes that. The planted refused zip is v1's own files plus one template
     Handlebars cannot parse (`GS005-TPL-ERR`, fatal) — the case §91 executed on T1 — proved fatal on gscan 6.4.2 locally before the
     step stores it.
+- **2026-11-25, Review — what the review changed beside the plan, each a routine call.**
+  - **Re-activate falls through to the Roll back** when Ghost says it does not hold the theme (`ValidationError`, `activate.js:46-54`
+    in both majors, read in source; executed by walk 121e2): "put back" uploads whenever Ghost lacks the files, as Approach says.
+  - **The manifest bound** is the listed rows, each one's predecessor and each site's Live row (the dropped settings need it) — at
+    most twice the cap and one per site, not "twice the cap".
+  - **`drops` is tri-state** (`null` when a row has no Pre-flight facts) and `confirmBody` takes the drops themselves, so the body
+    never says "nothing is lost" of settings nobody read.
+  - **One new word**, `HISTORY_WORDS.unrecorded`, for a record write that failed after Ghost acted (R-170, R-283's plain voice).
+  - **D2d's row is always expanded**, and the undo is the next row on the linked site, raised with `shadow-md` (S8e `:308`).
 
 ## Design Notes
 
@@ -549,6 +630,31 @@ Without the split, all of that is one test after one long build.
 **Ruled: option 1 (owner, 2026-11-25) — R-290.** *"1. (RECOMMENDED) Split in three, done in order: 7.23a (Roll back and
 Re-activate in History; this spec), then 7.23b (Restore original), then 7.23c (the phone card). Each piece's requirements
 move word for word into its own card."* `epics.md` carries the three cards and Epic 7's moved list.
+
+### Question 2 — Should Roll back first check whether someone changed your theme in Ghost Admin?
+
+**In plain English.** Before every **Ship it**, Inflozo compares the theme on your site with the version it last uploaded there
+(the "drift check", FR-J16). If someone changed the theme outside Inflozo, Ship it stops, lists the changed files, and offers to
+download the current theme before replacing it. **Roll back** also replaces the theme on your site, but today it skips that check.
+The PRD says the check runs "before every deploy after the first", and this story's spec never said whether a Roll back counts —
+so the choice is yours.
+
+**An example.** Your designer downloads your live theme (v3), edits the post template, and uploads it in Ghost Admin. A week later
+you press **Roll back** to v2.
+- **Today:** v2 goes live, and the designer's edit is gone — no warning, no copy kept.
+- **With the check:** the Roll back box says "Something changed on ghost6.inflozo.com since v3: Post template" and offers
+  **Download current theme** before you confirm. You can still roll back.
+
+1. **(RECOMMENDED) Check first, in this story.** Pressing Roll back reads your site's theme first (about a second, as Run checks
+   does). If it changed since Inflozo's last upload, the box names the changed files and offers Download current theme; you can
+   still roll back. If the check cannot run (no Staff Access Token, Ghost busy), the box says "couldn't verify" and lets you go on,
+   as Ship it does. Re-activate is unchanged: it switches on files Ghost already holds and replaces nothing.
+2. **No check.** Roll back stays instant. The box adds one line: "Anything changed in Ghost Admin since v3 is replaced." The PRD
+   gets a dated note that Roll back is exempt from the drift check.
+3. **Check, but later.** 7.23a ships as it is now, and the check is built with Story 7.23b (Restore original), which also replaces
+   the theme on your site.
+
+**Ruled:** _(awaiting the owner)_
 
 ## Owner's manual test
 
@@ -756,3 +862,26 @@ call):**
   clean worktree at the deployed sha — it has never run; iterate it as a cut of steps 1–5 + 121) and `STEP121_PLANT=<address>`
   for Deploy. Its T1 writes: three ships, the put-backs' re-uploads and activations, one refused upload, one Re-activate and a
   staff-token activation of T1's own theme, then the `finally`'s activation and deletes.
+
+**Executed — Review (2026-11-25, Node 24; every key read inside the script from `tools/probe/.env` by its variable name, never on
+argv, no value printed; the owner's in-session go to walk step 121's whole run, "1. Go", and to 121e2's four added T1 writes,
+"1. Go"):**
+- **CI on the Dev head `1e706298`** (`GITHUB_TOKEN`): run 45616356749 — `rls` success, `check` **failure** at "Run pnpm keyboard"
+  (355 passed, 1 failed: `journey.spec.mjs:2382`, "choosing a Layers row scrolls the canvas…", 111 received for 24), `deploy`
+  **skipped**; the Render matrix (45616356751) success. Every 7.23a line in that log passed. Nothing of the Dev phase reached
+  production, which still served the Schema push (`dpl_8f4iMHA7BRB1bDx2Nsii4RG5AfhY`, 43392c29). Re-run cold here, `-g "choosing a
+  Layers row scrolls the canvas" --repeat-each 5`: 5 of 5 passed — intermittent, nothing this story touches (DW-402).
+- **The Real-infra verifier, read-only** (`SUPABASE_DB_POOLER_URL` in a `read only` transaction, `SUPABASE_URL` +
+  `SUPABASE_SECRET_KEY`, `GHOST6_STAFF_ACCESS_TOKEN`, `GITHUB_TOKEN`, `VERCEL_*`): production's schema is at least as new as the
+  code (R-99) — `deploys.accepted_at` `timestamptz`, nullable, no default, its comment word for word; the backfill 5 `live` + 14
+  `uploaded` all equal to `coalesce(activated_at, created_at)`, 2 `checking` null; `authenticated` SELECT true, INSERT/UPDATE false
+  (a real UPDATE and INSERT in a rolled-back transaction: **42501**; the SELECT allowed, the control), `service_role` all true;
+  every column, enum value, foreign key and function the new code names present in the catalogue and in PostgREST's schema cache
+  (six GETs 200, the misspelt control 400/42703); T1 on `casper`, no probe or inflozo theme left by §91's run (a forged key 401,
+  the control).
+- **The main session's gates on the patched tree:** `pnpm check` exit 0, every package 0 failing (each printing its own count).
+  The implementation pass's runs, each new assertion seen red under a planted reversion and restored (byte for byte by sha256):
+  `run-keyboard-gate.sh -g "7\.23a" --repeat-each 2` and `-g "7\.22 ·"` green, the no-pointer sentinel green, `node --check` on the
+  walk and on its cut (steps 1–5 + 121).
+- **`pnpm keyboard`, the whole gate, on the final tree:** 356 passed, 0 failed — the 7.23a journeys (a)–(l), the floor, 7.22's
+  journeys, the Layers-row reveal (DW-402's) and the no-pointer sentinel among them.

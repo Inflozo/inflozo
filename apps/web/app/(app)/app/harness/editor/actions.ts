@@ -191,10 +191,6 @@ export async function harnessHistory(projectId: string): Promise<HistoryAnswer |
   return answer([])
 }
 
-/** STORY 7.22 — THE HARNESS'S PIN, the editor's `historyPin` seam: a pin under `free-full` or `pro-full` is the database's `cap`
- *  (the drawer's D2b), any press under `gone` is `gone` and under `pin-fails` a failed request; every other pin and every unpin
- *  lands. ponytail: stateless — a pin after an unpin in a full history is still
- *  refused, which no journey asks; `pin_version`'s own count is the RLS gate's and walk step 120's. Only the harness project. */
 /** STORY 7.23a — THE HARNESS'S PUT-BACK, the editor's `historyAct` seam (the route's POST `{ deploy, act: 'live' }` everywhere else),
  *  answered by `x-inflozo-harness-history`: `rollback` and `uploaded` go live; `refused` is Ghost's own check refusing the upload
  *  (the route's 422, with Ghost's detail); `busy` a ship of the site under way, `disconnected` the linked site disconnected and
@@ -211,6 +207,10 @@ export async function harnessAct(projectId: string, deploy: string): Promise<Act
   return { kind: 'failed' }
 }
 
+/** STORY 7.22 — THE HARNESS'S PIN, the editor's `historyPin` seam: a pin under `free-full` or `pro-full` is the database's `cap`
+ *  (the drawer's D2b), any press under `gone` is `gone` and under `pin-fails` a failed request; every other pin and every unpin
+ *  lands. ponytail: stateless — a pin after an unpin in a full history is still
+ *  refused, which no journey asks; `pin_version`'s own count is the RLS gate's and walk step 120's. Only the harness project. */
 export async function harnessPin(projectId: string, deploy: string, pinned: boolean): Promise<PinOutcome> {
   if (!HARNESS || projectId !== HARNESS_PROJECT.id || typeof deploy !== 'string') return 'failed'
   const asked = (await headers()).get('x-inflozo-harness-history')

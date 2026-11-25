@@ -103,8 +103,11 @@ export const DEPLOY_IO: DeployIo = {
     },
     // Story 7.21 — R-287's drift baseline: the newest upload Ghost accepted (`uploaded` or `live`), never the job's own. Story 7.23a
     // (DW-400): newest by `accepted_at` — a Roll back's upload of an older version is the newest accepted — as `lib/retention.ts`'
-    // `newestFirst` orders, `created_at` breaking a tie. ponytail: a row with no `accepted_at` stands last here and on its
-    // `created_at` there; the Schema's backfill gave every accepted row one, so only code older than the column writes such a row
+    // `newestFirst` orders, `created_at` breaking a tie. ponytail: a row with no `accepted_at` sorts last here (`nulls last`) and
+    // by its `created_at` in `lib/retention.ts`. Code older than the column writes one — and it ran AFTER the column existed too:
+    // production served the Schema push (the pre-7.23a `run.ts`, which writes `uploaded`/`live` with no `accepted_at`) between
+    // the Schema's apply and the Dev deploy (R-99's window). The migration's backfill (`coalesce(activated_at, created_at)`,
+    // re-runnable) is what closes those rows, and the Review counts them after the deploy
     async baseline({ projectId, siteId, userId, except }) {
       const rows = ok(await supabaseAdmin().from('deploys').select('version, content_manifest').eq('project_id', projectId).eq('site_id', siteId).eq('user_id', userId).in('status', ['uploaded', 'live']).neq('id', except).order('accepted_at', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false }).limit(1), 'drift baseline') as { version: string; content_manifest: DeployRow['content_manifest'] }[] | null
       const row = rows?.[0]

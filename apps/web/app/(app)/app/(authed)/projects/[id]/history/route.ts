@@ -67,7 +67,10 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       .eq('project_id', projectId)
       .in('status', ['uploaded', 'live'])
       .not('artifact_path', 'is', null),
-    // every upload Ghost accepted for the project, stored or pruned — light: the order, the predecessors, the Live rows
+    // every upload Ghost accepted for the project, stored or pruned — light: the order, the predecessors, the Live rows.
+    // ponytail: one request, and production's Data API answers at most `max_rows` = 1000 rows (read at Story 7.22's Review), so a
+    // project past 1000 accepted uploads would lose rows from the order, the predecessors and the Live row; page it as
+    // `api/cron/prune-artifacts/route.ts`' `collect` does, or read through an SQL function that returns only `heavyIds`' rows
     sb.from('deploys')
       .select('id, version, status, site_id, created_at, accepted_at, artifact_path')
       .eq('project_id', projectId)

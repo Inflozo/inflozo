@@ -4733,7 +4733,8 @@ the switch takes the site's lock, or waits for the job moving on it (DW-379).
 **And** *(given an owner by Story 7.23a's Dev, 2026-11-25)* the History drawer's put-back — Roll back and Re-activate
 (`apps/web/server/deploy/put-back.ts`), which upload and activate a stored artefact with no `deploy_jobs` row — takes the same
 per-site lock: today it refuses while a ship of the project × site is moving, and a ship that starts during a put-back can
-still race it (Ghost answers `EEXIST` to one of them, `deploy_running`); the lock closes that race.
+still race it (Ghost answers `EEXIST` to one of them, `deploy_running`); the lock closes that race — and *(Story 7.23a's Review,
+2026-11-25)* the race of two put-backs at once on one site (two tabs, or a session reading along, which R-192 lets act).
 
 **FRs:** FR-J11. · **Owner test:** none.
 
@@ -9938,6 +9939,9 @@ Heartbeat, DW-240 (a)'s held reload) stop failing intermittently against product
 **And** *(given an owner by Story 7.21's Review, 2026-11-24)* after a kept token, focus lands in the new view — its heading or
 first control — when the Add token that opened D1b is gone, for D3b's and B12b's alike, with a journey that reads
 `document.activeElement` (DW-398)
+**And** *(given an owner by Story 7.23a's Review, 2026-11-25)* the Layers-row reveal journey (`journey.spec.mjs`, "choosing a
+Layers row scrolls the canvas…") reads the scroll only once it settles — two reads 200 ms apart agreeing — with a budget CI can
+meet: it failed once in CI at 111 for 24 while passing 5 of 5 locally (DW-402)
 
 **Owner test:** none (automated). · **Verification:** production stack, T1–T3 (R-82).
 
@@ -10085,6 +10089,7 @@ Requirements page, which may not ship claiming verified Ghost(Pro) behaviour unt
 **And** on the same Starter site the editor's Content API reads answer VERIFY-AT-BUILD's three questions — whether an edge 429 carries `access-control-allow-origin`, the edge's limits against `REQUEST_CEILING` and the 60 s cache, and whether the `*.ghost.io` admin origin serves the Content API like the public domain (AD-23, DW-249).
 **And** the **Ghost 5 pass** runs at this gate, before public launch (R-238, DW-326). The owner spins up a fresh Ghost 5 server, and everything postponed when T3 was retired on 2026-10-04 runs on it: every `T1 and T3` verification, the probe scripts' GHOST5 legs, and a re-recording of the frozen `ghost5` fixtures. NFR-7's 5.x claim is tested again, not assumed.
 **And** before `tools/probe/record-mode-resolution.py` runs again on any server, its three cleanup gaps are closed (DW-332, from Story 6.5's Review, 2026-10-05): the upload sits inside the `try`, an interrupt during the restore still returns the article to draft, and the publish fallback is triggered by the missing `scheme-dark` body class rather than by the page's status alone.
+**And** *(given an owner by Story 7.23a's Review, 2026-11-25)* each deploy records the Ghost major it was compiled for, and the History drawer's Roll back of a version compiled for a major the site has since left is refused, warned or allowed as this pass decides — the Ghost 5 server is the one place both majors meet (DW-401).
 
 **Owner test:** yes. · **Verification:** a real Ghost(Pro) Starter site (T4). · **Note:** the owner already
 holds this as an action item with a trigger — buy the Starter trial when E13 closes and E14 opens.
