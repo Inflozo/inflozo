@@ -15312,8 +15312,12 @@ async function main() {
         await openDrawer121(pg)
         const shownE = await drawer121(pg)
         const rowsE = shownE?.rows ?? []
-        check(`step 121e — D2d in the drawer: v3 first with "${HW121.uploadedChip}", "${HW121.notLive}" and "${HW121.reactivateName(3)}"; no row Live; v2 and v1 each a Roll back, neither emphasised (nothing is live to undo)`,
-          rowsE.map((r) => r.v).join(' ') === 'v3 v2 v1' && rowsE[0].uploaded && rowsE[0].chip === HW121.uploadedChip && rowsE[0].line === HW121.notLive && rowsE[0].act?.name === HW121.reactivateName(3) &&
+        // the order is newest ACCEPTED first (DW-400), read from the rows themselves: after (c) and (d) it is v3, v1, v2 — v1 accepted
+        // by (c)'s Roll back after v2's ship — never the order the versions were made in (the Review's first run expected v3 v2 v1)
+        const orderE = (await rows121()).filter((r) => r.status === 'uploaded' || r.status === 'live')
+          .sort((a, b) => Date.parse(b.accepted_at) - Date.parse(a.accepted_at)).map((r) => `v${DEP121.versionNumber(r.version)}`)
+        check(`step 121e — D2d in the drawer: v3 first with "${HW121.uploadedChip}", "${HW121.notLive}" and "${HW121.reactivateName(3)}", then newest accepted first (${orderE.join(' ')}, not the order they were made); no row Live; the others each a Roll back, neither emphasised (nothing is live to undo)`,
+          orderE.join(' ') === 'v3 v1 v2' && rowsE.map((r) => r.v).join(' ') === orderE.join(' ') && rowsE[0].uploaded && rowsE[0].chip === HW121.uploadedChip && rowsE[0].line === HW121.notLive && rowsE[0].act?.name === HW121.reactivateName(3) &&
           rowsE.every((r) => !r.live) && rowsE.slice(1).every((r) => !r.uploaded && r.act?.name === HW121.rollBackName(Number(r.v.slice(1))) && r.act.emphasis === false),
           JSON.stringify(rowsE.map((r) => ({ v: r.v, uploaded: r.uploaded, chip: r.chip, line: r.line, live: r.live, act: r.act }))))
         const e = await putBack121(pg, 3)
@@ -15321,10 +15325,10 @@ async function main() {
         const shownE2 = await drawer121(pg)
         const activeE = await active121()
         const diffE = await liveDiff121(v3.content_manifest)
-        check(`step 121e — Re-activate: "${HW121.activating}", then "${HW121.said.live(3, HOST121)}"; v3's own row live and activated with its accepted_at unchanged (an activation alone — Ghost held the files); T1's active theme ${theme121} again holding v3's files at zero differences, ${ORIGIN121}/ "Version 3"; v2's Roll back now the emphasised undo`,
+        check(`step 121e — Re-activate: "${HW121.activating}", then "${HW121.said.live(3, HOST121)}"; v3's own row live and activated with its accepted_at unchanged (an activation alone — Ghost held the files); T1's active theme ${theme121} again holding v3's files at zero differences, ${ORIGIN121}/ "Version 3"; the next row, ${orderE[1]} (the version live before v3), now carries the emphasised undo`,
           e.busy === true && e.asked === null && e.ended?.said === HW121.said.live(3, HOST121) && v3E?.status === 'live' && v3E.activated === true && v3E.accepted_at === v3E0?.accepted_at &&
-          activeE === theme121 && none121(diffE) && (await homeSays121(3)) === 'Version 3' && shownE2?.rows[0]?.v === 'v3' && shownE2.rows[0].live && shownE2.rows[1]?.v === 'v2' && shownE2.rows[1].act?.emphasis === true,
-          JSON.stringify({ busy: e.busy, ended: e.ended, row: kept121(v3E), active: activeE, diff: diffE }))
+          activeE === theme121 && none121(diffE) && (await homeSays121(3)) === 'Version 3' && shownE2?.rows[0]?.v === 'v3' && shownE2.rows[0].live && shownE2.rows[1]?.v === orderE[1] && shownE2.rows[1].act?.emphasis === true,
+          JSON.stringify({ busy: e.busy, ended: e.ended, row: kept121(v3E), was: v3E0?.accepted_at ?? null, active: activeE, diff: diffE, shown: (shownE2?.rows ?? []).map((r) => `${r.v}${r.live ? '*' : ''}${r.act?.emphasis ? '!' : ''}`) }))
 
         // ── 121e2 — Re-activate when Ghost no longer holds the theme: its activation refused as not found, the stored zip goes up ──
         await closed121(pg)

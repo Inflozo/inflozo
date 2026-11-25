@@ -885,3 +885,36 @@ argv, no value printed; the owner's in-session go to walk step 121's whole run, 
   walk and on its cut (steps 1–5 + 121).
 - **`pnpm keyboard`, the whole gate, on the final tree:** 356 passed, 0 failed — the 7.23a journeys (a)–(l), the floor, 7.22's
   journeys, the Layers-row reveal (DW-402's) and the no-pointer sentinel among them.
+- **CI on the Review push `35dd0275`** (`GITHUB_TOKEN`): run 45637908026 — `check` (the whole keyboard gate among it), `rls` and
+  `deploy` success; the Render matrix (45637907949) success. **Vercel** (`VERCEL_TOKEN`): `dpl_BRYtVpKpfGHVXA7C549ZPmwAyKhB` READY on
+  production, built from 35dd0275 — the first deployment carrying 7.23a's code.
+- **R-99's window, read-only** (`SUPABASE_DB_POOLER_URL`, a `read only` transaction, once the deployment was READY): `uploaded` 14 and
+  `live` 5 rows, **0** with a null `accepted_at` — no customer shipped while production ran the Schema push's code, so no backfill
+  was owed; the control, `accepted_at` set on a row of any other status: 0.
+- **Walk step 121, production + T1** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_DB_POOLER_URL`, `VERCEL_TOKEN`,
+  `VERCEL_TEAM_ID`, and the step's own `GHOST6_*` read in-process), a cut of steps 1–5 + 121 run from a detached worktree at the
+  deployed 35dd0275 (`tools/probe/.env` linked in, never copied), each run's first line naming the READY deployment:
+  - **Run 1: 2 FAIL, 68 PASS** — both 121e's checks, each the WALK's own expectation written at Dev and never run: it wanted the
+    drawer as v3 v2 v1 and v2 as the undo, but after (c)'s Roll back to v1 and (d)'s undo the newest ACCEPTED order is v3, v1, v2
+    and the undo is v1, the version live before — the product right, by DW-400's own rule. The check now derives the order from
+    the rows' `accepted_at` and names the next row; the app untouched. Every other check passed, the finally included.
+  - **Run 2: 1 FAIL, 44 PASS** — stopped in 121a ("ship 3 ended awaiting_ship"), before anything 7.23a draws. Classified by
+    Vercel's request rows: the third Pre-flight's POST answered 202 at 15:23:25 and its reads followed, then NO Ship it POST ever
+    arrived while the page's lock beats kept arriving every 15 s — the press never left the browser (the walk's harness-hold
+    class, DW-204's), on a path run 1 had passed three times on the same deployment. Its finally put T1 back and counted back.
+  - **Run 3: 0 FAIL, 70 PASS**, the corrected 121e included: (a) three ships "Version 1–3"; (b) the drawer, three expanded rows,
+    Changed lines, the undo emphasised; (c) the planted `walk121_probe` dropped by v2 and v1 through the REAL route, the keyboard
+    Roll back to v1 — the confirm on Cancel, stopping at "stays in history." over Pre-flight's block "Walk121 probe" — T1's
+    download at ZERO differences from v1's `content_manifest`, v1's own row live with the newest `accepted_at` (3 rows → 3), the
+    prune's REAL `retention-io.ts` select pruning v2 never v1 (the control without `accepted_at` prunes v1), the next Run checks
+    D3c "Nothing changed on your site since v1", the plant restored; (d) the undo; (e) D2d as v3 v1 v2 and Re-activate with
+    `accepted_at` unchanged, v1 the new undo; **(e2) `inflozo-rollback-test` deleted on T1 (204), Re-activate on v3: Ghost's
+    not-found refusal, the stored zip up again, v3 live with a NEWER `accepted_at`, zero differences, "Version 3"**; (f) the planted
+    fatal zip proved blocked locally, Ghost's 422 said under v1 with its words and nothing changed, the real zip the control; (g)
+    a Roll back from a second session reading along; (h) `busy` 409, `elsewhere` 409 with its control, **another account's POST
+    404 with T1 untouched**, and L's own POST 200 (the control); finally T1 `casper*` with `racer` and `source`, every
+    `inflozo-` theme deleted, `routes.yaml` 130 → 130 bytes, L's objects 0, T1 disconnected, users 24 → 24, projects 17 → 17; zero
+    CSP violations.
+  - Three runs, the owner's limit. The walk's 121e fix is in this commit; the cut used was built from it, with the app modules the
+    deployed ones.
+- **Not hit in Review:** Resend and Dodo (a put-back sends no email and reads no plan). `STEP121_PLANT` is Deploy's.
