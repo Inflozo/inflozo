@@ -2,9 +2,9 @@
 title: 'Story 7.21 — Pre-deploy drift detection'
 type: 'feature'
 created: '2026-11-24'
-status: 'in-review'
+status: 'done'
 baseline_commit: '9a139db609248e3c733ca714bc52fb3845e813a9'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-20a-the-backup-gate-and-the-pre-inflozo-snapshot.md']
 ---
@@ -670,6 +670,17 @@ would say "ghost6.inflozo.com didn't hand over the live theme (400). Shipping an
    step 119 (f) change to expect it.
 
 **Ruled: option 1 (owner, 2026-11-24) — R-288.** *"1. Treat 400 as gone"*.
+
+## Owner's test findings
+
+**Owner's test (owner, 2026-11-25): passed.** The owner walked "Owner's manual test" on the deployed site
+(`dpl_2RUuMUMWdCdbJMkaJyQ2er7DK2Lt`, `https://app.inflozo.com`) as `umngkmr+drift721@gmail.com` and replied *"passed"*. No
+findings.
+
+Afterwards T1 still had `inflozo-drift-test` active, so step 13's clean-up had not happened. On the owner's in-session go
+("1. Yes, put it back"), it was undone with `GHOST6_STAFF_ACCESS_TOKEN` read in-process: Casper activated (200),
+`inflozo-drift-test` deleted (204), and the read-back shows `casper*`, `racer`, `source`, with `routes.yaml` at 130 bytes before
+and after. The alias account and its Drift test project were left as they are.
 
 ## Verification
 
