@@ -9951,6 +9951,9 @@ meet: it failed once in CI at 111 for 24 while passing 5 of 5 locally (DW-402)
 **And** *(given an owner by Story 7.23a's Review, 2026-11-25)* Story 5.23a's "every whole-page change repaints the whole page"
 waits for the repaint (`rendersSettle`, DW-292) before it reads the tags at "a subject" — it timed out twice, 5 of 5 on each
 re-run (DW-403)
+**And** *(given an owner by Story 7.23a's Review, 2026-11-25)* the deployed walk's Ship it press that now and then sends nothing
+(no request reaches Vercel) is classified from the state the walk now records — a swallowed click is a product defect, a request
+dying in the browser is the harness's (DW-404)
 
 **Owner test:** none (automated). · **Verification:** production stack, T1–T3 (R-82).
 

@@ -963,3 +963,23 @@ argv, no value printed; the owner's in-session go to walk step 121's whole run, 
   whole-page change repaints the whole page" --repeat-each 5`: 5 of 5 — its second sighting (CI at Story 7.22's Deploy), now DW-403.
 - **The walk's hand edit** uploads with the Admin API key, as step 119's does on T1 (executed at Story 7.21); a staff-token upload
   was never executed, so it is not the one relied on.
+- **CI on `650c8899`** (`GITHUB_TOKEN`): run 45657380696 — `check` (the whole keyboard gate), `rls` and `deploy` success; the Render
+  matrix (45657380809) success. **Vercel:** `dpl_Ggf9cXuGVwJaNqkBR4ymy39wTJNW` READY on production, built from 650c8899.
+- **Walk step 121 with the check, production + T1** (the owner's in-session go to the re-test, "1. Go", at most three runs; the same
+  keys by name, a cut of steps 1–5 + 121 from a detached worktree at 650c8899):
+  - **Run 1: 1 FAIL, 44 PASS** — stopped in 121a, "ship 2 ended awaiting_ship", before anything 7.23a draws: Vercel's rows show the
+    Pre-flight's POST 202 at 17:17:31 and its reads, then no Ship it POST while the lock beats kept arriving — the second such stop
+    (DW-404). Its finally restored T1 and counted back.
+  - **Run 2: 0 FAIL, 76 PASS.** Its debug copy (never committed) would have recorded and re-pressed a silent Ship it; it met none,
+    so every press here was the walk's own. Beside run 3 of the first set's checks, each passing again: **121c, R-291 real on T1** —
+    the confirm's status region said "Comparing with your live theme…" with its Roll back waiting, then D3c "Nothing changed on your
+    site since v3", focus on Cancel; **121e** — Re-activate ran no confirm and no check; **121i** — a hand edit uploaded on T1 (the
+    Admin API key; `home.hbs` with a Handlebars comment, live at once, "Version 3" unchanged, T1 differing from v3 by exactly that
+    file), then Roll back v2: the check FOUND it — D3a's block, "1 file differs", Changed "Home" over `home.hbs`, the foot "Rolling
+    back replaces it with v2's. Take a copy…" and Download; the Download on L's session a 303 to a signed URL serving
+    `inflozo-rollback-test-live.zip`, its manifest equal to T1's live one, the hand edit in it, kept under `-history.zip`, never
+    Ship it's key; the Roll back still went — v2 at zero differences, "Version 2"; the control, the next Roll back to v3 checking
+    clean "since v2" and going. Finally: T1 `casper*`, every `inflozo-` theme deleted, `routes.yaml` 130 → 130 bytes, objects 0,
+    T1 disconnected, users 24 → 24, projects 17 → 17.
+  - The committed walk now RECORDS a Ship it press that sends nothing within 20 s (the button, the refusal caption, a screenshot)
+    and never presses again (DW-404).

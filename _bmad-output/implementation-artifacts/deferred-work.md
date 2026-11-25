@@ -10887,3 +10887,21 @@ owner: Story 15.1 (the E2E suite, including the keyboard-only journey): wait for
   (`rendersSettle`, DW-292) before reading the tags, and give the poll CI's budget.
 location: `tools/keyboard/journey.spec.mjs` (Story 5.23a's "every whole-page change repaints the whole page")
 reason: a red run publishes nothing (DW-7), so each sighting costs a re-run, never a bad deploy.
+
+### DW-404: in walk step 121, a Ship it press now and then sends nothing, and the step stops at "ship n ended awaiting_ship"
+
+plain: The automatic production test of Roll back first ships three versions of a test theme. Twice in five runs, one press of Ship
+  it never left the browser: nothing reached the server, so the test stopped before it got to Roll back. The next run each time went
+  through. It has not been seen by a customer, and it may be the test's browser rather than the product.
+status: open
+severity: low
+origin: Story 7.23a's Review (2026-11-25): walk step 121 run 2 on `35dd0275` stopped at "ship 3 ended awaiting_ship", and run 1 on
+  `650c8899` at "ship 2 ended awaiting_ship". Vercel's request rows each time: the Pre-flight's POST 202 and its GETs, then NO Ship it
+  POST, while the page's lock beats kept arriving every 15 s. The same presses passed in the other three runs. A debug copy that
+  recorded and re-pressed a silent press never met one in its run.
+owner: Story 15.1 (the E2E suite): the committed walk now records a 20-second silence after the press — the button's state, the
+  refusal caption (`#deploy-refused`, which a fetch failing in the browser fills with the infrastructure sentence) and a
+  screenshot — so the next sighting says whether the click was swallowed (the product: a press that does nothing) or the request
+  died in the browser (the harness's DW-204 class). Reopen as a product defect if the caption is empty and the button enabled.
+location: `tools/probe/run-verify-editor.cjs` (step 121's `ship121`) · `apps/web/components/editor/deploy-wizard.tsx` (`press`)
+reason: two sightings with no state recorded; a stopped walk publishes and changes nothing (its finally restores T1).

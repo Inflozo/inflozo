@@ -15070,7 +15070,18 @@ async function main() {
       }
       const ship121 = async (pg, job) => {
         await until121(() => pg.locator('#deploy-ship').getAttribute('aria-disabled').catch(() => 'true'), (v) => v !== 'true', 60000)
+        // DW-404: twice in five runs at Story 7.23a's Review this press sent no POST at all (Vercel had no row). A silence of 20 s is
+        // RECORDED — the button's state, any refusal caption, a screenshot — never pressed again (a press is not retried)
+        const sent = pg.waitForRequest((r) => r.method() === 'POST' && /\/deploy$/.test(new URL(r.url()).pathname), { timeout: 20000 }).then(() => true, () => false)
         await pg.locator('#deploy-ship').click()
+        if (!(await sent)) {
+          const b = await pg.evaluate(() => {
+            const s = document.querySelector('#deploy-ship')
+            return { disabled: s?.getAttribute('aria-disabled') ?? null, busy: s?.getAttribute('aria-busy') ?? null, text: (s?.textContent ?? '').trim(), refused: document.querySelector('#deploy-refused')?.textContent ?? null, focus: document.activeElement?.id || document.activeElement?.tagName || null }
+          }).catch((e) => ({ unread: String(e?.message ?? e).slice(0, 120) }))
+          await pg.screenshot({ path: path.join(OUT, `step-121-ship-silent-${Date.now()}.png`) }).catch(() => {})
+          note('step 121 — DW-404, a Ship it press sent nothing in 20 s', JSON.stringify(b))
+        }
         return until121(job121, (j) => j?.id === job?.id && (j.stage === 'done' || j.stage === 'failed'), 300000)
       }
       /** ship n of (a): the editor left, Home's headline "Version n" stored, the editor opened, Ship it (Deploy & activate) — the first
