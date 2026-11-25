@@ -26,6 +26,14 @@
 -- RE-RUNNABLE: `drop … if exists`, `create or replace`, `revoke`, `grant` and `comment on` are idempotent by shape.
 -- COMMENTS LIVE OUTSIDE THE BODY: the RLS gate diffs these migrations against SCHEMA.sql through pg_dump.
 
+-- PRODUCTION NEVER HAD `deploys.pinned`. Read through the pooler at this story's apply (2026-11-25, the owner's go): the
+-- first apply stopped at `comment on column public.deploys.pinned` with 42703 and rolled back whole, and a catalogue diff
+-- of production against every migration here (columns, functions, triggers, policies, indexes, enums, constraints in
+-- `public` and `private`) found exactly three objects missing — this column, `guard_pin_leaves_a_slot()` and its trigger —
+-- and nothing else. The frozen migration declares all three; nothing had ever read or written `pinned`, so nothing broke.
+-- `add column if not exists` restores it on production and is a no-op on every database the migrations built.
+alter table public.deploys add column if not exists pinned boolean not null default false;
+
 drop trigger if exists deploys_pin_leaves_a_slot on public.deploys;
 drop function if exists public.guard_pin_leaves_a_slot();
 
