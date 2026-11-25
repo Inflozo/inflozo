@@ -754,5 +754,29 @@ writes on the owner's in-session go, "1. Go — all of it", run in the main sess
 - **`pnpm keyboard -g "7\.22|7\.21|journey uses no pointer|7\.18a"`** on the patched tree: every selected test passed, the
   no-pointer control among them, with 7.22 (a)'s gscan words and derived limit, (e)'s two-site pin names and (f)'s control run.
   The full gate is CI's `check` on the Review push.
-- **Next, on the Review's deployment (the owner's second go, "1. Go — re-run after the fix deploys"):** walk step 120 again, with
-  the Review's in-flight control in (d), and the deployment's crons read at `50 6`.
+- **The Review's deployment** (the owner's second go, "1. Go — re-run after the fix deploys"): CI run 45554704918 for e3363c54 —
+  `rls` and `check` (the full keyboard gate among its steps) success, then `deploy`; the Render matrix success.
+  `dpl_AuZwdR7kikCUc8a3ci7K6w44m8jt` READY, aliased to inflozo.com and app.inflozo.com, its `crons` listing
+  `/api/cron/prune-artifacts` at **`50 6 * * *`** beside the other three, so no two share an hour.
+- **Walk step 120 again, on that deployment**, from a clean worktree at e3363c54 (the same cut, its first line naming
+  `dpl_AuZwdR7kikCUc8a3ci7K6w44m8jt` READY from this HEAD). Two attempts died before any T1 write, and each one's `finally`
+  passed (T1 on `casper*`, the account deleted, users and projects counted back):
+  - the first at "T1 did not connect", with no further detail;
+  - the second on the project page's load at 06:02 UTC. Vercel's request rows show the first request never arrived and the retry
+    answered 200 in 709 ms, which is the walk's known `load` hold, not the product.
+
+  **The third ran to its end: 0 FAIL, 60 PASS.**
+  - (a)–(c) as at the Dev head: v1 pruned (row kept, pointer null, object gone); route and drawer v4 v3 v2; D2b and **409** at N−1;
+    v3 unpinned; v4 pruned → D3c "since v4"; the next version **5.0.0** in its row and its `package.json`.
+  - (d) the fixed sweep: **401** without the secret, **200** with it, `{"abandoned":1,"dropped":1,"pruned":0,"failed":0}` — again only
+    the walk's plants.
+    - R's stranded check was claimed and abandoned (job `cancelled`, row and object gone).
+    - P's failed row was kept with its pointer null and its object gone.
+    - **The Review's control held: a Ship it under way on a day-old check (job `uploading`, row `checking`) kept its pointer and its
+      zip.**
+    - The check resting on P's linked site and the `live/` copy were untouched.
+  - (e) Pro: nine pins 200, the tenth **409**, an unpin 200.
+  - finally: T1 back on `casper*` with every uploaded `inflozo-` theme deleted and routes.yaml byte for byte; no object left; T1
+    disconnected; the account deleted; users 22 → 22, projects 15 → 15; zero CSP violations.
+- **Still to read, for Deploy:** the first SCHEDULED run of `prune-artifacts`, due 06:50 UTC on 2026-11-25 on this deployment. Read
+  its request row and log line (Vercel's request-logs, or `npx vercel logs`).
