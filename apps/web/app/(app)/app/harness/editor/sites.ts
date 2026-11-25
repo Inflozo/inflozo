@@ -56,6 +56,8 @@ export const GHOST_5_SITE: EditorData['site'] = siteWith({ title: 'Harness site'
 
 /** Story 7.18b — the picker's other two sites and the project that holds one (ids of the harness's own, never the database's) */
 export const HARNESS_SITES = {
+  /** the linked site of every Ship it shape (`layout.tsx`' `shipOf`) — Story 7.22's history rows name it */
+  linked: '00000000-0000-4000-8000-000000000718',
   held: '00000000-0000-4000-8000-000000000719',
   german: '00000000-0000-4000-8000-000000000720',
   holder: '00000000-0000-4000-8000-000000000721',

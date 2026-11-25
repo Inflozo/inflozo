@@ -13,7 +13,7 @@ const quiet = { log: () => {}, error: () => {} }
 const job = (id: string, over: Partial<Resting> = {}): Resting => ({ id, userId: 'u', projectId: 'p', siteId: 'a', deployId: `d-${id}`, linkedSiteId: 'a', ...over })
 
 /** Fake deps over the three passes; every call recorded in order. */
-function deps(over: Partial<{ resting: Resting[] | Error; dead: Dead[] | Error; held: Held[] | Error; abandonFails: string[]; dropFails: string[]; dropped: string[]; prune: Record<string, { pruned: number; failed: number } | Error> }> = {}) {
+function deps(over: Partial<{ resting: Resting[] | Error; dead: Dead[] | Error; held: Held[] | Error; abandonFails: string[]; claimedFirst: string[]; dropFails: string[]; dropped: string[]; prune: Record<string, { pruned: number; failed: number } | Error> }> = {}) {
   const calls: string[] = []
   const d: SweepDeps = {
     async resting(limit) {
@@ -24,6 +24,7 @@ function deps(over: Partial<{ resting: Resting[] | Error; dead: Dead[] | Error; 
     async abandon(j) {
       calls.push(`abandon:${j.id}`)
       if (over.abandonFails?.includes(j.id)) throw Object.assign(new Error('x'), { code: '57014' })
+      return !over.claimedFirst?.includes(j.id)
     },
     async dead(before, limit) {
       calls.push(`dead:${limit}:${before.toISOString()}`)
@@ -56,6 +57,12 @@ test('pass 1 (DW-380): a check resting on a site its project no longer links —
   assert.deepEqual(calls.filter((c) => c.startsWith('abandon:')), ['abandon:moved', 'abandon:unlinked'])
   assert.equal(t.abandoned, 2)
   assert.equal(t.failed, 0)
+})
+
+test('pass 1: a stranded check a Ship it claimed since the read is left alone and not counted (the claim-first abandon, the review)', async () => {
+  const { d } = deps({ resting: [job('shipped', { linkedSiteId: 'b' }), job('moved', { linkedSiteId: 'b' })], claimedFirst: ['shipped'] })
+  const t = await runSweep(d, quiet)
+  assert.deepEqual(t, { abandoned: 1, dropped: 0, pruned: 0, failed: 0 })
 })
 
 test('pass 2 (DW-374): the dead zips older than a day are dropped (the pointer-first `drop`); one another hand changed first is not counted', async () => {
@@ -108,8 +115,9 @@ test('the budget: no item is started once BUDGET_MS is spent — the rest wait a
   const { d, calls } = deps({ resting: [job('a', { linkedSiteId: null }), job('b', { linkedSiteId: null })] })
   const abandon = d.abandon.bind(d)
   d.abandon = async (j) => {
-    await abandon(j)
+    const claimed = await abandon(j)
     clock += BUDGET_MS
+    return claimed
   }
   await runSweep(d, quiet, () => clock)
   assert.deepEqual(calls.filter((c) => c.startsWith('abandon:')), ['abandon:a'])
@@ -129,7 +137,14 @@ test('the route: the door before any read, `force-dynamic`, the ceiling stated p
   assert.match(flat, /pruneProject\(project, RETENTION_IO\)/, 'pass 3 is the one prune')
   // the dead zips: never a version, never one a resting check names, and the clear re-checks both before the object goes
   assert.match(flat, /\.not\('status', 'in', '\(uploaded,live\)'\) \.not\('artifact_path', 'is', null\) \.lt\('created_at', before\.toISOString\(\)\)/)
-  assert.match(flat, /from\('deploy_jobs'\)\.select\('deploy_id'\)\.eq\('stage', 'awaiting_ship'\)/)
+  // …every job NOT AT REST holds its zip — a Ship it under way reads it after leaving awaiting_ship (the review, 2026-11-25)
+  assert.match(flat, /from\('deploy_jobs'\)\.select\('id, deploy_id'\)\.in\('stage', \[\.\.\.MOVING, 'awaiting_ship'\]\)/)
+  // pass 1 claims the job off awaiting_ship before `abandon` touches its row or its object
+  assert.match(flat, /update\(\{ stage: 'cancelled', [^}]*\}\) \.eq\('id', job\.id\) \.eq\('user_id', job\.userId\) \.eq\('stage', 'awaiting_ship'\)/)
+  assert.ok(flat.indexOf(".eq('stage', 'awaiting_ship') .select('id')") < flat.indexOf('await abandon(io, '), 'the claim comes first')
+  // every cross-account read pages past the Data API's max_rows until an empty page: none is one bare read
+  for (const step of ['resting', 'dead held', 'dead', 'held']) assert.match(flat, new RegExp(`\\.range\\(from, to\\)[^;]*'${step}'`), `${step} pages`)
+  assert.match(flat, /if \(!data\?\.length\) break/, 'a page stops only when EMPTY')
   assert.match(flat, /\.eq\('artifact_path', row\.path\) \.not\('status', 'in', '\(uploaded,live\)'\) \.select\('id'\)/)
   // nothing here lists a prefix: an object no row names (the live copies under `live/`) is never touched
   assert.doesNotMatch(flat, /listV2|drainPrefix|\/live\//)

@@ -334,7 +334,7 @@ export const DEPLOY = 'deploy'
 export const deployPath = (projectId: string) => `/projects/${projectId}/${DEPLOY}`
 
 /** STORY 7.22 — the History drawer's one door (`projects/[id]/history/route.ts`): GET the project's stored versions, POST a pin or
- *  an unpin. A route handler for the lock route's reasons, a STATIC sibling of `[template]` like the three above */
+ *  an unpin. A route handler for the lock route's reasons, a STATIC sibling of `[template]` like the ones above */
 export const HISTORY = 'history'
 export const historyPath = (projectId: string) => `/projects/${projectId}/${HISTORY}`
 

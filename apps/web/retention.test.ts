@@ -4,6 +4,7 @@
 // The shell's rows are `deploy-run.test.ts`', the sweep's `artifact-sweep.test.ts'`, and the database's the RLS gate's FR-J7 block.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { nextVersion, shipStateOf } from './lib/deploy.ts'
 import { PLANS, type PlanId } from './lib/plan.ts'
 import {
@@ -229,4 +230,14 @@ test('the job\'s plan read refuses AD-28\'s degradation: a read that logged its 
   assert.deepEqual(lines, [['entitlement: read failed', { code: 'XX000' }]])
   assert.equal(await strictPlan(async () => 'pro', log), 'pro')
   assert.equal(await strictPlan(async () => 'free', log), 'free', 'an absent row is Free, read — not a failure')
+})
+
+test('the REAL clear (`server/retention-io.ts`) carries every condition the fake above holds — this user\'s, unpinned, still a stored version, still naming THIS object — so a pin or another prune that landed first keeps its zip (the review: the fake alone proved only that `pruneProject` reads a false)', () => {
+  const flat = readFileSync('server/retention-io.ts', 'utf8').replace(/\/\*[^]*?\*\/|\/\/[^\n]*/g, ' ').replace(/\s+/g, ' ')
+  const clear = /async clear\(\{ id, userId, path \}\) \{(.*?)\n?return \(answer\.data/.exec(flat)?.[1] ?? ''
+  for (const condition of [".update({ artifact_path: null, artifact_bytes: null })", ".eq('id', id)", ".eq('user_id', userId)", ".eq('pinned', false)", ".eq('artifact_path', path)", ".in('status', ['uploaded', 'live'])", ".select('id')"]) {
+    assert.ok(clear.includes(condition), `the clear keeps ${condition}`)
+  }
+  // the versions read is the same predicate as `isStoredVersion`, scoped to the user
+  assert.match(flat, /\.eq\('project_id', projectId\) \.eq\('user_id', userId\) \.in\('status', \['uploaded', 'live'\]\) \.not\('artifact_path', 'is', null\)/)
 })

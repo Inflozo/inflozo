@@ -433,7 +433,8 @@
 // listing v4 v3 v2; (b) v2 and v3 pinned through the drawer, v4's pin D2b and a 409; (c) v4 (the drift baseline) pruned as the
 // prune prunes, Run checks → D3c on its kept manifest, the new version 5.0.0 in the row and the artefact's package.json; (d) the
 // `prune-artifacts` cron — 401 without the secret; a planted DW-380 resting check abandoned and a planted failed row's zip dropped,
-// the check resting on the linked site and a live copy untouched; (e) Pro: nine pins 200, the tenth 409. Its finally puts T1 back,
+// the check resting on the linked site, a Ship it under way (the Review's) and a live copy untouched; (e) Pro: nine pins 200,
+// the tenth 409. Its finally puts T1 back,
 // removes K's objects, disconnects and deletes K, and counts back.
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
@@ -14263,8 +14264,8 @@ async function main() {
            cleared, then the object removed); the page read again; Run checks → D3c "since v4" against v4's kept manifest, the new
            deploy's version 5.0.0 (DW-372: counting stored rows would say 3) and its artefact's `package.json` saying 5.0.0.
        (d) THE SWEEP: planted — a check resting on T1 for an UNLINKED project R (DW-380), a failed row of P's two days old naming an
-           object (DW-374), the control: (c)'s check resting on P's linked site with its row back-dated two days, and an object under
-           `{P}/live/`. `GET /api/cron/prune-artifacts` without the secret → 401; with `CRON_SECRET` → R's job cancelled, its row and
+           object (DW-374), the controls: (c)'s check resting on P's linked site with its row back-dated two days, a Ship it under way
+           on a day-old check of R's (its job `uploading`; the Review's), and an object under `{P}/live/`. `GET /api/cron/prune-artifacts` without the secret → 401; with `CRON_SECRET` → R's job cancelled, its row and
            object gone; the failed row kept, its pointer null and its object gone; the control untouched; the live copy untouched.
        (e) PRO STOPS AT NINE: K made Pro (`entitlements.state`), project Q planted with ten stored versions on the site (rows only —
            `pin_version` reads the pointer, never the object): nine pins answer 200, the tenth 409, an unpin 200.
@@ -14539,6 +14540,13 @@ async function main() {
         const rPut = await putObject120(rKey, PLANTED_ZIP120)
         await call('/rest/v1', `/deploys?id=eq.${rDeploy?.id}`, { method: 'PATCH', body: JSON.stringify({ artifact_path: rKey, artifact_bytes: PLANTED_ZIP120.length }) })
         const rJob = (await call('/rest/v1', '/deploy_jobs', { method: 'POST', body: JSON.stringify({ project_id: R120, user_id: id120, site_id: site120, stage: 'awaiting_ship', deploy_id: rDeploy?.id }) })).body?.[0] ?? null
+        // the Review's control (2026-11-25): a Ship it UNDER WAY on a day-old check — its job `uploading`, its row still a non-version
+        // (`checking`) naming its zip, as `ship()` holds it until Ghost accepts — is no dead zip: every job not at rest holds its zip
+        const mDeploy = (await call('/rest/v1', '/deploys', { method: 'POST', body: JSON.stringify({ project_id: R120, user_id: id120, site_id: site120, version: '2.0.0', theme_name: 'inflozo-stranded-check', status: 'checking', created_at: DAYS_AGO120 }) })).body?.[0] ?? null
+        const mKey = `${R120}/${mDeploy?.id}.zip`
+        const mPut = await putObject120(mKey, PLANTED_ZIP120)
+        await call('/rest/v1', `/deploys?id=eq.${mDeploy?.id}`, { method: 'PATCH', body: JSON.stringify({ artifact_path: mKey, artifact_bytes: PLANTED_ZIP120.length }) })
+        const mJob = (await call('/rest/v1', '/deploy_jobs', { method: 'POST', body: JSON.stringify({ project_id: R120, user_id: id120, site_id: site120, stage: 'uploading', deploy_id: mDeploy?.id }) })).body?.[0] ?? null
         // P: a failed row two days old naming an object (DW-374)
         const fDeploy = (await call('/rest/v1', '/deploys', { method: 'POST', body: JSON.stringify({ project_id: P120, user_id: id120, site_id: site120, version: '9.0.0', theme_name: theme120, status: 'failed', created_at: DAYS_AGO120 }) })).body?.[0] ?? null
         const fKey = `${P120}/${fDeploy?.id}.zip`
@@ -14565,6 +14573,12 @@ async function main() {
         const fNow = await deploy120(fDeploy?.id)
         check('step 120d — DW-374: P\'s failed row is kept with its pointer null, and its object is gone',
           fNow !== null && fNow.artifact_path === null && (await object120(fKey)) === null, JSON.stringify({ row: fNow !== null, pointer: fNow?.artifact_path ?? null }))
+        const mRowNow = await deploy120(mDeploy?.id)
+        check('step 120d — the Review\'s control: a Ship it under way on a day-old check (its job `uploading`, its row still `checking`) keeps its pointer and its zip — every job not at rest holds its zip',
+          mDeploy !== null && mJob !== null && mPut === 200 && mRowNow?.artifact_path === mKey && (await object120(mKey)) !== null,
+          JSON.stringify({ job: mJob !== null, put: mPut, pointer: mRowNow?.artifact_path === mKey }))
+        // …and it is put to rest, so nothing of the step stays "in flight"
+        await call('/rest/v1', `/deploy_jobs?id=eq.${mJob?.id}`, { method: 'PATCH', body: JSON.stringify({ stage: 'failed' }) })
         const controlJob = await jobById120(preC?.id)
         const controlRow = await deploy120(v5?.id)
         check('step 120d — the controls are untouched: the check resting on P\'s linked site keeps its row, pointer and object; the live copy under live/ stays',

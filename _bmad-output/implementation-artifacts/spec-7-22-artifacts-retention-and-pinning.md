@@ -2,7 +2,7 @@
 title: 'Story 7.22 — Artifacts, retention and pinning'
 type: 'feature'
 created: '2026-11-25'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '0c8f8da48f4b331c075191eb832bf4f93abe7a14'
 owner_test: pending
 review_loop_iteration: 0
@@ -297,7 +297,8 @@ the original-theme row, D2d's Re-activate row and S8e's Roll back confirm.
   3. each project is pruned.
 
   Use the purge routes' door and budget, and answer 500 when anything failed. The header names E7, FR-J7 and AD-33.
-- [x] `apps/web/vercel.json` -- schedule `/api/cron/prune-artifacts` daily at `50 4 * * *`.
+- [x] `apps/web/vercel.json` -- schedule `/api/cron/prune-artifacts` daily at `50 4 * * *` (moved to `50 6 * * *` at the Review:
+  an hour of its own, Story 3.7's rule).
 
 *UI:*
 - [x] `apps/web/components/editor/deploy-history.tsx` (new) -- the drawer:
@@ -373,6 +374,90 @@ the original-theme row, D2d's Re-activate row and S8e's Roll back confirm.
   controls (a check resting on the linked site, `live/`) are untouched. Without the secret it answers 401.
 - **One deleter.** Given the finished code, then no code path but `pruneProject`, the sweep and `clear()` removes a
   `deploy-artifacts` object, and none sums artefact bytes into a quota (grep in Verification).
+
+### Review Findings
+
+Story 7.22's Review, 2026-11-25: five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, the read-only
+Real-infra verifier), and walk step 120 on production and T1 on the owner's in-session go. Every patch below is applied, two items
+are deferred to the stories that own them (DW-399's note, DW-400), and the rest are dismissed as noise or as the spec's own choices.
+No decision was left for the owner.
+
+- [x] [Review][Patch] **The nightly sweep could delete the zip of a Ship it under way.** Pass 2 kept only the zips of jobs resting
+  at `awaiting_ship`, but `ship()` reads its zip AFTER leaving `awaiting_ship` (`snapshotting`, `uploading`, a stale re-make) while
+  the row stays a non-version until Ghost accepts it — so a day-old check shipped at the sweep's hour would fail as ours, or go
+  live with no stored zip. Every job not at rest (`MOVING` + `awaiting_ship`) now holds its zip; the source test turns red on the
+  old predicate, and walk step 120d gains the control on production (a day-old check's job at `uploading` keeps its zip)
+  [`api/cron/prune-artifacts/route.ts` `dead`, `artifact-sweep.test.ts`, `run-verify-editor.cjs`] — all four reading layers
+- [x] [Review][Patch] **The sweep's cross-account reads were one bare request each**, and production's Data API answers at most
+  `max_rows` = **1000** rows (read now through the Management API's `GET /v1/projects/{ref}/postgrest`): past it, a resting
+  check's zip would go unprotected and pass 3 would skip projects. Every read now pages in a stable order until an EMPTY page; the
+  source test turns red on a short-page stop or a bare read [`route.ts` `collect`]
+- [x] [Review][Patch] Passes 1 and 2 read 200 oldest rows and skipped the protected ones in memory, so about 200 idle checks on
+  linked sites would fill every night's batch for good (DW-47's head-of-queue starvation); `collect` pages past the skipped rows
+  until a batch is found [`route.ts` `resting`, `dead`]
+- [x] [Review][Patch] Pass 1 abandoned a stranded check from a read made at the pass's start: a re-link and a Ship it meanwhile would
+  lose its row and zip mid-ship. It now claims the job off `awaiting_ship` first (`ship()`'s own claim is conditional the same
+  way) and skips one claimed since, uncounted [`route.ts` `abandon`, `lib/artifact-sweep.ts`, `artifact-sweep.test.ts`]
+- [x] [Review][Patch] An irreversible delete left no line: a dropped zip, a project's pruned versions and the inline prune now each
+  log their ids [`lib/artifact-sweep.ts`, `run.ts` `pruneAfter`]
+- [x] [Review][Patch] **The schedule.** `50 4` shared the orphan purge's hour against Story 3.7's "a different hour so the two never
+  share a cold start", and Dev loosened `purge.test.ts` to fit — two approved decisions disagreeing (standing rule 6). The job now
+  runs at `50 6`, an hour of its own, and the test holds both the hour and the gap; its gap read a same-minute pair as a whole day
+  (`|| 24 * 60`), which is gone [`vercel.json`, `purge.test.ts`; AD-33's note, DW-374/380's ledger line, the epic context]
+- [x] [Review][Patch] AD-29's note and the cron's header said nothing but the prune, the sweep and `clear()` removes a
+  `deploy-artifacts` object; FR-A5's account purge drains a deleted account's prefix and 7.18a's stale re-make removes a check's own
+  zip [`ARCHITECTURE-SPINE.md` AD-29, `route.ts`]
+- [x] [Review][Patch] "Two tabs at once" had no lasting check: deleting `pin_version`'s lock turned no gate red, and MEASUREMENTS
+  §26 credited the RLS gate with the race. The gate now holds that the body takes the project's lock before it counts (control: the
+  lock withheld from the migration and SCHEMA.sql → exit 3 at that line), and §26 says the race was executed once, at Schema
+  [`RLS-TEST.sql` → `rls.sql`, `MEASUREMENTS.md` §26]
+- [x] [Review][Patch] The "pin meets prune" row was proven over a fake clear only; a source test now holds the real clear's every
+  condition (this user's, unpinned, still a stored version, still naming this object) — red with `pinned` or the path dropped
+  [`retention.test.ts`, `server/retention-io.ts`]
+- [x] [Review][Patch] `compileInputOf`'s test could not tell `nextVersion` from counting rows (1.0.0 and 2.0.0 give 3 either way);
+  its fixture now skips numbers (1.0.0, 5.0.0 → 6.0.0) and the old count turns it red [`deploy-input.test.ts`]
+- [x] [Review][Patch] `deploy` and `history` had only the refusal loop's line; both now get the non-canvas assertions `lock` and
+  `routes` get, and `lib/editor.ts`' "like the three above" is corrected [`editor.test.ts`, `lib/editor.ts`]
+- [x] [Review][Patch] On a touch screen the bar is 56px (`coarse:h-14`) and the drawer sat at 48, over the bar's last 8px; it now
+  sits below the bar there too [`deploy-history.tsx`]
+- [x] [Review][Patch] D2b's note used `shadow-lg` (.14); the frame draws `0 12px 40px rgba(28,27,26,.2)` (`:177`), now the token
+  `shadow-popover`, recorded in DESIGN.md [`deploy-history.tsx`, `globals.css`, `DESIGN.md`]
+- [x] [Review][Patch] Two sites can each hold a v2, and both pins were named "Pin v2"; a pin on another site's row now carries
+  its "on {host}" in its name (journey: the two-sites drawer, the linked row's pin as the control) [`deploy-history.tsx`,
+  `journey.spec.mjs`]
+- [x] [Review][Patch] The gscan chip read aloud as "0 · 2"; it now says "0 errors · 2 warnings" to a screen reader (the wizard's
+  own sentence) and draws the frame's `0 · 2`, both from `HISTORY_WORDS` [`lib/retention.ts`, `deploy-history.tsx`, journey (a)]
+- [x] [Review][Patch] `HISTORY_WORDS.live` was dead — the badge typed its own "Live" — so `LiveBadge` now takes its word
+  (R-170) [`kit/badge.tsx`, `deploy-history.tsx`, the Kit page]
+- [x] [Review][Patch] Journey (f)'s title promised a control it never ran; it now runs it (`found` draws the Download)
+  [`journey.spec.mjs`]
+- [x] [Review][Patch] Journey (a) restated "10" and "3"; the limit line's numbers are read from `PLANS` [`journey.spec.mjs`]
+- [x] [Review][Patch] The harness's history site copied the linked site's id literal; both now read `HARNESS_SITES.linked`
+  [`harness/editor/sites.ts`, `layout.tsx`, `actions.ts`]
+- [x] [Review][Patch] Two live documents still stated the retired floor: the epic context's MEASUREMENTS line, and EXPERIENCE.md's
+  "pinning the last unpinned version refuses" (under N−1 a Free project with two versions and one pinned may pin the second)
+  [`epic-7-context.md`, `EXPERIENCE.md` F8]
+- [x] [Review][Defer] A version shipped from a check made before a re-link can be pruned the moment Ghost accepts it, because the
+  frozen rule orders by `created_at` (the Pre-flight's time), and the row's time label says when the check first ran
+  [`lib/retention.ts` `newestFirst`] — deferred, DW-400, owner Story 7.23 (its card carries it)
+- [x] [Review][Defer] After a downgrade leaves more pins than Free's cap, re-pinning an already-pinned row answers `cap`, not the
+  header's `pinned` (the drawer never sends it) [`20261125120000_pin_version.sql`] — added to DW-399, owner Story 12.4
+
+**Dismissed, each in one line:** the pin route's degraded plan read (AD-28's request rule, the spec's Always; a refusal changes
+nothing and the next press asks again) · pin and unpin scoped differently by URL (the route's ponytail; always the user's own row,
+and the drawer sends only its project's) · a NULL `p_cap` (service role only; the route always hands `PLANS`' number) ·
+`strictPlan` reading the log (`plan.test.ts` pins one line on a failed read and none on a good one) · the prune before activation
+(a few indexed reads, best effort; every step of the ship shares the same store) · an object leaked when a removal fails after its
+clear (the ceiling `server/retention.ts` names) · `upsert: false` meeting its own lost put (`deploy-io.ts`' ponytail; the customer
+runs the checks again) · the bar inert under the modal (✕ and Esc close it; S8e draws the bar unscrimmed) · `chipTone` beside the
+wizard's inline tone (one rule, two lines) · walk step 120's and the fixtures' scenario numbers and the migration's column comment
+(each fails loudly, and a change to the numbers is the spec's Ask First) · DW-396's test packing 50 MiB (7.2 s, measured; it
+proves the real constant, which an injected cap would not) · SQL restating `isStoredVersion` and an empty path (SQL cannot call
+the TS predicate; every path is `{projectId}/{deployId}.zip`) · `retention.ts` imported twice in the journey · the frame's bare
+16px ✕ (the Kit's 28px `IconButton`, the target floor), `LiveBadge`'s 500 weight and `ResultChip`'s padding (Kit components S8
+shares), D2b's lifted row and dimmed neighbour (the detail crop's emphasis; the note's own `z-10` lifts it), and no divider before
+▾ → History (the Kit `Menu` has none; 7.18a's menu the same) · a live copy refused if the store's limit is lowered (the spec's
+Ask First) · no phone width on the floor (R-201: the editor never mounts on a phone).
 
 ## Spec Change Log
 
@@ -620,3 +705,54 @@ Casper on your go.
 - **Propagation grep** (`guard_pin_leaves_a_slot`, `uploads.length + 1`): only the frozen applied migration, the new migration's
   and the architecture files' dated comments, MEASUREMENTS §26's history, the epic context's Create notes and this spec.
 - **`python3 tools/doc-audit.py --check`**, twice: PASS.
+
+**Executed — Review (2026-11-25, Node 24; keys by their variable names, read in-process, no value printed; production and T1
+writes on the owner's in-session go, "1. Go — all of it", run in the main session):**
+- **CI on the Dev head** (`GITHUB_TOKEN`, the runs API): run 45548261831 for 6799ecab — `rls` and `check` success, then `deploy`;
+  the Render matrix success. Vercel (`VERCEL_TOKEN`): `dpl_8vdawH2u3D8BuNHqDJzvakXeVaoi` READY at 05:08 UTC, aliased to
+  inflozo.com and app.inflozo.com, built from 6799ecab.
+- **The Real-infra verifier, read-only** (`SUPABASE_DB_POOLER_URL` inside `BEGIN READ ONLY`; `SUPABASE_SECRET_KEY`,
+  `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_ACCESS_TOKEN`, `VERCEL_TOKEN`):
+  - R-99: every column the new code selects, filters or updates exists on production (`missing: []` over `deploys`, `deploy_jobs`,
+    `projects`, `sites`, `entitlements`; the control `pinned_zz` → false); `deploys.pinned` is `boolean not null default false`;
+    `deploy_status` and `job_stage` carry every value the code writes; `pin_version(uuid,uuid,integer)`'s `md5(prosrc)` equals the
+    migration body's (the control `pin_version(uuid,uuid,text)` → NULL); EXECUTE anon false, authenticated false, service_role
+    true; no trigger on `deploys` and no `guard_pin_leaves_a_slot`; the embeds `sites(url)` and `projects(linked_site_id)` resolve
+    to one foreign key each. PostgREST: the history GET's select → 200 `[]` (control `pinnedx` → 400 42703); `POST
+    /rpc/pin_version` with the publishable key → 401 42501 (control `pin_version_nope` → 404 PGRST202).
+  - Storage: `deploy-artifacts`' `file_size_limit` null and the project's `fileSizeLimit` 52428800 — `LIVE_COPY_MAX_BYTES`
+    (control: an unknown bucket → 400).
+  - Deployed: the deployment's `crons` list `/api/cron/prune-artifacts` at `50 4 * * *`; `https://inflozo.com/api/cron/prune-artifacts`
+    → 401 with no header and 401 with a wrong bearer (control: `/api/cron/prune-artifacts-nope` → 404; before the deploy the route
+    itself was 404); `GET` and `POST https://app.inflozo.com/projects/<uuid>/history` signed out → 401 "Not signed in" (control:
+    `/history-nope` → 307 to `/sign-in`).
+- **Production's Data API `max_rows`** (`SUPABASE_ACCESS_TOKEN`, `GET /v1/projects/{ref}/postgrest`): **1000** — the reason every
+  cross-account read in the sweep now pages.
+- **Walk step 120 on production and T1, at the Dev head** — a cut of steps 1–5 and 120 (`tools/probe-debug/cut120.cjs`, built from
+  the walk by slicing on its step markers, never committed) run from a clean detached worktree at 6799ecab with `T1_WRITES=1`, the
+  walk's first line naming `dpl_8vdawH2u3D8BuNHqDJzvakXeVaoi` READY from this HEAD: **0 FAIL, 59 PASS.**
+  - (a) four ships live in turn as 1.0.0–4.0.0; the fourth pruned v1 — its row kept with a null pointer, its version and manifest,
+    its object gone; v2–v4 kept theirs; the route (HTTP 200) and the drawer at 1440 list exactly v4 v3 v2, with the limit line.
+  - (b) v2 and v3 pinned through the drawer; v4's pin → D2b, focus on Got it, the pin unfilled; the same POST → **409**; the rows
+    read 2.0.0 and 3.0.0 pinned; v3 unpinned.
+  - (c) v4, the drift baseline, pruned as the prune prunes (clear 200, object removed 200) → Run checks → D3c "Nothing changed on
+    your site since v4" (`drift: { kind: 'clean', since: 4 }`); the new deploy is **5.0.0** in its row and its zip's `package.json`.
+  - (d) `prune-artifacts` → **401** without the secret, **200** with `CRON_SECRET`: `{"abandoned":1,"dropped":1,"pruned":0,"failed":0}`
+    — exactly the walk's two plants, so nothing of any other account was touched; R's stranded check `cancelled`, its row and object
+    gone; P's failed row kept, pointer null, object gone; the controls (the check resting on P's linked site, the `live/` copy)
+    untouched.
+  - (e) Pro: nine pins 200, the tenth **409**, an unpin 200.
+  - finally: T1 back on `casper*` with `racer` and `source`, every uploaded `inflozo-` theme deleted, routes.yaml byte for byte as
+    at the start; no object left under the account's prefixes, T1 disconnected, the account deleted; users 22 → 22, projects
+    15 → 15; zero CSP violations.
+- **The Review's patches, locally:** `pnpm check` green (every package, each printing its own count). Each new assertion seen red
+  under a planted reversion: the sweep's source test under each of four (the old `awaiting_ship` hold, a claim-less abandon, a
+  short-page stop, a bare `held` read); the real clear's under `pinned` or the path dropped; `compileInputOf`'s under
+  `uploads.length + 1`; `purge.test.ts` under `50 4` and under a same-minute `30 4`. `bash supabase/tests/run-rls-gate.sh` exit 0
+  with the new FR-J7 line; **the control**, `perform pg_advisory_xact_lock(…)` withheld from both the migration and SCHEMA.sql:
+  exit 3 at "pin_version no longer takes the project's lock before it counts", both files restored after.
+- **`pnpm keyboard -g "7\.22|7\.21|journey uses no pointer|7\.18a"`** on the patched tree: every selected test passed, the
+  no-pointer control among them, with 7.22 (a)'s gscan words and derived limit, (e)'s two-site pin names and (f)'s control run.
+  The full gate is CI's `check` on the Review push.
+- **Next, on the Review's deployment (the owner's second go, "1. Go — re-run after the fix deploys"):** walk step 120 again, with
+  the Review's in-flight control in (d), and the deployment's crons read at `50 6`.

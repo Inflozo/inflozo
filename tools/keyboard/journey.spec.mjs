@@ -11037,6 +11037,7 @@ test('7.21 · (f) DW-338: the Layers rename field stops at 60 characters, typed 
 
 const RETENTION = await import(new URL('../../apps/web/lib/retention.ts', import.meta.url).href)
 const HW = RETENTION.HISTORY_WORDS
+const { PLANS } = await import(new URL('../../apps/web/lib/plan.ts', import.meta.url).href)
 const drawer = (page) => page.locator('dialog[data-deploy-history]')
 const historySaid = (page) => page.locator('[data-history-said]').innerText()
 const historyRow = (page, v) => drawer(page).locator(`[data-history-row="${v}"]`)
@@ -11079,12 +11080,15 @@ test('7.22 · (a) the clock just before Ship it opens S8e\'s drawer — 420 wide
   expect(await drawer(page).locator('[data-history-row]').evaluateAll((rs) => rs.map((r) => r.dataset.historyRow))).toEqual(['v3', 'v2', 'v1'])
   await expect(historyRow(page, 'v3')).toContainText(HW.live)
   await expect(historyRow(page, 'v2')).not.toContainText(HW.live)
-  await expect(historyRow(page, 'v3').locator('[data-history-gscan]')).toHaveText('0 · 0')
-  await expect(historyRow(page, 'v2').locator('[data-history-gscan]')).toHaveText('0 · 2')
+  // the chip as drawn (`0 · 0`, hidden from a screen reader) and its counts in words (the review: "0 · 2" read aloud says nothing)
+  await expect(historyRow(page, 'v3').locator('[data-history-gscan] [aria-hidden]')).toHaveText(HW.gscan(0, 0))
+  await expect(historyRow(page, 'v2').locator('[data-history-gscan] [aria-hidden]')).toHaveText(HW.gscan(0, 2))
+  await expect(historyRow(page, 'v2').locator('[data-history-gscan] .sr-only')).toHaveText(HW.gscanSaid(0, 2))
   await expect(historyRow(page, 'v1')).toContainText('Nov 1 · ')
   await expect(drawer(page).locator('[data-history-pinned]'), 'nothing pinned').toHaveCount(0)
   await expect(drawer(page).locator('[data-history-limit]')).toHaveText(HW.limit)
-  expect(HW.limit).toContain('Pro keeps the last 10 versions. Free keeps the last 3.')
+  // both plans' numbers, read from PLANS (counts are derived, never restated)
+  expect(HW.limit).toContain(`Pro keeps the last ${PLANS.pro.history} versions. Free keeps the last ${PLANS.free.history}.`)
   // Tab reaches each pin from ✕, newest first
   for (const v of ['v3', 'v2', 'v1']) {
     await page.keyboard.press('Tab')
@@ -11233,11 +11237,14 @@ test('7.22 · (e) nothing shipped: "Nothing shipped yet" and still the limit (UX
   await openHistory(page, 'two-sites')
   expect(await drawer(page).locator('[data-history-row]').evaluateAll((rs) => rs.map((r) => r.dataset.historyRow))).toEqual(['v3', 'v2', 'v1'])
   await expect(historyRow(page, 'v2').locator('[data-history-site]')).toHaveText(HW.on('de.harness.example'))
+  // two sites can each hold a v2: the pin's name carries the row's "on {host}" (the review), and a linked site's pin is the control
+  await expect(pinOf(page, 'v2')).toHaveAccessibleName(`${HW.pin(2)} ${HW.on('de.harness.example')}`)
+  await expect(pinOf(page, 'v3')).toHaveAccessibleName(HW.pin(3))
   await expect(historyRow(page, 'v3').locator('[data-history-site]'), 'the linked site\'s rows say nothing').toHaveCount(0)
   await expect(historyRow(page, 'v1').locator('[data-history-site]')).toHaveCount(0)
 })
 
-test('7.22 · (f) DW-396: a found drift whose live zip was too large to keep draws D3a WITHOUT its Download — Cancel focused, Overwrite and ship anyway still there (the control: `found` draws it)', async ({ page }) => {
+test('7.22 · (f) DW-396: a found drift whose live zip was too large to keep draws D3a WITHOUT its Download — Cancel focused, Overwrite and ship anyway still there; the control, `found`, draws it', async ({ page }) => {
   await toDrift(page, 'found-unkept')
   const report = wizard(page).locator('[data-drift-report]')
   await expect(report).toBeVisible({ timeout: 15_000 })
@@ -11245,4 +11252,8 @@ test('7.22 · (f) DW-396: a found drift whose live zip was too large to keep dra
   await expect(page.locator('#deploy-drift-download')).toHaveCount(0)
   await expect(page.locator('#deploy-overwrite')).toHaveAccessibleName(DRW.overwrite)
   await expect(report.locator('[data-drift-file]')).toHaveCount(5)
+  // THE CONTROL, run here (the review: the title promised it): the same report from a live zip that WAS kept draws its Download
+  await toDrift(page, 'found')
+  await expect(wizard(page).locator('[data-drift-report]')).toBeVisible({ timeout: 15_000 })
+  await expect(page.locator('#deploy-drift-download')).toHaveCount(1)
 })

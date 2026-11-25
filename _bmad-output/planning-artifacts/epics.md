@@ -4589,6 +4589,10 @@ back confirm and the phone card — and S8e's full clock tooltip, "History — e
 its own `{projectId}/{deployId}.zip` and the prune clears a pointer and removes that key; once a rollback records an upload of a
 STORED artefact, two rows can name one object, so the prune must remove an object only when no remaining row names it
 (`server/retention.ts`, `pruneProject`)
+**And** *(DW-400, Story 7.22's Review, 2026-11-25)* **"newest" for retention is decided here, with the rows of two sites**: the
+rule orders a project's stored versions by `deploys.created_at`, the Pre-flight's time, so a check made before a re-link and
+shipped after one can be pruned the moment Ghost accepts it; this story decides whether newest is the upload Ghost accepted, and
+what the row's time label says after a stale re-make (`lib/retention.ts`' `newestFirst`)
 
 **FRs:** FR-J9. · **Frame:** `S8 Deploy.dc.html` S8e · `D2 Deploy History Completed.dc.html` D2a · D2b · D2c. ·
 **Owner test:** yes. · **Verification:** a real rollback on T1 and T3 (R-82), and a real snapshot restored on T1 (moved

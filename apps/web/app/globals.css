@@ -121,6 +121,7 @@
   --shadow-hue-thumb: 0 1px 3px rgba(0,0,0,.35);        /* S7d's hue strip thumb (:1940), Story 6.4 */
   --shadow-canvas-page: 0 4px 16px rgba(28,27,26,.10);  /* the editor's page card — S4a :63 (Story 5.1) */
   --shadow-panel-overlay: -12px 0 40px rgba(28,27,26,.18);  /* the Controls overlay below 1280 — D8 :121 (Story 5.22) */
+  --shadow-popover: 0 12px 40px rgba(28,27,26,.2);  /* D2b's pin refusal under its pin — D2 :177 (Story 7.22's Review) */
   --shadow-focus: 0 0 0 2px #C2381F;   /* the one ring, everywhere (Calibration Set, 2026-09-04) */
 
   /* type roles — the frames also set half steps (12.5, 11.5); read those off the frame

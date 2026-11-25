@@ -207,6 +207,7 @@ elevation:
   hue-thumb: '0 1px 3px rgba(0,0,0,.35) — the colour picker hue strip''s thumb (S7d). Added 2026-10-04 by Story 6.4 (R-236)'
   canvas-page: '0 4px 16px rgba(28,27,26,.10) — the editor's page card on the canvas ground (S4 Editor.dc.html :63): md's geometry at .10. Added 2026-09-17 by Story 5.1'
   panel-overlay: '-12px 0 40px rgba(28,27,26,.18) — the Controls panel as an overlay below 1280, cast leftward over the canvas (D8 Editor Below 1440.dc.html :121, verbatim). Added 2026-09-27 by Story 5.22'
+  popover: '0 12px 40px rgba(28,27,26,.2) — lg''s geometry at .2: the History drawer''s pin refusal, a note over the rows (D2 Deploy History Completed.dc.html :177, verbatim). Added 2026-11-25 by Story 7.22''s Review'
   focus: '0 0 0 2px #C2381F — the one ring, everywhere: 7.9:1 on paper, past 3:1 on white; was 0 0 0 2px rgba(255,89,65,.4) until 2026-09-04 (A7 item 7)'
 ---
 

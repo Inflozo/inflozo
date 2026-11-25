@@ -419,7 +419,7 @@ const HARNESS_ROUTES: RoutesConfig = {
  *  live on the site, so Deploy only is greyed */
 function shipOf(shape: string | null, required: readonly string[]): ShipState {
   // Story 7.20a — confirmed and self-hosted on every shape: the Backup step is `withBackup`'s, by its own header
-  const site = { id: '00000000-0000-4000-8000-000000000718', host: 'harness.example', url: 'https://127.0.0.1:9', version: '6.58.0', source: null, locale: 'en', staff: false, declined: false, backupConfirmed: true, hosting: 'self' as const }
+  const site = { id: HARNESS_SITES.linked, host: 'harness.example', url: 'https://127.0.0.1:9', version: '6.58.0', source: null, locale: 'en', staff: false, declined: false, backupConfirmed: true, hosting: 'self' as const }
   // Story 7.18b — the picker's rows: the linked site, one another project holds (Question 1's confirm) and one set to German
   // (FR-Q6's) — none at all with no header, so Destination offers Go to Sites alone
   const sites: ShipState['sites'] = [

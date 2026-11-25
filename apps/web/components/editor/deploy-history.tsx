@@ -117,7 +117,7 @@ export function DeployHistory({ projectName, read, pin, onClose }: {
         <span className={`inline-flex items-center rounded-pill border border-line px-2 py-px font-mono text-[11px] font-medium text-ink [font-variant-ligatures:none] ${r.pinned ? 'bg-surface' : ''}`}>
           {versionLabel(r.n)}
         </span>
-        {r.live ? <LiveBadge /> : null}
+        {r.live ? <LiveBadge label={HW.live} /> : null}
         {r.pinned ? (
           <span data-history-pinned className="inline-flex items-center rounded-pill bg-marigold-tint px-2 py-[2px] text-[10px] font-semibold uppercase text-marigold-text">
             {HW.pinnedTag}
@@ -125,7 +125,10 @@ export function DeployHistory({ projectName, read, pin, onClose }: {
         ) : null}
         {r.gscan === null ? null : (
           <span data-history-gscan>
-            <ResultChip tone={chipTone(r.gscan)}>{`${r.gscan.errors} · ${r.gscan.warnings}`}</ResultChip>
+            <ResultChip tone={chipTone(r.gscan)}>
+              <span aria-hidden>{HW.gscan(r.gscan.errors, r.gscan.warnings)}</span>
+              <span className="sr-only">{HW.gscanSaid(r.gscan.errors, r.gscan.warnings)}</span>
+            </ResultChip>
           </span>
         )}
         {r.elsewhere === null ? null : <span data-history-site className="min-w-0 truncate text-[11px] text-ink-soft">{HW.on(r.elsewhere)}</span>}
@@ -134,7 +137,7 @@ export function DeployHistory({ projectName, read, pin, onClose }: {
           type="button"
           data-history-pin={r.id}
           aria-pressed={r.pinned}
-          aria-label={out ? (r.pinned ? HW.unpinning(r.n) : HW.pinning(r.n)) : HW.pin(r.n)}
+          aria-label={`${out ? (r.pinned ? HW.unpinning(r.n) : HW.pinning(r.n)) : HW.pin(r.n)}${r.elsewhere === null ? '' : ` ${HW.on(r.elsewhere)}`}`}
           title={r.pinned ? HW.unpinTitle : HW.pinTitle}
           aria-busy={out || undefined}
           aria-disabled={busy !== null || undefined}
@@ -151,7 +154,7 @@ export function DeployHistory({ projectName, read, pin, onClose }: {
           <div
             id="history-refusal"
             data-history-refusal
-            className="absolute right-2 top-full z-10 mt-[9px] flex w-[296px] max-w-[calc(100%-16px)] gap-[10px] rounded border border-marigold-line bg-marigold-tint-soft px-[14px] py-[13px] shadow-lg"
+            className="absolute right-2 top-full z-10 mt-[9px] flex w-[296px] max-w-[calc(100%-16px)] gap-[10px] rounded border border-marigold-line bg-marigold-tint-soft px-[14px] py-[13px] shadow-popover"
           >
             <AlertTriangle size={15} strokeWidth={1.8} className="mt-[2px] shrink-0 text-marigold-glyph" />
             <div className="flex flex-1 flex-col gap-[10px]">
@@ -196,8 +199,9 @@ export function DeployHistory({ projectName, read, pin, onClose }: {
         onClose()
         if (back instanceof HTMLElement && back.isConnected) back.focus()
       }}
-      // S8e's drawer: 420 at the right edge below the 48px bar, the scrim from the bar down (D2a `:48`, ink at .25)
-      className="fixed top-12 right-0 bottom-0 left-auto m-0 h-auto max-h-none w-[420px] max-w-full flex-col overflow-hidden border-0 bg-surface p-0 text-ink shadow-modal backdrop:top-12 backdrop:bg-ink/25 open:flex"
+      // S8e's drawer: 420 at the right edge below the 48px bar — 56px on a touch screen (`editor.tsx`' `coarse:h-14`) — the scrim
+      // from the bar down (D2a `:48`, ink at .25)
+      className="fixed top-12 right-0 bottom-0 left-auto m-0 h-auto max-h-none w-[420px] max-w-full flex-col overflow-hidden border-0 bg-surface p-0 text-ink shadow-modal backdrop:top-12 backdrop:bg-ink/25 open:flex coarse:top-14 coarse:backdrop:top-14"
     >
       <div className="flex items-center justify-between border-b border-line px-5 py-4">
         <h2 id="deploy-history-title" className="text-[13px] font-semibold uppercase tracking-[0.04em] text-ink-soft">

@@ -120,7 +120,7 @@ export async function harnessRoutes(projectId: string, siteId: string): Promise<
 }
 
 /** STORY 7.22 — the linked site's id in every Ship it shape (`layout.tsx`' `shipOf`), and the second site `two-sites` adds */
-const HISTORY_SITE = '00000000-0000-4000-8000-000000000718'
+const HISTORY_SITE = HARNESS_SITES.linked
 const OTHER_SITE = HARNESS_SITES.german
 /** one stored version of the harness project: v{n} on day n of November 2026, at nine in the morning, gscan clean */
 const stored = (n: number, over: Partial<HistoryAnswer['rows'][number]> = {}): HistoryAnswer['rows'][number] => ({

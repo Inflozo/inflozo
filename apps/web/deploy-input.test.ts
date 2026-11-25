@@ -68,7 +68,8 @@ test('a stored project compiles through the shell into a theme both pinned gscan
     project_treatments: null,
     routes_config: null,
     custom_templates: [],
-    deploys: [{ version: '1.0.0', activated: true, activated_at: '2026-10-01T00:00:00Z' }, { version: '2.0.0', activated: false, activated_at: null }],
+    // Story 7.22 (DW-372): v2–v4's rows were pruned away from this read's view — the number is the highest plus one, never a count
+    deploys: [{ version: '1.0.0', activated: true, activated_at: '2026-10-01T00:00:00Z' }, { version: '5.0.0', activated: false, activated_at: null }],
     project_site_bindings: { theme_name: 'inflozo-field-notes' },
   }, filters)
   const read = await compileInputOf({ projectId: P, siteId: S, userId: U }, db)
@@ -86,8 +87,8 @@ test('a stored project compiles through the shell into a theme both pinned gscan
   assert.deepEqual(Object.keys(read.input.templates).sort(), ['default.hbs', 'home.hbs'])
   assert.deepEqual(Object.keys(read.input.pageTwo ?? {}), ['home.hbs'])
   assert.equal(read.input.theme.name, 'inflozo-field-notes', 'the binding\'s frozen name')
-  assert.equal(read.input.theme.version, '3.0.0', 'n = two uploads + 1')
-  assert.deepEqual(read.version, { n: 3, prev: 1 })
+  assert.equal(read.input.theme.version, '6.0.0', 'n = the highest upload + 1 (two rows would count 3)')
+  assert.deepEqual(read.version, { n: 6, prev: 1 })
   assert.equal(read.input.postsPerPage, 9)
   assert.equal(read.routing.unreadable, false)
   assert.equal(read.input.routes, null, 'Ghost\'s default routing hands no routes file')
@@ -96,7 +97,7 @@ test('a stored project compiles through the shell into a theme both pinned gscan
   for (const file of ['package.json', 'home.hbs', 'index.hbs', 'default.hbs', 'assets/js/main.js', 'assets/css/cards.css', 'README.md']) assert.ok(Object.hasOwn(theme.files, file), file)
   assert.ok(Object.keys(theme.files).some((f) => f.startsWith('assets/fonts/')), 'the pool\'s files ship')
   assert.ok(Object.keys(theme.files).some((f) => /^LICENSE-.*\.txt$/.test(f) && f !== 'LICENSE-ghost.txt' && f !== 'LICENSE-tabler.txt'), 'a family\'s licence ships')
-  assert.equal(JSON.parse(theme.files['package.json'] as string).version, '3.0.0')
+  assert.equal(JSON.parse(theme.files['package.json'] as string).version, '6.0.0')
   for (const major of [5, 6] as const) {
     const v = await gscanGate(theme.files, major)
     assert.equal(v.errors.length, 0, `gscan at v${major}: ${JSON.stringify(v.errors.map((e) => e.rule))}`)

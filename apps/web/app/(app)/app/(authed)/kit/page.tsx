@@ -372,7 +372,7 @@ export default function KitGallery() {
           <div className="flex flex-wrap items-center gap-2">
             <ProBadge />
             <FreeBadge />
-            <LiveBadge version="v4" />
+            <LiveBadge label="Live" version="v4" />
             <VersionChip>v5</VersionChip>
           </div>
           <div className="flex flex-wrap items-center gap-2">

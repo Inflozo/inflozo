@@ -123,7 +123,7 @@ export type DeployIo = {
   }
   /** STORY 7.22 — the one prune (`server/retention.ts`' `pruneProject`, its real io bound in by `deploy-io.ts`): this project's
    *  stored versions past its plan's cap lose their zip, the rows kept. Called once Ghost accepts an upload, best effort */
-  prune: (a: { projectId: string; userId: string }) => Promise<unknown>
+  prune: (a: { projectId: string; userId: string }) => Promise<{ pruned: readonly string[]; failed: number }>
   /** claim the frozen name at the first accepted upload (AD-19, VERIFY 30): `ok`, or `taken` on a 23505 whose stored row is
    *  not this name (a concurrent first upload) */
   bind: (a: { projectId: string; siteId: string; userId: string; themeName: string; at: string }) => Promise<'ok' | 'taken'>
@@ -743,7 +743,9 @@ async function goLive(io: DeployIo, job: JobRow, c: Clock, deploy: DeployRow, fi
  *  nightly sweep (`api/cron/prune-artifacts`) runs the same prune again. */
 async function pruneAfter(io: DeployIo, job: JobRow): Promise<void> {
   try {
-    await io.prune({ projectId: job.project_id, userId: job.user_id })
+    const done = await io.prune({ projectId: job.project_id, userId: job.user_id })
+    // an irreversible delete leaves its line: ids only (the review, 2026-11-25)
+    if (done.pruned.length > 0) io.log('deploy: versions pruned', { job: job.id, deploys: done.pruned.join(',') })
   } catch (e) {
     io.log('deploy: the prune failed', { job: job.id, code: (e as { code?: string } | null)?.code })
   }

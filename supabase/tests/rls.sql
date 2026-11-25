@@ -1038,7 +1038,14 @@ begin
   if (select pinned from public.deploys where id = 'dddddddd-7220-0000-0000-000000000003') then
     raise exception 'FAIL (FR-J7): the refused client call changed the row';
   end if;
-  raise notice 'PASS (FR-J7): only the service role executes pin_version, and the retired floor is gone';
+  -- "two tabs at once" holds only while the body takes the project's lock BEFORE it counts. The race was executed with two sessions
+  -- at Story 7.22's Schema (one pinned, one cap; without the lock both pinned); this one-session gate holds the lock's place
+  -- (Story 7.22's Review: deleting the lock turned nothing here red)
+  if (select position('pg_advisory_xact_lock' in prosrc) from pg_proc where proname = 'pin_version') not between 1 and
+     (select position('count(*)' in prosrc) from pg_proc where proname = 'pin_version') then
+    raise exception 'FAIL (FR-J7): pin_version no longer takes the project''s lock before it counts — two tabs could both take the last slot';
+  end if;
+  raise notice 'PASS (FR-J7): only the service role executes pin_version, it locks the project before it counts, and the retired floor is gone';
 end $$;
 delete from auth.users where id in ('77777777-7220-0000-0000-000000000001','77777777-7220-0000-0000-000000000002');
 

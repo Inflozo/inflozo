@@ -2119,8 +2119,11 @@ which N−1 allows, and it counted failed and pruned rows as unpinned, so it mos
 function takes a per-project advisory lock, counts the project's pinned stored versions and answers
 `pinned`, `cap` (at N−1, nothing changed) or `gone`, its update re-checking the pointer so a pin
 meeting a prune is kept or gone. The RLS gate's FR-J7 block now holds the lone version pinning (the
-floor's false refusal as the control), `cap`, `gone`, unpin, 42501 for `authenticated`, and two
-concurrent pins of the last slot (one `pinned`, one `cap`; without the lock, both pinned). 26d's
+floor's false refusal as the control), `cap`, `gone`, unpin, 42501 for `authenticated`, and — since
+7.22's Review — that the body takes the project's lock before it counts (deleting the lock turns it
+red). Two concurrent pins of the last slot were executed ONCE, with two sessions on a PostgreSQL 17
+container at 7.22's Schema (one `pinned`, one `cap`; without the lock, both pinned) — the spec's
+Verification is that record; the one-session gate cannot race. 26d's
 three items are built by the same story: the History drawer prints both plans' limits, lists stored
 versions only, and the prune skips pinned rows with N from `plan.ts`.
 

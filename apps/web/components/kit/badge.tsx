@@ -23,10 +23,11 @@ export const FreeBadge = () => (
 )
 
 /** The dot never speaks alone — the word Live is part of the badge. */
-export const LiveBadge = ({ version }: { version?: string }) => (
+/** its word is the caller's (R-170: the History drawer's comes from `HISTORY_WORDS`) */
+export const LiveBadge = ({ label, version }: { label: string; version?: string }) => (
   <span className="inline-flex items-center gap-[5px] text-control-label font-medium text-mint-text">
     <span aria-hidden className="size-[6px] rounded-full bg-mint" />
-    Live
+    {label}
     {version ? <span className="font-mono text-helper-caption">{version}</span> : null}
   </span>
 )

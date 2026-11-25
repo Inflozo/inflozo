@@ -10439,11 +10439,14 @@ reason: it needs the advisory lock 7.25 builds; the same user, two windows, insi
 plain: When Ship it refuses because the project's site changed, or a project switches sites while finished checks wait for
   the old one, the theme Inflozo built for those checks stays in storage with nothing that will ever ship it.
 status: done 2026-11-25 (Story 7.22)
-resolution: Story 7.22's Dev (2026-11-25) — AD-33's artifact-retention job (`app/api/cron/prune-artifacts`, daily `50 4`, its loop
+resolution: Story 7.22's Dev (2026-11-25) — AD-33's artifact-retention job (`app/api/cron/prune-artifacts`, daily `50 6` since the Review — Dev's `50 4` shared an hour — its loop
   `lib/artifact-sweep.ts`' `runSweep`): pass 1 abandons every check resting at `awaiting_ship` on a site its project no longer
   links (or on none) exactly as `start()` abandons one (`run.ts`' exported `abandon`: the object, the deploy row, the job
   `cancelled`); pass 2 drops every zip a non-version row still names once it is a day old and no resting check names it —
-  pointer first, then object, the row kept. A check resting on the linked site is the control and is never touched.
+  pointer first, then object, the row kept. A check resting on the linked site is the control and is never touched. The
+  Review (2026-11-25) widened pass 2's hold to every job not at rest (a Ship it under way reads its zip after leaving
+  `awaiting_ship`), made pass 1 claim the job off `awaiting_ship` before abandoning it, and paged every cross-account read
+  past the Data API's `max_rows` (1000 on production).
   `artifact-sweep.test.ts` and `deploy-run.test.ts` hold both, each seen red under a planted reversion; walk step 120d runs
   the job on production against planted rows.
 severity: low
@@ -10797,3 +10800,26 @@ owner: Story 12.4 (downgrade, and block-until-resolved), built before Story 12.2
 location: `apps/web/lib/retention.ts` (`prunable`) · `apps/web/server/retention.ts` (`pruneProject`) ·
   `apps/web/app/api/cron/prune-artifacts/route.ts`
 reason: unreachable until Story 12.2 lets an account fall to Free; the spec's Never list keeps 12.4's rule out of 7.22.
+  Story 7.22's Review (2026-11-25) adds one more thing for 12.4 to decide: `pin_version` counts the OTHER pinned rows before it
+  looks at this one, so after a downgrade leaves more pins than Free's cap, pinning an already-pinned version answers `cap`
+  (the migration's header says `pinned`). The drawer never sends it (its toggle unpins a pinned row), so nothing reaches it today.
+
+### DW-400: a version shipped from a check made before another site's newest version can be pruned the moment Ghost accepts it
+
+plain: Inflozo decides which old versions to remove by when each was BUILT (its checks ran), not when it was shipped. If a
+  project moves to another site, ships there, and later moves back and ships a check it had built before the move, the version
+  it just put live counts as "older" than the other site's, and on a plan already full of pins it can lose its stored copy at
+  once — it would then not appear in History, and could never be rolled back to.
+status: open
+severity: low
+origin: Story 7.22's Review (2026-11-25), the Edge Case Hunter and Blind Hunter layers. The rule orders a project's stored
+  versions by `deploys.created_at` (the spec's frozen "newest first by `created_at`"), and `created_at` is the Pre-flight's
+  time, kept by a stale re-make on the same row — so the drawer's time label also says when the check first ran, not when the
+  version was rebuilt or shipped. It needs a check made on site A, resting, a re-link to B and a ship there, then a re-link to A
+  and Ship it on the old check (DW-380's nightly sweep now abandons a check resting off its project's link, which narrows it to
+  a re-link and back within one day).
+owner: Story 7.23 (Roll back, and another site's rows): it decides how rows on two sites are ordered and rolled back to, and
+  whether "newest" is the upload Ghost accepted (`activated_at`, or an `uploaded_at` it records) rather than `created_at`.
+location: `apps/web/lib/retention.ts` (`newestFirst`, `prunable`) · `apps/web/components/editor/deploy-history.tsx` (the row's time)
+reason: the frozen rule names `created_at`; changing what "newest" means is a rule change (the spec's Ask First), and the path
+  that reaches it is a re-link, a ship elsewhere and a re-link back inside a day.

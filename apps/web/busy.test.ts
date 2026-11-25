@@ -415,7 +415,7 @@ test('Story 7.20a (R-98): the Backup step\'s two Downloads say "Preparing…", i
 test('Story 7.22 (R-98): the History drawer\'s pin says "Pinning v3…" or "Unpinning v3…" with aria-busy while its request is out, every pin aria-disabled meanwhile — never `disabled` — and its loading rows are the compact row\'s own shape, never a spinner', () => {
   const drawer = readFileSync('components/editor/deploy-history.tsx', 'utf8')
   const pin = drawer.slice(drawer.indexOf('data-history-pin={r.id}'), drawer.indexOf('</button>', drawer.indexOf('data-history-pin={r.id}')))
-  assert.match(pin, /aria-label=\{out \? \(r\.pinned \? HW\.unpinning\(r\.n\) : HW\.pinning\(r\.n\)\) : HW\.pin\(r\.n\)\}/, 'the pin\'s label swaps to the present tense')
+  assert.match(pin, /aria-label=\{`\$\{out \? \(r\.pinned \? HW\.unpinning\(r\.n\) : HW\.pinning\(r\.n\)\) : HW\.pin\(r\.n\)\}/, 'the pin\'s label swaps to the present tense')
   assert.match(pin, /aria-busy=\{out \|\| undefined\}/)
   assert.match(pin, /aria-disabled=\{busy !== null \|\| undefined\}/, 'every pin waits while one is out')
   assert.match(pin, /aria-pressed=\{r\.pinned\}/, 'a toggle')

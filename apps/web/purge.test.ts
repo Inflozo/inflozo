@@ -377,11 +377,14 @@ test('every scheduled job names a route that exists, and each runs once a day', 
     assert.match(hour, /^\d+$/, 'a daily job pins its hour')
     assert.deepEqual(rest, ['*', '*', '*'], `'${job.schedule}' does not run once a day`)
   }
-  // NO TWO JOBS EVER RUN AT ONCE (Story 3.7's line: "never share a cold start"): two runs side by side are one function
-  // competing with itself for the pooler and for somebody else's Ghost. Story 3.7 kept them an hour apart; Story 7.22's spec
-  // schedules artifact retention at 4:50, twenty minutes after the orphan purge's 4:30, so the property is held as it was meant —
-  // each job starts only after the one before it can have ended, its route's own `maxDuration` (300 s where a route states none,
-  // AD-11's ceiling) — rather than as a whole hour. A gap shorter than that is red.
+  // THE JOBS MUST NOT SHARE AN HOUR (Story 3.7's spec: "a different hour so the two never share a cold start"): two runs side by
+  // side are one function competing with itself for the pooler and for somebody else's Ghost. Story 7.22's Dev scheduled artifact
+  // retention at 4:50, beside the orphan purge's 4:30, and loosened this to the gap below; its Review moved the job to an hour of
+  // its own (6:50) and restored the hour, so two approved decisions no longer disagree (standing rule 6).
+  const hours = jobs.map((job) => job.schedule.trim().split(/\s+/)[1])
+  assert.equal(new Set(hours).size, hours.length, `two scheduled jobs share an hour: ${hours.join(', ')}`)
+  // …and each starts only after the one before it can have ended, its route's own `maxDuration` (300 s where a route states none,
+  // AD-11's ceiling). A gap shorter than that is red — two jobs at the SAME minute included (a gap of 0, never a whole day).
   const starts = jobs
     .map((job) => {
       const [minute, hour] = job.schedule.trim().split(/\s+/).map(Number)
@@ -392,7 +395,7 @@ test('every scheduled job names a route that exists, and each runs once a day', 
     .sort((a, b) => a.at - b.at)
   starts.forEach((job, i) => {
     const next = starts[(i + 1) % starts.length]
-    const gap = (next.at - job.at + 24 * 60) % (24 * 60) || 24 * 60
+    const gap = (next.at - job.at + 24 * 60) % (24 * 60)
     assert.ok(starts.length === 1 || gap >= job.runs, `${next.path} starts ${gap} min after ${job.path}, which may still be running for ${job.runs}`)
   })
 })

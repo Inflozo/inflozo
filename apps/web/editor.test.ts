@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   CANVASES, canvasesOf, canvasFromSegment, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath, canvasStack, captionOf,
-  CONDITIONAL, CUSTOM_TEMPLATE_CAPTION, emptiesCustomTemplate, EMPTY_TEMPLATE_ASK, fileOf, fileOfKey, isCards, isEditorPath, isMembership, isPaywall, isRouteCanvas, isRouteKey, isSiteFooter, isSurface, isUuid, labelOf, landWithin, LOCK, HISTORY, siteSlot,
+  CONDITIONAL, CUSTOM_TEMPLATE_CAPTION, emptiesCustomTemplate, EMPTY_TEMPLATE_ASK, fileOf, fileOfKey, isCards, isEditorPath, isMembership, isPaywall, isRouteCanvas, isRouteKey, isSiteFooter, isSurface, isUuid, labelOf, landWithin, LOCK, HISTORY, historyPath, DEPLOY, deployPath, siteSlot,
   lockPath, NEW_TEMPLATE_QUERY, newTemplatePath, PAGE_TWO, pageTwoOfCanvas,
   pageTwoKeyOf, routeCanvasOf, ROUTED_EMPTY_ASK, ROUTES, ROUTES_GROUP, routesPath, SETTINGS, settingsPath, SITE, SYNC, syncPath, TEMPLATE_GONE, templateKeyOf, type Canvas, type CanvasKey,
 } from './lib/editor.ts'
@@ -144,6 +144,23 @@ test('Story 5.17: `lock` is the scheme\'s THIRD non-canvas segment — the same 
   assert.notEqual(lockPath(ID), settingsPath(ID))
   assert.notEqual(lockPath(ID), syncPath(ID))
   assert.ok(isEditorPath(lockPath(ID)), 'it is under the project, so the Shell reads it as an editor path')
+})
+
+test('Stories 7.18a and 7.22: `deploy` and `history`, the two route handlers beside `lock`, are non-canvas segments — the same three assertions again (the review: only the refusal loop named them)', () => {
+  const siblings = [settingsPath(ID), syncPath(ID), lockPath(ID), routesPath(ID)]
+  for (const [word, path] of [[DEPLOY, deployPath(ID)], [HISTORY, historyPath(ID)]] as const) {
+    assert.equal(path, `/projects/${ID}/${word}`)
+    // (1) it resolves as no canvas
+    assert.equal(canvasOfPath(path), null, word)
+    assert.equal(canvasOfTemplateKey(word), null, word)
+    assert.ok(!Object.hasOwn(CANVASES, word), `\`${word}\` must never join CANVASES`)
+    // (2) it collides with no canvas path
+    for (const key of Object.keys(CANVASES) as CanvasKey[]) assert.notEqual(canvasPath(ID, key), path, key)
+    // (3) and with none of its static siblings, nor the other of the two
+    for (const other of siblings) assert.notEqual(path, other, word)
+    assert.ok(isEditorPath(path), `${word} is under the project`)
+  }
+  assert.notEqual(deployPath(ID), historyPath(ID))
 })
 
 test('a conditional canvas is ABSENT until its condition holds, and the route 404s it meanwhile (FR-D6)', () => {

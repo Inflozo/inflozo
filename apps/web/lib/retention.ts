@@ -1,5 +1,5 @@
 import { PLANS } from './plan.ts'
-import { versionLabel, versionNumber } from './deploy.ts'
+import { DEPLOY_WORDS, versionLabel, versionNumber } from './deploy.ts'
 
 /**
  * STORY 7.22 — ARTIFACT RETENTION'S ONE RULE (FR-J7, AD-29, AD-33). Pure, like `lib/deploy.ts`: no import from `server/`, no
@@ -134,8 +134,12 @@ export const HISTORY_WORDS = {
   /** D2a/D2c's footer: both plans' numbers from `PLANS`, and why they are a real bound */
   limit: `Pro keeps the last ${PLANS.pro.history} versions. Free keeps the last ${PLANS.free.history}. Older versions are removed, not hidden — an Inflozo theme can't be rebuilt later, so this is how far back you can go.`,
   readFailed: "Couldn't load your history. Close it and open it again to try once more.",
+  /** the Live badge's word (`LiveBadge` takes it) */
   live: 'Live',
   pinnedTag: 'Pinned',
+  /** the gscan chip as D2a draws it (`:105`), and the same counts in words for a screen reader (the wizard's own sentence) */
+  gscan: (errors: number, warnings: number) => `${errors} · ${warnings}`,
+  gscanSaid: DEPLOY_WORDS.checkedMeta,
   today: 'Today',
   on: (host: string) => `on ${host}`,
   /** the pin's name (a toggle: `aria-pressed` says which way it is) and the frame's two titles */

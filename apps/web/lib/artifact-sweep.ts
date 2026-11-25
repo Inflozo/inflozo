@@ -39,11 +39,13 @@ export type Dead = { id: string; userId: string; path: string }
 export type Held = { projectId: string; userId: string }
 
 export interface SweepDeps {
-  /** every job resting at `awaiting_ship`, with its project's link as it stands now */
+  /** jobs resting at `awaiting_ship` off their project's link (the route pages past the ones on it), with that link as it stands */
   resting(limit: number): Promise<Resting[]>
-  /** `run.ts`' `abandon`: the object, the deploy row, the job `cancelled` */
-  abandon(job: Resting): Promise<void>
-  /** non-version rows naming an object, created before `before`, that no job resting at `awaiting_ship` names */
+  /** the job claimed off `awaiting_ship` (only if it is still there), then `run.ts`' `abandon`: the object, the deploy row, the job
+   *  `cancelled`; false when a Ship it claimed it first — nothing then is touched */
+  abandon(job: Resting): Promise<boolean>
+  /** non-version rows naming an object, created before `before`, that no job NOT AT REST names (resting at `awaiting_ship`, or a
+   *  Ship it under way, which reads the zip after leaving `awaiting_ship`) */
   dead(before: Date, limit: number): Promise<Dead[]>
   /** the conditional clear (still this object, still no version), then — only when it changed the row — the object's removal;
    *  true when it dropped one */
@@ -95,7 +97,7 @@ export async function runSweep(
       // the control: a check resting on the project's linked site is the customer's next Ship it
       if (job.linkedSiteId === job.siteId) continue
       try {
-        await deps.abandon(job)
+        if (!(await deps.abandon(job))) continue
         t.abandoned += 1
         log.log('prune-artifacts: a stranded check abandoned', { job: job.id, project: job.projectId })
       } catch (e) {
@@ -112,7 +114,10 @@ export async function runSweep(
       for (const row of await deps.dead(new Date(now() - DEAD_AFTER_MS), BATCH)) {
         if (spent()) break
         try {
-          if (await deps.drop(row)) t.dropped += 1
+          if (!(await deps.drop(row))) continue
+          t.dropped += 1
+          // an irreversible delete leaves its line: ids only
+          log.log('prune-artifacts: a dead zip dropped', { deploy: row.id })
         } catch (e) {
           failed('drop', { deploy: row.id }, e)
         }
@@ -130,6 +135,7 @@ export async function runSweep(
         try {
           const done = await deps.prune(project)
           t.pruned += done.pruned
+          if (done.pruned > 0) log.log('prune-artifacts: versions pruned', { project: project.projectId, pruned: done.pruned })
           // each row's own failure is `pruneProject`'s log line; here it counts, so the run answers red
           t.failed += done.failed
         } catch (e) {

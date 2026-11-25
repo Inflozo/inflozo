@@ -1489,7 +1489,7 @@ from 1366 up (R-289) and from Ship it ▾ → History at every width; every row 
 |---|---|
 | **Pin** | A pin control on every row — "keep this one, it was good". A pinned version survives pruning |
 | **The cap** | At most **N−1** pinned: 9 of 10 on Pro, 2 of 3 on Free |
-| **The refusal** | Pinning the last unpinned version **refuses, visibly, with the reason** — *"One version has to stay unpinned so your next deploy has somewhere to go. Unpin another first."* Never a silent failure |
+| **The refusal** | A pin past the cap — the project already holds N−1 pinned versions — **refuses, visibly, with the reason** (it is the count, not the last unpinned row: a Free project with two versions and one pinned may pin the second; Story 7.22's Review, 2026-11-25) — *"One version has to stay unpinned so your next deploy has somewhere to go. Unpin another first."* Never a silent failure |
 | **Unpinning** | **Always allowed, by design**, so nobody can trap themselves |
 
 **Two rows S8e does not have, and both are required.**
