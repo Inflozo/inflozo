@@ -2,9 +2,9 @@
 title: 'Story 7.23b — Restore original (split from Story 7.23 by R-290)'
 type: 'feature'
 created: '2026-11-26'
-status: 'in-review'
+status: 'done'
 baseline_commit: '59dcf65c983ae848809b244898f3adb2e796c3a8'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-23a-roll-back-and-re-activate-from-history.md']
 ---
@@ -647,6 +647,35 @@ Use a desktop window at least **1366 px** wide. Keep a tab on `https://ghost6.in
 
 **After the test:** say "passed", or list what you saw. On your go, Claude then removes the test theme `inflozo-restore-test` from
 T1 (the plant uploaded no other; Ghost never accepts `old-magazine`). Casper stays live.
+
+## Owner's test findings
+
+**Owner's test (owner, 2026-11-26): passed.** The owner replied *"passed"* on the deployed site (`dpl_4ZooiyFvvyX2igk2Mx81FwQrPpUK`,
+`https://app.inflozo.com`). No findings.
+
+**What production showed before each record, and his rulings.** Each "passed" was checked first with GET-only reads
+(`SUPABASE_SECRET_KEY`: auth `last_sign_in_at` and the `deploys` rows; `GHOST6_STAFF_ACCESS_TOKEN`: `GET themes/`) and Vercel's
+request rows (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, the request-logs endpoint). All times are UTC, 2026-11-26:
+- **His first "passed"** came about three minutes after the plant. Neither planted account had signed in, T1 still served
+  `inflozo-restore-test` with v2 `live`, and there was no request row on either project. Asked in R-83's shape, he ruled *"1. I'll
+  walk it now (RECOMMENDED)"*. Question 2 went in the same ask and was ruled there (R-293).
+- **His second "passed":** A signed in at 14:12:12 and B at 14:12:47.
+  - Step 3, Restore original: `POST …/history` 200 at 14:13:36.
+  - Step 5, Re-activate v2: `POST …/history` 200 at 14:14:51, and v2's `activated_at` became 14:14:51 with `accepted_at` unchanged.
+  - Step 8, B's Restore original: **422** at 14:16:17.
+  - Step 6 (the keyboard restore) and step 9 (the Download) had left no trace. T1 still served v2 and no `/snapshots/…/download`
+    row existed. Asked, he ruled *"1. I'll do steps 6 and 9 now (RECOMMENDED)"*.
+- **His third "passed":**
+  - Step 6: `POST …/history` 200 at 14:18:38. T1 read `casper*` with `inflozo-restore-test` installed and not active, and v2 read
+    `uploaded`.
+  - Step 9: `GET /snapshots/e720d588-…/download` 200 at 14:19:01, B's planted snapshot.
+
+Steps 1, 2, 4 and 7 are looks and a menu that write nothing; step 10 is a link to Ghost Admin. Walk step 122's run 2 on production and
+T1 at Review is their executed proof, and the 7.23b journeys run in `pnpm keyboard` on every push.
+
+**Afterwards, T1 was cleaned up** on the owner's in-session go (*"1. Delete it (RECOMMENDED)"*), with `GHOST6_STAFF_ACCESS_TOKEN`
+read in-process. With Casper live and the theme not active, `DELETE themes/inflozo-restore-test/` answered 204. The read-back shows
+`casper*`, `racer`, `source` and `inflozo-ghost6`. Both planted accounts remain on production with their projects and sites.
 
 ## Verification
 

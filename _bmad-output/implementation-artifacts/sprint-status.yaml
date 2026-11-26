@@ -157,7 +157,7 @@ development_status:
   7-21-pre-deploy-drift-detection: done
   7-22-artifacts-retention-and-pinning: done
   7-23a-roll-back-and-re-activate-from-history: done
-  7-23b-restore-original: in-progress
+  7-23b-restore-original: done
   7-23c-the-phone-s-deploy-history-card: backlog
   7-24-theme-naming-frozen-per-site: backlog
   7-25-rate-limits-the-compile-budget-and-the-advisory-lock: backlog
