@@ -1,0 +1,427 @@
+---
+title: 'Story 7.23c — The phone''s Deploy history card (split from Story 7.23 by R-290)'
+type: 'feature'
+created: '2026-11-26'
+status: 'ready-for-dev'
+owner_test: pending
+review_loop_iteration: 0
+context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-23a-roll-back-and-re-activate-from-history.md', '{project-root}/_bmad-output/implementation-artifacts/spec-5-22-the-editor-s-responsive-floor.md']
+---
+
+## In plain English
+
+After this story, opening a project on a phone shows a **Deploy history** card on the "The editor needs a bigger screen."
+page: which version is live on your Ghost site and since when, and a **Roll back to v4** button for the version before it.
+Tapping it opens the same small box as History on a laptop — it checks your site first, lists anything someone changed by hand
+with a download, and has **Cancel** — and tapping **Roll back** there switches your site in seconds. The card then shows the
+version you went back to as live, with a button to roll forward again.
+
+No question for the owner. The phone's Roll back opens the same box as the laptop's, with the same check (FR-J9 as built, R-291),
+so "one-tap" means the button sits right on the card; Design Notes says why. Nothing waits on the owner but the in-session gos
+for the writes.
+
+<frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
+
+## Intent
+
+**Problem:** On a phone a project opens on D4f's Small Screen Notice (Story 5.22, R-201), never the editor. The notice offers
+only **Your sites**. D4f also draws a **Deploy history** card with a one-tap Roll back, and R-118 held it back until a Roll back
+existed. Story 7.23a built Roll back, so a bad ship still cannot be undone from a phone.
+
+**Approach:**
+- **D4f's card** goes above the links card under "What works here". It reads the project's History once as the notice opens,
+  through the History route that already exists (GET `projects/[id]/history`). It draws the linked site's **Live** version, and
+  the version before it with **Roll back to v{n}** — 7.23a's undo row (`historyRows`' `emphasis`).
+- **The Roll back is 7.23a's, whole.** It opens S8e's confirm on Cancel and runs R-291's drift check first, with the same
+  put-back, words and refusals. That confirm and its check move out of `DeployHistory` into one exported component, so the drawer
+  and the card mount the same thing. Nothing is copied.
+- **No server change.** The route's GET, its `act: 'check'` and `act: 'live'` POSTs, and `history/live` already answer
+  everything the card needs.
+
+**Frame (R-74):**
+- `D4 Dashboard Sheets and Blocks.dc.html` D4f `:401-414` is the card:
+  - the clock tile, "Deploy history", and "Live `v5` · today 2:14 PM";
+  - the bordered row: the `v4` chip, "Aug 14 · 9:02 AM", and the 44px coral-outline **Roll back to v4**.
+  - The epic's card cites `:401-413`, one line short: `:414` closes the card.
+  - It sits first under "WHAT WORKS HERE" (`:400`), above the Your sites card (`:415`).
+- **The confirm at 390 is extrapolated.** No frame draws it on a phone. It is S8e's confirm (`S8 Deploy.dc.html:337-345`) as 7.23a
+  built it, at the width the phone leaves (its `max-w-[calc(100vw-20px)]`), with D8a's 44px touch targets.
+- The states the frame does not draw are extrapolated in the card's own shape, in History's own words (R-170):
+  - loading, nothing shipped, not linked, nothing live, and a failed read;
+  - a refusal under the row (7.23a's per-row line).
+
+**The epic's criteria, word for word (R-195), and how this story meets each:**
+- **Given** a project opened on a phone (Story 5.22's Small Screen Notice), **when** the notice shows, **then** the project's
+  deploy history with one-tap rollback is one of its rows *(Story 5.22's card: "one row today, Your sites; Stories 7.23 and 12.5
+  add theirs — R-118")*.
+  — The card above Your sites. Billing stays absent, Story 12.5's.
+- **And** the history is reachable from a phone, because it is what the Small Screen Notice offers, and this story adds D4f's
+  Deploy history card to that notice — the live version and a one-tap Roll back to the one before it — which Story 5.22 built
+  without it (R-118).
+  — The live line and the undo row. The Roll back is one tap away on the card, behind 7.23a's confirm (Design Notes).
+- **And** *(Story 7.22's Dev, moved by R-290)* **this story adds** the phone card. — Built here.
+- **And** the card matches D4f at 390 (R-290). — The first acceptance criterion.
+
+## Boundaries & Constraints
+
+**Always:**
+- **Where and when.** The card lives only in the notice, so only on a phone (R-201's `PHONE`, asked once by `editor.tsx`'s gate).
+  - It reads History once, as the notice mounts, through the same request the drawer makes. The harness's `historyRead`,
+    `historyAct` and `historyCheck` seams reach it through the gate.
+  - Nothing else starts: no lock, no sync, no IndexedDB. The only Ghost read is the check a Roll back sends, after the
+    customer's tap.
+- **What it draws** comes from one pure rule, `phoneCard(answer)` in `lib/retention.ts`, over `historyRows(answer)`, checked in
+  this order:
+  1. **nothing shipped** (no rows): "Nothing shipped yet" (`HISTORY_WORDS.empty`), no row;
+  2. **not linked** (`linkedSiteId` null): "This project isn't linked to a site.", no row;
+  3. **nothing live:** no stored `live` row of the linked site. That covers after Restore original, a Deploy only, or a live
+     version no longer kept. The card says "None of your kept versions is live on your site.", no row;
+  4. **live:** "Live `v{n}` · {time}", the version in mono. The time is `cardTime` (D4f's own form: "today 2:14 PM"; another day
+     "Aug 14 9:02 AM"; the year once it is not this year) of the Live row's `acceptedAt`, the time History shows.
+     - **the undo:** the row History marks `emphasis` — the linked site's next stored row after its Live one, another site's rows
+       skipped, only as a Roll back. It gets the `v{n}` chip, `timeLabel`'s time, and **Roll back to v{n}**
+       (`HISTORY_WORDS.rollBackName`: the visible label and the name).
+     - No such row (a first ship, or the one before is gone): the header alone.
+- **The card's shape (D4f `:401-414`), every word from `HISTORY_WORDS`:**
+  - the card: surface, `line` hairline, radius 12, `shadow-sm`, 14px padding, 11px between its parts;
+  - its header: the 34px `paper` tile with the Kit's `HistoryClock` at 16 in `ink-soft-aa` (D4f's hand sits at 15.5 — the Kit's
+    one drawing, named as `ViewportChip` names its roundings), then "Deploy history" as an `h3` (13.5px, 600, `tabIndex={-1}`) and
+    the line in 12px `ink-soft-aa` (the version in mono at 11);
+  - the row: a `line` border, radius 10, 9 × 11 padding, 9px gaps. Its parts:
+    - the chip as History draws it;
+    - the time in 11.5px `ink-soft`, taking the free width;
+    - the Kit's `coral-outline` Button at 44 high, with D4f's 14px padding, 13px 600 type, the `thumb` radius and `RollBack` at 13.
+  - The row wraps, so the button drops under the chip and time where the width runs out (v10, another year's date, a 320px
+    phone). There is never a sideways scroll, and the button's label never breaks.
+- **Loading (R-98):** the card in its own shape — the tile, two `paper-sunk` bars and a 44px row bar — with `aria-busy` and
+  History's "Loading history…" for a screen reader. Never a spinner.
+- **A failed read:** "Couldn't load your deploy history. Reload this page to try again." where the lines go. Your sites still
+  works.
+- **The Roll back.** A tap opens the shared confirm for the undo row, exactly as History's undo opens it:
+  - on Cancel (UX-DR14);
+  - the check at once, with "Comparing with your live theme…" and the Roll back waiting;
+  - then D3c's line, D3a's list with "Download the live theme first" (DW-391's one way), or D3b;
+  - Pre-flight's dropped-settings block where Ghost will forget a setting;
+  - "Rolling back…" (R-98), and Cancel and Esc waiting while the put-back is out.
+
+  At 390 the confirm is `calc(100vw - 20px)` wide and a long drift list scrolls inside it.
+- **The endings, said once (UX-DR12)** in the notice's own polite region, every sentence 7.23a's (`actSaid`):
+  - **live / uploaded / gone:** the confirm closes, the sentence is said, the card reads History again, and focus goes to the
+    card's heading. After a Roll back the card reads "Live v4" with **Roll back to v5**, the way forward again;
+  - **refused** (Ghost's 422 with its detail in mono, `busy`, `disconnected`, 502): said under the row in its own `role="status"`
+    line, as History's rows say it; focus goes back on the card's Roll back; nothing is read again;
+  - **stale** (409 `live`/`elsewhere`, or a request whose fate is unknown): the card reads History again. The sentence is then
+    said under the row if that version is still the undo, else in the region with focus on the heading. As in History, a lost
+    answer that landed is said as live.
+- **One confirm.** S8e's confirm and R-291's check leave `DeployHistory` whole, as one exported component in
+  `deploy-history.tsx`. It keeps:
+  - the markup and every `data-history-*` hook;
+  - the check's ticket (an answer for a closed opening is dropped);
+  - the put-back call, "Rolling back…" and `data-unstoppable`;
+  - opening on Cancel, and focus back on whatever opened it when it closes.
+
+  It hands its ending (the put-back's outcome, or the check's refusal) to its caller and says when a put-back is out. The drawer
+  keeps its own `settle`, and its pins and Restore original wait exactly as now; the card has its own.
+- **One set of History requests.** `editor.tsx`'s read, pin, act, check and restore functions, and the two Download addresses,
+  become one module that both the editor and the notice use. Same bodies, same logs, same `/app` prefix rule.
+- **Touch targets.** `globals.css`' coarse-pointer 44px rule (D8a) gains `[data-small-screen]` beside `[data-editor]`. The
+  confirm's Cancel, Roll back and Download therefore reach 44px on a phone, as they already do on a tablet.
+- **Any plan, any lock:** the card reads no plan and needs no lock (FR-J9). A desktop session holding the edit lock does not stop
+  the phone's Roll back.
+
+**Ask First:**
+- **Every production write and every T1 write needs the owner's in-session go**, asked in R-83's shape, run in the main session
+  and never by a subagent. Word each ask for the run's whole set of writes. That covers:
+  - walk step 123;
+  - Deploy's `STEP123_PLANT`;
+  - the cleanup after the owner's test.
+
+**Never:**
+- A change to the History route, the put-back, the check or any table. Every answer the card needs exists (no Schema phase).
+- A second copy of S8e's confirm, R-291's check or the History requests.
+- A Roll back on the phone without the confirm and its check.
+- More on the card than D4f draws: no pin, no Re-activate, no Restore original, no full list, no limit line.
+- Billing's row (Story 12.5).
+- Mounting the editor, or starting the lock, sync, IndexedDB or any Ghost read before a tap, on a phone.
+
+## I/O & Edge-Case Matrix
+
+| Scenario | Input / State | Expected Output / Behavior | Error Handling |
+|----------|--------------|---------------------------|----------------|
+| The undo | v5 live on the linked site, v4 stored | "Live v5 · today 2:14 PM"; row: `v4`, "Aug 14 · 9:02 AM", **Roll back to v4** (44px) | N/A |
+| Roll back | tap → confirm on Cancel, D3c → tap Roll back | "Rolling back…"; "v4 is live on {host}." once; card re-read: Live v4, **Roll back to v5**; focus on the heading | N/A |
+| Cancel | Cancel, Esc or the backdrop, the check reading or done | closes; nothing sent; focus back on the card's Roll back | N/A |
+| Drift found | a hand edit on the live theme | D3a's list in the confirm, its foot, **Download the live theme first**; Roll back still allowed; the list scrolls inside at 390 | the Download's 404/401/502 said under it (DW-391) |
+| Check couldn't run | no token, Ghost unreachable, the request fails | D3b's row and cause; Roll back allowed | logged by status |
+| Another site between | v3 live (linked), v2 on another site, v1 (linked) | the undo is v1 | N/A |
+| Live, no undo | a first ship; the one before pruned or another site's | the header alone | N/A |
+| D2d above live | v3 `uploaded` (newest), v2 live, v1 | "Live v2", undo v1 | N/A |
+| Nothing live | after Restore original; a Deploy only; the live version no longer kept | "None of your kept versions is live on your site.", no row | N/A |
+| Not linked | versions kept, no linked site | "This project isn't linked to a site.", no row | N/A |
+| Nothing shipped | no versions | "Nothing shipped yet", no row | N/A |
+| Loading | the read out | the card's own skeleton, `aria-busy`, "Loading history…" (sr-only) | N/A |
+| Read failed | GET not ok, or the network | "Couldn't load your deploy history. Reload this page to try again." | logged by status |
+| Refused | Ghost's 422; 409 `busy` / `disconnected`; 502 | under the row (Ghost's detail in mono); focus back on Roll back; card unchanged | logged |
+| Gone | 404 — pruned since the read | the confirm closes; said once; card re-read; focus on the heading | N/A |
+| Stale | 409 `live`/`elsewhere`; the request's answer lost | card re-read; said under the row if still the undo, else in the region (a landed one said as live) | logged |
+| Reading along, any plan | the lock held on a laptop; Free or lapsed | the Roll back works | N/A |
+| Narrow | 320px phone; v10; another year's date | the row wraps the button under; no sideways scroll | N/A |
+| Not a phone | a tablet or a desktop at any zoom | the editor, and History's drawer unchanged | N/A |
+
+</frozen-after-approval>
+
+## Code Map
+
+- `apps/web/components/editor/small-screen-notice.tsx` -- D4f's notice (Story 5.22):
+  - `SmallScreenNotice({ name })` `:31`;
+  - "What works here" `:69-82`, where the card goes above the links card `:73`;
+  - the header comment's "ONE ROW, NOT THREE" `:16-18`, which this story updates (two of three).
+
+  The links card's classes (`rounded border border-line bg-surface shadow-sm`, the 34px `paper` tile, `ink-soft-aa` icon) are
+  the card's own.
+- `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx`:
+  - the gate `Editor` `:803-808`, which hands the notice `name` alone today;
+  - its doc comment `:790-802` and the THE FLOOR paragraph `:264-274` ("no live read ever starts there");
+  - the harness seams `historyRead`/`historyPin`/`historyAct`/`historyCheck`/`historyRestore` `:578-591`;
+  - the History requests `:2604-2653` (`historyUrl`, `readHistory`, `pinHistory`, `actHistory`, `checkHistory`,
+    `restoreHistory`), and `landed` `:2640-2645`, which stays the editor's;
+  - the drawer's mount `:7052-7074` (`liveHref`, `originalHref`);
+  - imports `isApp` `:96`, `historyPath` `:55`, `historyLiveDownloadPath` `:106`.
+- `apps/web/components/editor/deploy-history.tsx` -- 7.22/7.23a/7.23b's drawer. What moves out:
+  - the state `asking`/`opens`/`checked`/`checking`/`acting` `:132-146` and `reading`;
+  - the confirm's open effect `:185-187`, `cancelConfirm` `:191-194`, `putBack` `:198-205`, `checkFirst` `:209-217`;
+  - the confirm's markup `:649-761`.
+
+  What stays: `settle` `:221-253` (the drawer's endings), the Roll back press in `action` `:363-371`, `restoreBack` `:257-285`
+  (uses `acting`), `toggle` `:287` (waits on `acting`), and the drawer's `onCancel`/`onKeyDown` `:582-595` (read `acting`).
+  `chip` `:310-314` is the version chip the card's row draws.
+- `apps/web/lib/retention.ts`:
+  - `historyRows` `:267-292` (`emphasis` `:287-291`), `timeLabel`/`dateHalf` `:305-322` (the clock half to share with `cardTime`);
+  - `HISTORY_WORDS` `:338-454` (`empty`, `loading`, `rollBackName`, `said`, `refused`);
+  - `actSaid` `:483-498`, `actOutcomeOf`, `checkOutcomeOf`;
+  - `versionLabel`/`versionNumber` from `lib/deploy.ts`.
+- `apps/web/lib/renders.ts:111` `useSaid` -- the one polite region's hook.
+- `apps/web/lib/floor.ts` -- `PHONE`, `isPhone` (R-201); unchanged.
+- `apps/web/app/globals.css:393-404` -- the coarse 44px rule, scoped `:where([data-editor])`.
+- `apps/web/components/kit/`:
+  - `button.tsx`: `coral-outline` `:39` and size `44` `:52` (`h-11 px-5 text-ui rounded`; the card overrides padding, type and
+    radius to D4f's);
+  - `icons.tsx`: `HistoryClock` `:418`, `RollBack` `:433`;
+  - `dialog.tsx`: `openOnCancel`, `closeOnBackdrop`.
+- `apps/web/app/(app)/app/(authed)/projects/[id]/history/route.ts` -- GET and POST `{ deploy, act: 'live' | 'check' }`, read
+  only for this story. `lib/editor.ts:339` `historyPath`; `lib/drift.ts:269` `historyLiveDownloadPath`.
+- Harness:
+  - `app/(app)/app/harness/editor/layout.tsx` mounts `Editor` with every history seam `:379`; the header docs are `:167-189`;
+  - `actions.ts`' `harnessHistory` `:166`, whose values the card's states reuse: `rollback` (v5 live, v4 undo), `free`, `empty`
+    (no header), `fail`, `original-restored` (nothing live), `elsewhere`, `uploaded`, and `refused`/`busy`/`disconnected`/
+    `rollback-gone` for `harnessAct`;
+  - `harnessCheck` `:269` answers by `x-inflozo-harness-check`.
+- Tests:
+  - `tools/keyboard/floor.spec.mjs`: `device()` `:23`, `watchMount` `:29`; 5.22's phone test `:76-120`, whose `:88`/`:95`
+    expect Deploy history ABSENT; 7.23a's floor `:1117`;
+  - `tools/keyboard/journey.spec.mjs`: 7.23a's journeys `:11302-11910`; the pointer-free sentinel `:165`;
+  - `tools/probe/run-verify-editor.cjs`: step 97 `:7432-7476` (the phone on production), whose check `:7462` expects Deploy
+    history ABSENT; step 121/`STEP121_PLANT` `:447-465` and step 122 (the patterns); the header's plant list `:9-18`; the last step
+    is 122.
+- **Ghost:** nothing new is claimed. The put-back, the check and their T1 facts are 7.23a's (§91, VERIFY 61, VERIFY 76).
+
+## Tasks & Acceptance
+
+**Dev gate:** nothing waits on the owner but the in-session gos for the writes.
+
+**Execution:**
+
+*The rule:*
+- [ ] `apps/web/lib/retention.ts`:
+  - `phoneCard(answer)` → `{ kind: 'empty' } | { kind: 'unlinked' } | { kind: 'notLive' } | { kind: 'live'; live: HistoryRow; undo:
+    HistoryRow | null }`, over `historyRows`, in Always' order;
+  - `cardTime(at, now, tz?)`, sharing `timeLabel`'s clock half;
+  - `HISTORY_WORDS` gains:
+    - D4f's "Deploy history" (`:405`) and "Live" (`:406`);
+    - "This project isn't linked to a site.";
+    - "None of your kept versions is live on your site.";
+    - "Couldn't load your deploy history. Reload this page to try again.";
+
+    each reused where one already says it (R-170).
+
+*The requests and the confirm:*
+- [ ] `apps/web/components/editor/history-requests.ts` (new) -- `historyRequests({ projectId, prefix, seams })` →
+  `read`/`pin`/`act`/`check`/`restore` and `liveHref`/`originalHref`. It holds `editor.tsx`'s bodies, moved, with their logs.
+  `editor.tsx` uses it; `landed` stays the editor's.
+- [ ] `apps/web/components/editor/deploy-history.tsx` -- export the confirm as Always' "One confirm" states. `DeployHistory`
+  mounts it nested as today, and its header comment names the move. No drawer behaviour changes.
+
+*The card:*
+- [ ] `apps/web/components/editor/small-screen-notice.tsx`:
+  - `SmallScreenNotice({ name, history })` draws the Deploy history card above the links card: states, shape, Roll back and
+    endings as Always states, with one polite region;
+  - the header comment: two rows of D4f's three now, Billing Story 12.5's.
+- [ ] `editor.tsx` -- the gate hands the notice `historyRequests(...)` built from `project.id`, the pathname's prefix and the
+  props' seams. Update the floor paragraph and the gate's comment: no Ghost read before a tap.
+- [ ] `apps/web/app/globals.css` -- the 44px rule's scope becomes `:where([data-editor], [data-small-screen])`, with its
+  comment.
+
+*Harness:*
+- [ ] `app/(app)/app/harness/editor/actions.ts` and `layout.tsx` -- `x-inflozo-harness-history` gains:
+  - `first`: v1 live alone;
+  - `unlinked`: two versions, `linkedSiteId` null.
+
+  Document both in the header's doc.
+
+*Tests* (each assertion seen red under a planted reversion):
+- [ ] `apps/web/lib/retention.test.ts`:
+  - `phoneCard` for every state row of the matrix: another site between, D2d above live, a pruned live, a first ship, not
+    linked, empty;
+  - `cardTime` (today, another day, another year, a time zone).
+- [ ] `tools/keyboard/journey.spec.mjs` -- 7.23c, on the iPhone 13 descriptor, keyboard only (below the sentinel, pointer-free):
+  - (a) the card's anatomy and words. The Tab order runs back link → **Roll back to v5** → Your sites. Enter opens the confirm on
+    Cancel, the check says "Comparing…" then D3c. Esc puts focus back on the card's Roll back;
+  - (b) Roll back confirmed: "Rolling back…" with `aria-busy`, Esc doing nothing while it is out, said once, the card read again
+    (switch the header the way 7.23a's `rollback-gone` is used), focus on the heading;
+  - (c) refused: Ghost's 422 with its detail, `busy`, `disconnected` — under the row, focus back on Roll back;
+  - (d) gone; (e) the request fails; (f) D3a found, with the Download reachable by Tab.
+- [ ] `tools/keyboard/floor.spec.mjs`:
+  - re-expect 5.22's phone test: the card present (no header: "Nothing shipped yet"), Billing absent, still one link row in the
+    section;
+  - add 7.23c at 390 (iPhone 13) and at 320 × 568 (a touch phone):
+    - the card's geometry against D4f `:401-414` (padding, radius, tile, the 44px button, the row's gaps), and each state's shape
+      (`rollback`, `first`, `original-restored`, `unlinked`, `empty`, `fail`, loading held);
+    - a tap on Roll back opening the confirm within the viewport, with `found` scrolling inside;
+    - every target in the notice and its open confirm at least 44px;
+    - no sideways scroll;
+    - no lock or sync request.
+- [ ] `tools/probe/run-verify-editor.cjs`:
+  - re-expect step 97: the card present in A's project's state, Billing absent, Your sites one 56px row;
+  - add step 123 and `STEP123_PLANT`: the Verification's run, under `T1_WRITES=1`, written at Dev and never run there.
+
+*Propagation* (standing rules 3 and 7; end with a grep for "Deploy history and Billing", "ONE ROW" and "7.23c"):
+- [ ] Planning documents:
+  - FR-J9: a dated note, the phone card as built;
+  - `EXPERIENCE.md`: the Small Screen Notice paragraph `:70-73` and its IA row `:138`, a dated note;
+  - Story 5.22's card in `epics.md` stays as dated.
+
+**Acceptance Criteria:**
+- **Matches the frame.** Given the notice at 390 on an iPhone 13 with v5 live and v4 kept, when it has read History, then the
+  card matches D4f `:401-414`:
+  - its place, above Your sites;
+  - its tile, title and line;
+  - its row, with the 44px coral-outline **Roll back to v4**.
+
+  The extrapolated states keep the card's shape.
+- **The phone's Roll back, really.** Given "Phone test" with v1 and v2 shipped live to T1, on a phone on production, when Roll back
+  to v1 is tapped and confirmed after the check:
+  - T1's active theme files equal v1's `content_manifest`;
+  - v1's own row is updated, with no row added;
+  - the card reads Live v1 with **Roll back to v2**.
+- **The check runs on the phone.** Given a hand edit on T1's live theme, when the phone's Roll back opens the confirm, then D3a
+  names the file, its Download serves a zip equal to T1's live theme with the page staying, and the Roll back still completes.
+- **The drawer is unchanged.** Given the editor at 1440, when `pnpm keyboard` runs, then 7.23a's and 7.23b's journeys and floor
+  pass with no edit to their expectations.
+- **A phone starts nothing else.** Given the notice, when it has read History and no Roll back was tapped, then there is no lock
+  or sync request, no `edit_locks` row and no `inflozo-*` database.
+
+## Spec Change Log
+
+## Design Notes
+
+**Why the phone's Roll back opens the confirm and runs the check — a routine call, not a question.** "One-tap" (R-76, D4f's
+prompt) and "one click" (FR-J9) have always meant that the action is one button away, with S8e's confirm. The design drew that
+confirm for the same Roll back, FR-J9 as built puts Roll back "behind S8e's confirm", and EXPERIENCE says "the roll-back confirm
+stays exactly as drawn". R-291 made a Roll back check the site first, because without the check a hand edit made in Ghost Admin
+is replaced with no warning and no copy. That holds on a phone just as on a laptop, and a phone is where taps land by accident.
+A direct one-tap rollback would undo R-291 on one device.
+
+**Why the card reads the History route, not new server props.** R-201 decides "phone" in the browser, as the project opens. The
+server cannot know, so it draws the skeleton for every device. The History GET is the one source of what is kept and live; it
+needs no lock and no plan, and it reads no Ghost. A second read path would be a second rule for "which version is live".
+
+**The confirm moves; it is not copied.** Its 110 lines carry R-291's ticket, S8c's "once it starts, it finishes", UX-DR14's
+focus and the DW-391 Download. Two copies would drift at the next ruling. The drawer keeps everything that is the drawer's:
+- its `settle`, which focuses ✕ and re-reads the list;
+- its pins and Restore original, which wait while a put-back is out;
+- `data-unstoppable` on the drawer for R-192's sweep.
+
+The card's endings differ only in where focus lands: the card's heading, since a phone has no ✕.
+
+**The undo is History's own `emphasis` row.** No second rule for "the one before it". After a Roll back the version left behind
+becomes the next row (7.23a orders by `accepted_at`), so the card's button turns into the way forward, as History's coral-outline
+undo does.
+
+**Two time forms in one card are the frame's.** D4f writes the live line "today 2:14 PM" and the row "Aug 14 · 9:02 AM"
+(`timeLabel`'s, History's own). `cardTime` gives the first and shares the clock half with `timeLabel`.
+
+## Owner's manual test
+
+**Before you start:** Deploy plants one new Free test account on your go, connected to T1 (`ghost6.inflozo.com`): `{address —
+Deploy fills it}`, project **"Phone test"**.
+- v1 and then v2 were shipped live. The home page headline reads "Version 1" or "Version 2" to match.
+- One small invisible change was then made to v2's files on T1, as if someone had edited the theme in Ghost Admin. Your first
+  Roll back finds it.
+
+You need a **phone**, held upright. On the phone:
+- sign in at `https://app.inflozo.com/sign-in` with that address;
+- open the link that arrives, on the phone too;
+- keep a second tab on `https://ghost6.inflozo.com`.
+
+1. **URL:** `https://app.inflozo.com/projects/{id — Deploy fills it}` on the phone. **Screen:** "The editor needs a bigger
+   screen." **Do:** scroll down to "WHAT WORKS HERE". **Type:** nothing. **See:**
+   - first, a white card: a clock icon, **Deploy history**, and "Live **v2** · today" with the time;
+   - inside it, a box with `v1`, "Today ·" and a time, and an orange-outlined **Roll back to v1** button;
+   - under the card, **Your sites** as before;
+   - no sideways scrolling.
+2. **URL:** the same page. **Do:** tap **Roll back to v1**. **See:**
+   - a box titled "Roll back to v1?" with "Your live site switches to v1 instantly. v2 stays in history — nothing is lost.";
+   - "Comparing with your live theme…" for about a second;
+   - then a warning listing **one file that changed on your site**, a line saying Rolling back replaces it, a **Download the live
+     theme first** button, and **Cancel** and **Roll back** at the bottom.
+3. **URL:** the same page, the box open. **Do:** tap **Download the live theme first**. **See:** a zip downloads (your phone may
+   ask where to keep it), and the box stays open.
+4. **URL:** the same page. **Do:** tap **Cancel**. **See:** the box closes and the card is unchanged. Reload
+   ghost6.inflozo.com: it still reads "Version 2".
+5. **URL:** the same page. **Do:** tap **Roll back to v1**, wait for the check, then tap **Roll back**. **See:**
+   - the button says "Rolling back…";
+   - then the box closes, and the card reads "Live **v1** · today" with a box for `v2` and **Roll back to v2**;
+   - reload ghost6.inflozo.com: it reads "Version 1".
+6. **URL:** the same page. **Do:** tap **Roll back to v2**. **See:** this time a green line, "Nothing changed on your site since
+   v1". **Do:** tap **Roll back**. **See:** the card reads "Live **v2**" with **Roll back to v1**, and ghost6.inflozo.com reads
+   "Version 2".
+7. **URL:** `https://app.inflozo.com/projects/{id}` on a **laptop**, window at least 1366 px wide, signed in with the same address.
+   **Do:** press the clock icon left of **Ship it**, then **Roll back** on v1. **See:** History as before (v2 with the green
+   **Live** dot), and the same box as on the phone. **Do:** press **Cancel**.
+
+**After the test:** say "passed", or list what you saw. On your go, Claude then puts T1 back on Casper and removes the test theme
+from T1.
+
+## Verification
+
+**Commands:**
+- `pnpm check` -- expected: green. That is lint, typecheck and every package test, among them `retention.test.ts` and
+  `busy.test.ts`. The run prints its own counts; never write one down.
+- `python3 tools/doc-audit.py --check`, run twice -- expected: green.
+- `pnpm keyboard` -- expected: journeys 7.23c (a)–(f), 7.23a's and 7.23b's unchanged, 5.22's phone floor re-expected and 7.23c's
+  floor at 390 and 320 all green.
+- `grep -rn "Deploy history and Billing\|ONE ROW, NOT THREE" apps/web tools` -- expected: nothing stale.
+
+**Real infrastructure** (R-82; each on the owner's in-session go, in the main session, from a clean worktree at the deployed sha):
+- **Walk step 97, re-expected,** on production: the phone's notice with the card in A's project's state.
+- **Walk step 123, on production and T1,** with a throwaway Free account and an iPhone 13 context (coarse pointer, 390 × 844):
+  - connect T1 through the wizard and ship v1 then v2 ("Version n" on Home);
+  - (a) the phone opens the project: `PHONE` true, no editor, no lock or sync call, and the card reads Live v2 and Roll back to v1
+    at D4f's geometry, with no sideways scroll;
+  - (b) tap Roll back to v1: the confirm on Cancel and the check's D3c "since v2". Confirm it:
+    - T1's active theme downloaded with the staff token equals v1's `content_manifest`;
+    - v1's row is updated and the row count is unchanged;
+    - the card reads Live v1 and Roll back to v2;
+  - (c) a hand edit uploaded on T1 under the frozen name with the Admin API key. The phone's Roll back finds it (D3a names the
+    file), and the Download is followed to a zip equal to T1's live theme with the page staying. Confirmed, v2 is live. The
+    control: the next Roll back checks clean;
+  - (d) Cancel sends nothing: no `act: 'live'` POST, and T1 unchanged;
+  - (e) a desktop session holding the lock, and the phone's Roll back still landing;
+  - (f) the site disconnected: the check's 409 said under the row; reconnected after;
+  - finally: T1 back on its own theme, the frozen theme deleted, the account deleted, users and projects counted back.
+
+  **Ghost 5's half** (T3, R-238) is postponed to DW-326's pass at Story 15.7.
+- **`STEP123_PLANT=<address>`** (Deploy): (a)'s ships and (c)'s invisible hand edit on v2, live. It stops there, for the owner's
+  test above.
+- **Vercel:** the deployment is READY from the Dev head.
+- **The owner's test above (R-80).**
