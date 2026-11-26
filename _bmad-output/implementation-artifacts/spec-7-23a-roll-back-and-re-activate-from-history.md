@@ -2,9 +2,9 @@
 title: 'Story 7.23a — Roll back and Re-activate from History (split from Story 7.23 by R-290)'
 type: 'feature'
 created: '2026-11-25'
-status: 'in-review'
+status: 'done'
 baseline_commit: 'e3ea8624b9bf53b9d06b4aff50aec7ad648c2781'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-22-artifacts-retention-and-pinning.md']
 ---
@@ -739,6 +739,35 @@ browser at least **1366 px** wide. Keep a second tab on `https://ghost6.inflozo.
 
 **After the test:** say "passed", or list what you saw. Your Re-activate leaves an Inflozo theme live on T1, so Claude puts T1
 back on Casper on your go.
+
+## Owner's test findings
+
+**Owner's test (owner, 2026-11-26): passed.** The owner replied *"passed"* on the deployed site (`dpl_CP7B8vxvzRzWPfSdxvxRpJeT3mPY`,
+`https://app.inflozo.com`). No findings.
+
+**What production showed, and the owner's ruling on it.** Before recording, a read of production (`SUPABASE_SECRET_KEY`, GET only)
+found the planted account `umngkmr+rollback723a@gmail.com` never signed in after the plant. His first "passed" came from his own
+account instead: at 02:40 and 02:41 UTC, signed in as his main address, he rolled **Ghost 6 Project** back to v1 and then to v2
+on ghost6, each a re-upload (`accepted_at` moved), v2 left live. Asked in R-83's shape, the owner ruled *"1. Walk 3 steps
+(RECOMMENDED)"*: the planted steps 3 (Re-activate), 4–5 (the drift warning, its download, then the Roll back) and 7 (Ghost's
+refusal). He walked them and replied *"passed"* again. Production and Vercel's request rows (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`,
+the request-logs endpoint) show each one, 2026-11-26 UTC:
+- 03:33:32 his sign-in (`POST /sign-in` 200, the account's `last_sign_in_at` 03:33:58);
+- 03:34:34 **Re-activate v3**: `POST …/history` 200, and v3's `activated_at` 03:34:34 with `accepted_at` unchanged (Re-activate
+  re-uploads nothing);
+- 03:34:50 v2's confirm **check** (`POST …/history` 200), then 03:35:03 **Download the live theme first** (`GET …/history/live`
+  303 to the signed zip);
+- 03:35:09 **Roll back to v2**: `POST …/history` 200, v2 `live` with a new `accepted_at` 03:35:10, T1's Home reading "Version 2"
+  with `inflozo-rollback-test` active;
+- 03:35:27 v1's confirm check (200), then 03:35:36 **Roll back to v1: 422**, v1's row unchanged and v2 still live.
+
+Steps 1–2 and 8–10 (the drawer's first look, the ▾ menu row, keyboard and the Pro list) were not walked by him; walk step 121's runs
+on production and T1 at Review are their executed proof, and its journeys run in `pnpm keyboard` on every push.
+
+**Afterwards T1 was put back** on the owner's in-session go (*"1. Casper back (RECOMMENDED)"*), with `GHOST6_STAFF_ACCESS_TOKEN` read
+in-process: Casper activated (200), `inflozo-rollback-test` deleted (204), and the read-back shows `casper*`, `racer`, `source` and
+`inflozo-ghost6` (his own Ghost 6 Project's theme, kept, no longer live), with `routes.yaml` at 130 bytes, byte for byte the same
+before and after. Every account and project, his own and the planted one, was left as it is.
 
 ## Verification
 
