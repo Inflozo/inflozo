@@ -1043,6 +1043,17 @@ Source are only ever activated (DW-389). It overwrites nothing, so it runs no dr
 at activation as at upload, so the fallback offers the zip "to keep a copy, or to have it updated" and links Design & branding ↗ as
 the place to upload it, rather than as a place where the refused theme could be switched on.)*
 
+*(Story 7.23b's Dev, 2026-11-26 — the **Restore** row as built.* It is D2a's original-theme row in **Deploy History** (F8), the
+project's linked site's alone. One press: "Restoring…" while it is out, the drawer waiting for it; then "Your original theme is
+live on {host}." — or "…is on {host} but isn't live yet." when Ghost took the upload and not the activation — said once, the list
+read again, focus on ✕. **Refused by Ghost's own check:** under the row, "Ghost's own theme check refused your original theme, so
+nothing on your site changed.", Ghost's words in mono, **Download your original theme** (Story 2.5's route, followed so a failure
+is said under the button) and "Download it to keep a copy, or to have it updated for this version of Ghost — then upload it in
+Ghost under **Design & branding ↗**" (a new tab, the site's own Design panel). Other refusals under the row: "Reconnect {host} in
+Sites to restore your original theme.", 7.23a's "A deploy to {host} is under way. Try again when it ends.", and a saved original
+replaced or removed since History opened — the list read again, then "Your saved original theme has changed since you opened
+History. Check it and try again." or "Your original theme is no longer kept." *)*
+
 > **B12b's copy was wrong in the way that matters most** (corrected 2026-09-04, A7 item 2). It said "your integration key may not have
 > theme read permission … Check the key." Ghost's `tokenPermissionCheck` allowlists only
 > `themes: ['POST','PUT']` for Custom Integration tokens, so **every** `GET /themes/*` made with an
@@ -1510,6 +1521,13 @@ from 1366 up (R-289) and from Ship it ▾ → History at every width; every row 
   copy of the original, or uploads the saved one only when Ghost no longer has it, so nothing is overwritten and no check runs;
   the Inflozo version that was live then shows D2d's "Uploaded, not live" with Re-activate, the undo. The row is the linked
   site's alone.)*
+  *(Story 7.23b's Dev, 2026-11-26 — as built, D2a `:58-73` and its rule `:75`: the row sits above the `<ol>` and outside its count —
+  above "Nothing shipped yet" too, the limit line still last — with the archive tile, **Your original theme**, the theme's name and
+  the version its `package.json` declared at capture in mono (the name alone for one saved before the version was kept),
+  "Archived {date}" (the row time's date half; "Archived today" on the day), the frame's quiet line and **Restore original** (the
+  Kit's secondary at 28). No Live badge on it: no record says it is live, and the outcome says it once. It is the drawer's first
+  Tab stop after ✕, and stays live in a read-only editor, as the pin does (R-192). Its outcomes and refusals are F1's Restore
+  row.)*
 - **A partial-success row** — status `uploaded`, `activated` false. It appears **without an active
   badge**, so a retry is a one-click **re-activate** rather than a recompile. See below.
 

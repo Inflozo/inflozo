@@ -308,57 +308,59 @@ gos for the writes.
   one assertion that the column exists, and that `authenticated` cannot update it.
 
 *Server:*
-- [ ] `apps/web/server/snapshot.ts`, `snapshot-io.ts` -- the upsert writes `theme_version: version`.
-- [ ] `apps/web/lib/retention.ts`:
+- [x] `apps/web/server/snapshot.ts`, `snapshot-io.ts` -- the upsert writes `theme_version: version`.
+- [x] `apps/web/lib/retention.ts`:
   - `HistoryAnswer.original`;
   - `archivedLabel(at, now, tz?)`;
   - every word in Always, in `HISTORY_WORDS` — the frame's line verbatim, and "Restoring…";
   - `restoreSaid(outcome, host)` over `actOutcomeOf`'s outcomes.
-- [ ] `apps/web/server/deploy/put-back.ts` -- `restoreOriginal(io, { userId, projectId, snapshotId, now })`, exactly as Always
+- [x] `apps/web/server/deploy/put-back.ts` -- `restoreOriginal(io, { userId, projectId, snapshotId, now })`, exactly as Always
   states. It returns `live | uploaded | gone | disconnected | busy | { refused: DeployError }`. `PutBackIo` gains:
   - `original({ siteId, userId })` → `{ id, theme_name, storage_path } | null`;
   - `snapshots.get(key)`;
   - `deploys.demote`'s `except` becomes optional.
 
   The header comment names the restore, DW-389 and the baseline note.
-- [ ] `apps/web/server/deploy/put-back-io.ts`, `deploy-io.ts`:
+- [x] `apps/web/server/deploy/put-back-io.ts`, `deploy-io.ts`:
   - `original`, with the service role and `user_id` plus `site_id` clauses;
   - `snapshots.get`, from `SNAPSHOT_BUCKET` by key;
   - `demote` with an optional `except`, the same in both files;
   - `liveProject` gains `.eq('status', 'live')`, with a comment naming R-264 (a) and the restore.
-- [ ] `(editor)/read.ts:346` -- the same `status = 'live'`. `lib/deploy.ts` `liveHere`'s comment says "still live".
-- [ ] `history/route.ts`:
+- [x] `(editor)/read.ts:346` -- the same `status = 'live'`. `lib/deploy.ts` `liveHere`'s comment says "still live".
+- [x] `history/route.ts`:
   - GET adds `original`: the user's `site_snapshots` rows (RLS) with `sites(url)`, the linked site's picked.
   - POST `{ act: 'restore', snapshot }`, checked before `deploy`. It validates `snapshot` with `isUuid` and calls
     `restoreOriginal`. The answers are the act branch's own: 200 `{ outcome }`, 404, 409 `{ code }`, 422, 502.
   - Its header says the restore reads no plan, lock or gscan.
-- [ ] DW-391 -- one server helper answers a signed URL as `200 { url }` or a 303, and sign-in as `401` or a 303, by `Accept`.
+- [x] DW-391 -- one server helper answers a signed URL as `200 { url }` or a 303, and sign-in as `401` or a 303, by `Accept`.
   The three routes use it. A client `followSigned(href)` with its three words goes in one module.
+  *(Dev: both in `apps/web/lib/signed-download.ts` — the helper answers with the platform's `Response`, so no `next/server` import and
+  `node --test` reads it.)*
 
 *UI:*
-- [ ] `apps/web/components/editor/deploy-history.tsx`:
+- [x] `apps/web/components/editor/deploy-history.tsx`:
   - the original row (D2a `:58-73` and the rule `:75`) above the list, outside its `<ol>`, with Restore original
     (`Button` secondary, 28);
   - its busy state, outcomes, refusals and the refusal's fallback, as Always says;
   - the confirm's Download (`#history-drift-download`) clicks through `followSigned`, its sentence under it.
   - New props: `restore`, `originalHref`.
-- [ ] Kit -- `button.tsx` size `28` (`h-7 px-[11px] text-[12px] rounded-thumb`). `icons.tsx` `Archive` from `D2:60`. Both are
+- [x] Kit -- `button.tsx` size `28` (`h-7 px-[11px] text-[12px] rounded-thumb`). `icons.tsx` `Archive` from `D2:60`. Both are
   recorded on the Kit page.
-- [ ] `apps/web/components/editor/deploy-wizard.tsx`:
+- [x] `apps/web/components/editor/deploy-wizard.tsx`:
   - `follow` is replaced by `followSigned`; the Theme Download's failure is said under its row through the existing `fetched`;
   - D3a's Download (`#deploy-drift-download`) clicks through `followSigned`, its sentence under it.
-- [ ] `editor.tsx`:
+- [x] `editor.tsx`:
   - `restoreHistory(snapshot)` POSTs `{ snapshot, act: 'restore' }`;
   - `originalHref(id)` is the `/app` prefix plus `snapshotDownloadPath`;
   - the harness seam is `historyRestore`.
-- [ ] Harness `layout.tsx`/`actions.ts`:
+- [x] Harness `layout.tsx`/`actions.ts`:
   - `x-inflozo-harness-history` gains `original` (casper with a version, v2 live, v1), `original-unversioned` and
     `original-empty` (a snapshot, no versions);
   - `harnessRestore` answers by `x-inflozo-harness-restore: live | refused | gone | disconnected | busy`, with no database and no
     Ghost.
 
 *Tests* (each assertion seen red under a planted reversion):
-- [ ] `put-back.test.ts` -- every I/O row of the restore, including:
+- [x] `put-back.test.ts` -- every I/O row of the restore, including:
   - zero Ghost calls on each refusal;
   - never an upload of `casper.zip`;
   - no `deploys` insert and no `accepted_at` write;
@@ -368,7 +370,7 @@ gos for the writes.
   written), `deploy-run.test.ts` and `read.test.ts` (a demoted row is not "live here"), `deploy.test.ts` (the three routes' JSON
   and 303 answers), `busy.test.ts` (Restoring…, Preparing…), `server-wiring.test.ts` (the snapshot bucket read on put-back-io's
   service-role reason), and a test for `followSigned` over a fake fetch.
-- [ ] `tools/keyboard/journey.spec.mjs` -- the 7.23b journeys:
+- [x] `tools/keyboard/journey.spec.mjs` -- the 7.23b journeys:
   - (a) the row's anatomy, outside the list's count; the unversioned mono line; the row above "Nothing shipped yet";
   - (b) Enter on Restore original: "Restoring…", the drawer unstoppable, said once, focus on ✕, v2 drawn as D2d's row;
   - (c) refused: the note, the mono detail, the Download and the link (its `href` is `adminAt`'s, new tab);
@@ -377,15 +379,16 @@ gos for the writes.
     unchanged — and 200 `{ url }` firing a download.
 
   `floor.spec.mjs`: the drawer with the original row, and the refused row, at 1440, 1280 and 820, with no sideways scroll.
-- [ ] `tools/probe/run-verify-editor.cjs` step 122 -- the Verification's real-infra run, with a `STEP122_PLANT` mode for Deploy.
+- [x] `tools/probe/run-verify-editor.cjs` step 122 -- the Verification's real-infra run, with a `STEP122_PLANT` mode for Deploy.
+  *(Dev: written and syntax- and name-checked; never run — it writes to T1 and production, the main session's on the owner's go.)*
 
 *Propagation* (standing rules 3 and 7; end with a grep for `follow(` and for the `liveHere`/`liveProject` reads):
-- [ ] Planning documents:
+- [x] Planning documents:
   - FR-J9 and FR-J13: dated notes (as built; Question 1's ruling);
   - EXPERIENCE F8's original row and F1's Restore row;
   - VERIFY-AT-BUILD 10's snapshot half, from walk 122 — a real customer theme still open, and Ghost 5's half to DW-326;
   - Story 7.25's card and AD-19's note: the restore joins the per-site lock beside the put-back.
-- [ ] `deferred-work.md` -- resolve DW-389 and DW-391.
+- [x] `deferred-work.md` -- resolve DW-389 and DW-391.
 
 **Acceptance Criteria:**
 - **Matches the frame.** Given the editor at 1440 on a project whose linked site has a snapshot, when History opens:
@@ -408,6 +411,36 @@ gos for the writes.
   the editor stays.
 
 ## Spec Change Log
+
+- **2026-11-26, Dev — what landed beside the plan, each a routine call.**
+  - **One module for DW-391**, `apps/web/lib/signed-download.ts`: `signedAnswer` and `signInAnswer` for the three routes, and
+    `followSigned` with its three sentences, in one pure file. The route helper answers with the platform's own `Response`
+    (`Response.json`, a 303 with `Location`), because `next/server` does not resolve under `node --test`; the routes' 404s and 502s
+    are unchanged. A press with a modifier key stays the browser's own (`followsHere`), so a new tab still follows the 303.
+  - **The three sentences** (no frame draws them; R-170, one list): "This file is no longer kept, so there's nothing to download.",
+    "You've been signed out. Sign in again, then download it.", "We couldn't prepare that download. Try again." — and "Preparing…" is
+    the Backup step's own word.
+  - **`SignedDownload`** (`deploy-wizard.tsx`, exported) is the one `<a href>` the three link Downloads share: D3a's (40), the Roll
+    back confirm's (40) and the original row's "Download your original theme" (28, the row's own button size). Its words sit in the
+    `BusyLabel` grid, so 7.23a's journey (n) now reads the Download's accessible name rather than its text.
+  - **The route's answers are one function**, `answered()`, shared by the act branch and the restore branch; `deploy.test.ts`' 7.23a
+    test reads them there. A failed `site_snapshots` read fails the History GET (502), as a failed deploys read does — never a
+    missing row.
+  - **`restoreSaid(outcome, host, kept)`**: `gone` says "changed", or "no longer kept" when the re-read has no original left.
+  - **A request that fails** (the network) is said under the row with focus back on Restore original, and the list is not read
+    again — the matrix's "row unchanged".
+  - **The original row's tile** is `paper-sunk` with `ink-soft-aa` (D2 `:60`'s `#EFECE7` and `#6B6459`), the row `paper-raised`
+    with the `line` hairline (`:58`); no new token.
+  - **The harness** answers `original-restored` (v2 demoted to D2d's row) for a journey to switch to while the press is held, as
+    7.23a's `rollback-gone` is used; `harnessRestore` with no header answers live.
+  - **Re-expected journeys**, each by the rule this story changed: 7.20a (h)'s and 7.21's fake download routes now answer the
+    follower's JSON then a signed stand-in (`fakeSigned`), and 7.23a (n) reads the Download's name.
+  - **The main session's matrix audit** moved the linked site's pick into `historyAnswer` (`originalOf`), so "never another site's"
+    is a unit test rather than the route's inline line, and added journeys 7.23b (f) (reading along, R-192) and (g) (the request
+    failing) beside the plan's (a)–(e).
+  - **Walk step 122** puts the saved copy back under the name `walk-original` and plants the fatal original as `walk-fatal` (both
+    T1-deleted by its finally); `STEP122_PLANT` plants B's original as `old-magazine` 2.1.0 — the saved Casper renamed, plus one
+    template Handlebars cannot parse, proved blocked on gscan 6.4.2 before anything is stored — as the owner's test names it.
 
 ## Design Notes
 
@@ -568,3 +601,78 @@ live.
   **Ghost 5's half** (T3, R-238) is postponed to DW-326's pass at Story 15.7.
 - **Vercel:** the deployment is READY from the Dev head.
 - **The owner's test above (R-80).**
+
+**Executed — Dev, the main session (2026-11-26, Node 24; the real services by their variable names, every key read inside the
+script from `tools/probe/.env`, never on argv, no value printed; the owner's in-session go to the one write, "1. Go"):**
+- **Supabase production database** (`SUPABASE_DB_POOLER_URL`):
+  - **Before, read-only:** the catalogue of `public` and `private` (columns; functions without the extension-owned ones; triggers;
+    policies; indexes; enums; constraints) read on production inside a `read only` transaction, against a PostgreSQL 17 container
+    built from the prelude and every migration except 7.23b's: 575 rows each, and `diff` empty — production had drifted nowhere.
+    `theme_version` was absent on production — the control.
+  - **The apply, one transaction, then read back:** the column is `text`, nullable, no default; its comment equals the file's;
+    `authenticated` INSERT false, UPDATE false, SELECT true (the table-wide read); `service_role` UPDATE true; of the 5 snapshot
+    rows, none carries a version (no backfill, as planned).
+  - **As a signed-in customer**, in a transaction rolled back (a throwaway user, site and snapshot; `set local role authenticated`
+    with a JWT sub): the customer reads its own `theme_version` (`5.9.4`, the control), and `update public.site_snapshots set
+    theme_version = …` is refused, **42501**. Proof rows left behind: 0.
+  - **After:** production's catalogue against a container built from every migration, 7.23b's applied twice (it re-runs
+    cleanly): 576 rows each, and `diff` empty. Production before against after differs in exactly one line: the column.
+- **The RLS gate's control** (the Schema push): the architecture's `SCHEMA.sql` at the Create head with the 7.23b migration
+  withheld: **exit 3**, stopping at "FAIL (7.23b): site_snapshots.theme_version (text, nullable, no default) is missing". With it:
+  exit 0 and the 7.23b PASS line.
+- **CI on the Schema push ce08ed50** (`GITHUB_TOKEN`): run 45771995849 — `check`, `rls` and `deploy` success; the Render matrix
+  success. **Vercel** (`VERCEL_TOKEN`): `dpl_5NuP2SK5LgZ4QuTbBYYSRetrd89Q` READY on production, built from ce08ed50.
+- **The matrix audit** (each row to a check that ran in that row's state). Two rows were checked by words or a static read alone,
+  and one by the route's inline code; each now has a check, seen red under a planted reversion, then restored:
+  - *No row* (no linked site, or another site's snapshot): the pick moved out of the route into `historyAnswer` (`originalOf`,
+    `lib/retention.ts`), and `retention.test.ts` holds the linked site's picked out of the user's, never another site's, none with
+    no link or no snapshot. Red (1) with the pick reverted to the first row; `deploy.test.ts`' route test reads the hand-over.
+  - *Reading along, any plan*: journey **7.23b (f)** — the editor read-only (the control: Add section disabled), Restore original
+    live, pressed and said. Red with the restore refusing while the lock bar shows.
+  - *Request fails*: journey **7.23b (g)** — "didn't go back… Try again." under the row, focus on Restore original, the list
+    unchanged, nothing said in the drawer's region. Red with a failure re-reading the list and saying it in the region.
+  - Every other row maps as follows: the four Ghost rows, the default theme, the original already live, gone, disconnected, busy,
+    unrecorded and the no-row-written baseline to `put-back.test.ts`' 7.23b tests; Deploy only after a restore to `read.test.ts`'
+    and `deploy-run.test.ts`' R-264 (a) tests; the version unknown and nothing shipped to journey (a); the refusal to (c); gone,
+    disconnected and busy to (d); DW-391 served and failed to (e1)–(e4), `signed-download.test.ts` and `deploy.test.ts`. The
+    undo and the baseline's D3c on real Ghost are walk step 122's (Review).
+  - **Matches the frame:** the row's tokens read against `D2:58-75` — `line` `#E7E2DB`, `paper-raised` `#FBF9F5`, `paper-sunk`
+    `#EFECE7`, `ink-soft-aa` `#6B6459`, `ink-soft` `#6E6A64`, `radius` 12 px, `radius-sm` 8 px (`globals.css`); the 28 button and the
+    26 × 26 tile measured by the floor at 1440, 1280 and 820.
+- **The main session's own gates, on the final tree:** `pnpm check` exit 0 (every package 0 failing, each printing its own count);
+  `pnpm keyboard -g "7\.23b"`: 13 of 13 green — (a)–(g) with (e1)–(e4), and the floor at 1440, 1280 and 820.
+- **Not hit in Dev:** T1, Resend and Dodo (nothing of this Dev sends to Ghost; a restore sends no email and reads no plan). Walk
+  step 122 (production + T1) and `STEP122_PLANT` are written and have never run: they are the Review's and Deploy's, from a clean
+  worktree at the deployed sha, each on the owner's in-session go. Vercel's READY from the Dev head is read after the push (the
+  Review reads CI on the Dev head first).
+
+**Executed — Dev, the implementation pass (2026-11-26, Node 24; local only — no production, Vercel, Resend, Dodo or T1 call):**
+- **`pnpm check`:** exit 0 — lint, typecheck and every package's tests, each printing its own count with 0 failing; the web
+  package's run includes the put-back, retention, snapshot, deploy-run, read, deploy, busy, server-wiring and the new
+  signed-download tests.
+- **`bash supabase/tests/run-rls-gate.sh`:** exit 0, with "PASS (7.23b): site_snapshots.theme_version is a nullable text with no
+  default, commented and client-unwritable" (no schema change at Dev; the Schema push's own gate and its control stand).
+- **`python3 tools/doc-audit.py --check`**, twice: the first regenerated the story board (STALE), the second PASS.
+- **`grep -n "holdsLock\|resolveEntitlement" apps/web/server/deploy/put-back.ts`:** nothing.
+- **The propagation greps:** no `follow(` left in `apps/web`; both of R-264 (a)'s reads (`deploy-io.ts` `liveProject`, `(editor)/read.ts`)
+  carry `status = 'live'`, and `previous`/`previousCustom` keep `activated` alone, as the Design Notes say.
+- **Each new unit assertion seen red under a planted reversion**, then restored byte for byte (sha256): Casper uploaded on a
+  not-found (2 red), the restore's demote removed (5), no `disconnected` refusal (1), the snapshot id unchecked (1), a `deploys`
+  write on the restore (3), "Archived today" lost (1), `gone` ignoring `kept` (1), `original` not passed through (1), no 401 to the
+  follower (1), no JSON answer (1), `liveProject` without `status = 'live'` (1), `read.ts` likewise (1), `theme_version` not written
+  (2), Restore original without `aria-busy` (1), the Theme Download not followed (1), the original read from the wrong bucket (1).
+- **The journeys** (`run-keyboard-gate.sh -g "7\.23b"`): 7.23b (a)–(d), (e1)–(e4) and the 7.23b floor at 1440/1280/820, 11 of 11
+  green; with `deploy-history.tsx` and `deploy-wizard.tsx` put back to HEAD, 11 of 11 red; restored (sha256 equal), green.
+- **The neighbours** (`-g "7\.2[0-3]|pointer"`): 7.20a's, 7.21's, 7.22's and 7.23a's journeys and floors and the no-pointer sentinel —
+  89 green once 7.23a (n) read the Download's name (its first run read the text, which now holds the hidden "Preparing…").
+- **`pnpm keyboard`, the whole gate, on the final tree:** 373 passed, 0 failed — 7.23b (a)–(e4) and its floor, 7.23a's, 7.22's, 7.21's
+  and 7.20a's journeys and floors, and the no-pointer sentinel among them.
+- **Walk step 122:** `node --check` and a `no-undef` lint pass (its control, a planted undefined name, red); never run.
+- **Written, the main session's to run on the owner's in-session go:** the migration's production apply (before this code is
+  pushed, R-99), walk step 122 (`T1_WRITES=1`, from a clean worktree at the deployed sha — a cut of steps 1–5 + 122), and
+  `STEP122_PLANT=<a>,<b>` for Deploy. Step 122's T1 writes: two ships of "Restore test" (uploads and activations under its frozen
+  name), about five Restore original presses (activations of T1's own theme, and uploads of `walk-original` and the refused
+  `walk-fatal` under their own names), two Re-activates, then the finally's activation of T1's own theme and deletion of every
+  `inflozo-`/`walk-` theme it uploaded. Its production writes: the throwaway account, its site, project, jobs and deploys through
+  the product; the snapshot row repointed twice and deleted, two objects stored under its prefix, its site's `disconnected_at`
+  stamped and cleared — all removed by the finally.

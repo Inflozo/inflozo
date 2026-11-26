@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { ARTIFACT_BUCKET } from '@/lib/deploy'
 import { historyCopyPath, liveFileName } from '@/lib/drift'
 import { isUuid } from '@/lib/editor'
+import { signedAnswer, signInAnswer } from '@/lib/signed-download'
 import { currentUser, supabaseAdmin, supabaseServer } from '@/lib/supabase/server'
 
 /**
@@ -17,6 +18,10 @@ import { currentUser, supabaseAdmin, supabaseServer } from '@/lib/supabase/serve
  * The object is the project × linked site's one check copy (`historyCopyPath`) — never Ship it's (`liveCopyPath`), so a resting
  * D3a's Download is never this check's zip. `?theme=` names the file alone: anything but a plain theme name (`\w.-`) is "theme". A
  * missing object (`NoSuchKey`) is a 404, any other signing failure a 502.
+ *
+ * STORY 7.23b (DW-391) — asked by the editor's follower (`Accept: application/json`, `lib/signed-download.ts`), the same signed URL is
+ * answered `200 { url }` and a signed-out ask `401`, so the Roll back confirm's Download says a 404, a 502 or the sign-in under the button and the
+ * editor stays; asked as a link, the 303 as before.
  */
 
 export const dynamic = 'force-dynamic'
@@ -29,8 +34,9 @@ const PLAIN = /^[\w.-]{1,120}$/
 const no = (status: number, body: string) => new NextResponse(body, { status, headers: { 'Cache-Control': 'no-store' } })
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  // a link the browser followed: a signed-out press goes to sign in, as Story 2.5's does
-  if (!(await currentUser())) return NextResponse.redirect(new URL('/sign-in', request.url), 303)
+  // a link the browser followed: a signed-out press goes to sign in, as Story 2.5's does — and the editor's follower is answered 401
+  // (Story 7.23b, DW-391: `lib/signed-download.ts`)
+  if (!(await currentUser())) return signInAnswer(request)
   const projectId = (await params).id
   if (!isUuid(projectId)) return no(404, 'Not found')
 
@@ -55,7 +61,5 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     console.error('history/live: signing failed', { message: signError?.message })
     return no(502, 'Could not prepare that download')
   }
-  const away = NextResponse.redirect(signed.signedUrl, 303)
-  away.headers.set('Cache-Control', 'no-store')
-  return away
+  return signedAnswer(request, signed.signedUrl)
 }

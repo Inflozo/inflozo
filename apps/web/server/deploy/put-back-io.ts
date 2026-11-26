@@ -1,7 +1,8 @@
 import { ARTIFACT_BUCKET } from '@/lib/deploy'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import { call } from '@/server/ghost-admin'
-import type { PutBackIo, PutBackRow } from './put-back.ts'
+import { SNAPSHOT_BUCKET } from '../../app/(app)/app/(authed)/account/deletion-rule.ts'
+import type { OriginalRow, PutBackIo, PutBackRow } from './put-back.ts'
 import type { DeployRow } from './run.ts'
 
 /**
@@ -15,6 +16,10 @@ import type { DeployRow } from './run.ts'
  *   - THE CHOKEPOINT: `theme_upload` and `theme_activate`, both already on `ADMIN_WRITES` (R-22) — the same two writes Ship it sends —
  *     and R-291's check before a Roll back: one READ with the Staff Access Token, `GET themes/{name}/download/` (`liveTheme`,
  *     `deploy-io.ts`' own), so `ADMIN_WRITES` is unchanged. Its live copy goes to `deploy-artifacts` with `deploy-io.ts`' own `put`.
+ * STORY 7.23b — Restore original reads two more things with the same service role and for the same reasons: the site's saved
+ * original (`site_snapshots`, select-only to the tenant and server-written, scoped by `user_id` and `site_id`) and its zip out of
+ * the `site-snapshots` bucket (no Storage policy at all, AD-32 — Story 2.5's download's reason), by the key the row names. Its
+ * Ghost writes are the same two, activate and upload, so `ADMIN_WRITES` is unchanged.
  */
 
 const BUCKET = ARTIFACT_BUCKET
@@ -59,12 +64,23 @@ export const PUT_BACK_IO: PutBackIo = {
     const rows = ok(await supabaseAdmin().from('deploy_jobs').select('id').eq('project_id', projectId).eq('site_id', siteId).eq('user_id', userId).in('stage', ['snapshotting', 'uploading', 'activating']).gt('updated_at', since).limit(1), 'moving jobs') as unknown[] | null
     return (rows ?? []).length > 0
   },
+  async original({ siteId, userId }) {
+    return ok(await supabaseAdmin().from('site_snapshots').select('id, theme_name, storage_path').eq('site_id', siteId).eq('user_id', userId).maybeSingle(), 'original theme') as OriginalRow | null
+  },
+  snapshots: {
+    async get(key) {
+      const blob = ok(await supabaseAdmin().storage.from(SNAPSHOT_BUCKET).download(key), 'original download') as Blob
+      return new Uint8Array(await blob.arrayBuffer())
+    },
+  },
   deploys: {
     async update(id, userId, patch) {
       ok(await supabaseAdmin().from('deploys').update(patch).eq('id', id).eq('user_id', userId), 'deploy update')
     },
+    // Story 7.23b: with no `except`, every live row on the site — Restore original's, after which no Inflozo theme is live there
     async demote({ siteId, userId, except }) {
-      ok(await supabaseAdmin().from('deploys').update({ status: 'uploaded' }).eq('site_id', siteId).eq('user_id', userId).eq('status', 'live').neq('id', except), 'deploy demote')
+      const live = supabaseAdmin().from('deploys').update({ status: 'uploaded' }).eq('site_id', siteId).eq('user_id', userId).eq('status', 'live')
+      ok(await (except === undefined ? live : live.neq('id', except)), 'deploy demote')
     },
   },
   artifacts: {

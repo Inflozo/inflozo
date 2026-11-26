@@ -2,19 +2,22 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
-import { DriftFound, DriftUnverified, PassRow, StageRow } from '@/components/editor/deploy-wizard'
+import { DriftFound, DriftUnverified, PassRow, SignedDownload, StageRow } from '@/components/editor/deploy-wizard'
 import { LiveBadge, ResultChip } from '@/components/kit/badge'
-import { Button, buttonClasses, IconButton } from '@/components/kit/button'
+import { Button, IconButton } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel } from '@/components/kit/dialog'
 import { ring } from '@/components/kit/greyed'
-import { AlertTriangle, Bolt, Download, Pin, RollBack, X } from '@/components/kit/icons'
+import { AlertTriangle, Archive, Bolt, Pin, RollBack, X } from '@/components/kit/icons'
 import { BusyLabel } from '@/components/kit/submit'
-import { versionLabel, versionNumber } from '@/lib/deploy'
+import { hostOf } from '@/lib/connect-rule'
+import { DEPLOY_WORDS, versionLabel, versionNumber } from '@/lib/deploy'
 import { causeSentence, DRIFT_WORDS as DW, driftCount } from '@/lib/drift'
+import { adminAt } from '@/lib/paywall'
 import { PREFLIGHT_WORDS } from '@/lib/preflight'
 import { useSaid } from '@/lib/renders'
 import {
-  actSaid, chipTone, HISTORY_WORDS as HW, historyRows, pinSaid, timeLabel, type ActOutcome, type CheckOutcome, type HistoryAnswer, type HistoryRow, type PinOutcome,
+  actSaid, archivedLabel, chipTone, HISTORY_WORDS as HW, historyRows, pinSaid, restoreSaid, timeLabel, type ActOutcome, type CheckOutcome, type HistoryAnswer, type HistoryRow,
+  type OriginalTheme, type PinOutcome,
 } from '@/lib/retention'
 
 /* ───────── STORY 7.22 — THE HISTORY DRAWER (FR-J7), from the export (R-74):
@@ -32,8 +35,7 @@ import {
  * chip, the row's action and the pin. NO BY-LINE: the frame's "by Maya" names a person, and R-189 rules that no surface names one.
  * The rest are 7.22's compact rows, each with the quiet Roll back before its pin (FR-J9's "any retained artifact redeploys in one
  * click"; the export decides what the row is built from, so the expanded row's button, sized as drawn). D2d's row (D2 `:194-201`):
- * the sky border and wash, the chip, the wizard's own D2e line and the coral Re-activate. Story 7.23b adds the original-theme row
- * (R-290). Extrapolated in the same tokens: the loading rows (in the compact row's shape — R-98, never a spinner), the empty state
+ * the sky border and wash, the chip, the wizard's own D2e line and the coral Re-activate. Extrapolated in the same tokens: the loading rows (in the compact row's shape — R-98, never a spinner), the empty state
  * (UX-DR6, the limit line still under it), a failed read (one sentence where the rows go), and "on {host}" on a row of another site
  * (one list per project) — which carries no Roll back (Design Notes: its zip is that site's, and that site may be another project's
  * now).
@@ -59,6 +61,20 @@ import {
  * the Roll back allowed; null (no two manifests), nothing. A check REFUSED (404, 409) closes the confirm and is handled exactly as
  * the put-back's same refusal (`settle`). Focus stays on Cancel as it lands. Re-activate runs no check: it replaces nothing.
  *
+ * STORY 7.23b — D2a'S ORIGINAL-THEME ROW (`D2 Deploy History Completed.dc.html:58-73`, its rule `:75`; D2c `:240-252` on Free): the
+ * linked site's saved pre-Inflozo theme, above the versions and OUTSIDE their `<ol>` (outside the count), drawn above "Nothing
+ * shipped yet" too — the archive tile, "Your original theme", the mono name and version, "Archived {date}", the frame's quiet line
+ * and Restore original (the Kit's secondary at 28). Never another site's, and no Live badge: no record says it is live, and the
+ * outcome says it once. RESTORE ORIGINAL is one press with no confirm, as drawn (R-292: it overwrites nothing, and Re-activate is
+ * the undo): "Restoring…" with `aria-busy` and `aria-disabled` while it is out, every action and pin waiting and the drawer
+ * `data-unstoppable` (Esc, ✕ and the backdrop wait), as a put-back's. Live or on the site: said once, the list read again, focus on
+ * ✕ — Inflozo's version then shows as D2d's row with its Re-activate. Gone: the list read again, then "changed" — or "no longer
+ * kept" with none left — and focus on ✕. A refusal is said under the row in its own `role="status"` line with focus back on
+ * Restore original; GHOST'S CHECK refusing it (no frame draws this — extrapolated from 7.23a's refusal line, D3a's Download and
+ * B12b's linked place line) adds Ghost's detail in mono, "Download your original theme" (DW-391's one way) and the line ending in
+ * Ghost's own "Design & branding ↗" (`adminAt(url, 'design')`, a new tab). Restore original stays live in a read-only editor, as
+ * the pin does (R-192): it changes no design.
+ *
  * THE LIST IS EXACTLY WHAT IS KEPT. The route lists stored versions only (`isStoredVersion`), so a pruned version is absent —
  * never a greyed row with a dead Restore (the epic's criterion). Every word is `HISTORY_WORDS`' (R-170), its numbers `PLANS`'.
  *
@@ -68,7 +84,7 @@ import {
  * with focus on Got it, and Got it or Esc returns focus to the pin; `gone` re-reads, so the row leaves the list.
  */
 
-type Shown = { kind: 'loading' } | { kind: 'failed' } | { kind: 'rows'; rows: HistoryRow[]; live: number | null }
+type Shown = { kind: 'loading' } | { kind: 'failed' } | { kind: 'rows'; rows: HistoryRow[]; live: number | null; original: OriginalTheme | null }
 /** R-291 — the check before a Roll back, as the confirm draws it: reading, its record (null: nothing to compare), or its request failed */
 type Checked = { kind: 'reading' } | Extract<CheckOutcome, { kind: 'drift' | 'failed' }>
 
@@ -84,7 +100,7 @@ const Thumb = () => (
   </span>
 )
 
-export function DeployHistory({ projectName, read, pin, act, check, liveHref, onClose }: {
+export function DeployHistory({ projectName, read, pin, act, check, liveHref, restore, originalHref, onClose }: {
   projectName: string
   /** the project's stored versions (GET `projects/[id]/history`), or null when the read failed */
   read: () => Promise<HistoryAnswer | null>
@@ -96,6 +112,10 @@ export function DeployHistory({ projectName, read, pin, act, check, liveHref, on
   check: (deploy: string) => Promise<CheckOutcome>
   /** R-291 — the address of the live zip a found check kept (`history/live`), named by the theme it read */
   liveHref: (theme: string) => string
+  /** Story 7.23b — Restore original (POST `{ act: 'restore', snapshot }`), answered as a put-back's outcome is */
+  restore: (snapshot: string) => Promise<ActOutcome>
+  /** Story 7.23b — the saved original's download (Story 2.5's route), for the refusal's fallback */
+  originalHref: (snapshot: string) => string
   onClose: () => void
 }) {
   const dialog = useRef<HTMLDialogElement>(null)
@@ -115,7 +135,8 @@ export function DeployHistory({ projectName, read, pin, act, check, liveHref, on
   /** each press of a Roll back, so a confirm reopened before the last one's `close` event has run still opens: that event is
    *  queued, so `asking` can still hold the same row when the next press sets it (seen once in three runs of journey (b)) */
   const [opens, setOpens] = useState(0)
-  const [note, setNote] = useState<{ id: string; words: string; detail?: string } | null>(null)
+  /** a refusal said under a row — or under the original's, where Ghost's check refusing it also draws its fallback (`offer`) */
+  const [note, setNote] = useState<{ id: string; words: string; detail?: string; offer?: true } | null>(null)
   const confirm = useRef<HTMLDialogElement>(null)
   /** R-291 — the check before a Roll back, and the opening it answers for: a press of a Roll back and the confirm closing each move
    *  it on, so an answer that lands for an opening since closed or replaced is dropped */
@@ -124,7 +145,9 @@ export function DeployHistory({ projectName, read, pin, act, check, liveHref, on
   const reading = checked?.kind === 'reading'
 
   /** the list, read and DRAWN before it returns (`flushSync`), so focus lands on what it drew — its rows, or null when it failed */
-  const load = async (): Promise<HistoryRow[] | null> => {
+  const load = async (): Promise<HistoryRow[] | null> => (await loaded())?.rows ?? null
+  /** …and the original-theme row with them (Story 7.23b: a restore's `gone` asks whether one is still kept) */
+  const loaded = async (): Promise<{ rows: HistoryRow[]; original: OriginalTheme | null } | null> => {
     const answer = await read().catch(() => null)
     if (answer === null) {
       setShown({ kind: 'failed' })
@@ -133,8 +156,9 @@ export function DeployHistory({ projectName, read, pin, act, check, liveHref, on
     }
     const live = answer.liveVersion === null ? Number.NaN : versionNumber(answer.liveVersion)
     const rows = historyRows(answer)
-    flushSync(() => setShown({ kind: 'rows', rows, live: Number.isFinite(live) ? live : null }))
-    return rows
+    const original = answer.original ?? null
+    flushSync(() => setShown({ kind: 'rows', rows, live: Number.isFinite(live) ? live : null, original }))
+    return { rows, original }
   }
 
   useEffect(() => {
@@ -225,6 +249,38 @@ export function DeployHistory({ projectName, read, pin, act, check, liveHref, on
     setNote(noted)
     if (back !== null) confirm.current?.close()
     else actOf(row.id)?.focus()
+  }
+
+  /** STORY 7.23b — RESTORE ORIGINAL: one press, no confirm. An ending is said once, the list read again and focus put on ✕; a
+   *  refusal is said under the row, focus back on Restore original */
+  const restoreBack = async (original: OriginalTheme): Promise<void> => {
+    if (acting !== null || busy !== null) return
+    setNote(null)
+    setActing(original.id)
+    const outcome: ActOutcome = await restore(original.id).catch((): ActOutcome => ({ kind: 'failed' }))
+    setActing(null)
+    const host = hostOf(original.siteUrl)
+    if (outcome.kind === 'live' || outcome.kind === 'uploaded') {
+      say(restoreSaid(outcome, host))
+      await loaded()
+      document.getElementById('deploy-history-close')?.focus()
+      return
+    }
+    if (outcome.kind === 'gone') {
+      // "changed" or "no longer kept" is the re-read's to decide; a re-read that failed has said its own sentence
+      const after = await loaded()
+      if (after !== null) say(restoreSaid(outcome, host, after.original !== null))
+      document.getElementById('deploy-history-close')?.focus()
+      return
+    }
+    const refused = outcome.kind === 'refused' && outcome.code === 'ghost_theme_refused'
+    setNote({
+      id: original.id,
+      words: restoreSaid(outcome, host),
+      ...(outcome.kind === 'refused' && outcome.detail !== undefined ? { detail: outcome.detail } : {}),
+      ...(refused ? { offer: true as const } : {}),
+    })
+    document.getElementById('history-restore')?.focus()
   }
 
   const toggle = async (row: HistoryRow): Promise<void> => {
@@ -339,6 +395,64 @@ export function DeployHistory({ projectName, read, pin, act, check, liveHref, on
       ) : null}
     </p>
   )
+
+  /** STORY 7.23b — D2a's original-theme row (`:58-73`), then its rule (`:75`) */
+  const originalRow = (o: OriginalTheme) => {
+    const out = acting === o.id
+    const said = note?.id === o.id ? note : null
+    return (
+      <>
+        <div data-history-original className="flex flex-col gap-2 rounded border border-line bg-paper-raised px-[13px] py-3">
+          <div className="flex items-center gap-[9px]">
+            <span aria-hidden className="flex size-[26px] shrink-0 items-center justify-center rounded-sm bg-paper-sunk text-ink-soft-aa">
+              <Archive size={13} />
+            </span>
+            <div className="flex min-w-0 flex-col gap-px">
+              <span className="text-[12.5px] font-semibold text-ink">{HW.original}</span>
+              <span data-history-original-name className="truncate font-mono text-[11px] text-ink-soft [font-variant-ligatures:none]">{HW.originalName(o.theme, o.version)}</span>
+            </div>
+            <span data-history-archived className="ml-auto shrink-0 text-[11px] text-ink-soft">{archivedLabel(o.capturedAt, now)}</span>
+          </div>
+          <div className="flex items-center gap-[9px]">
+            <span className="flex-1 text-[11px] leading-[1.5] text-ink-soft [text-wrap:pretty]">{HW.originalQuiet}</span>
+            <Button
+              id="history-restore"
+              variant="secondary"
+              size={28}
+              aria-busy={out || undefined}
+              aria-disabled={acting !== null || busy !== null || undefined}
+              aria-describedby={said === null ? undefined : 'history-original-note'}
+              onClick={() => void restoreBack(o)}
+              className="shrink-0"
+            >
+              <BusyLabel pending={out} busy={HW.restoring}>{HW.restore}</BusyLabel>
+            </Button>
+          </div>
+          {/* a refusal, said under the row — its own polite region, there before its words; Ghost's own words in mono */}
+          <p id="history-original-note" role="status" data-history-note={o.id} className="m-0 flex flex-col gap-[3px] text-[11.5px] leading-[1.5] text-danger-text empty:absolute [text-wrap:pretty]">
+            {said === null ? null : (
+              <>
+                <span>{said.words}</span>
+                {said.detail === undefined ? null : <span data-history-detail className="break-words font-mono text-[10.5px] text-ink-soft">{said.detail}</span>}
+              </>
+            )}
+          </p>
+          {said?.offer === true ? (
+            <div data-history-original-fallback className="flex flex-col gap-[7px]">
+              <SignedDownload id="history-original-download" href={originalHref(o.id)} label={HW.downloadOriginal} size={28} />
+              <p className="m-0 text-[11.5px] leading-[1.5] text-ink-mid [text-wrap:pretty]">
+                {HW.originalFallback}
+                <a data-history-original-place href={adminAt(o.siteUrl, 'design')} target="_blank" rel="noreferrer" className={`font-semibold text-coral-text ${ring}`}>
+                  {HW.originalPlace} ↗<span className="sr-only"> {DEPLOY_WORDS.newTab}</span>
+                </a>
+              </p>
+            </div>
+          ) : null}
+        </div>
+        <div aria-hidden data-history-original-rule className="h-px shrink-0 bg-line" />
+      </>
+    )
+  }
 
   const row = (r: HistoryRow) => {
     const out = busy === r.id
@@ -512,13 +626,19 @@ export function DeployHistory({ projectName, read, pin, act, check, liveHref, on
           </ol>
         ) : shown.kind === 'failed' ? (
           <p data-history-failed className="m-0 px-1 py-[6px] text-[12.5px] leading-[1.55] text-ink [text-wrap:pretty]">{HW.readFailed}</p>
-        ) : shown.rows.length === 0 ? (
-          // UX-DR6: nothing shipped yet — and the limit line below still states the bound
-          <p data-history-empty className="m-0 px-1 py-[6px] text-[12.5px] font-semibold text-ink">{HW.empty}</p>
         ) : (
-          <ol aria-labelledby="deploy-history-title" className="m-0 flex list-none flex-col gap-[9px] p-0">
-            {shown.rows.map(row)}
-          </ol>
+          <>
+            {/* Story 7.23b — above the versions and outside their count, and above "Nothing shipped yet" too */}
+            {shown.original === null ? null : originalRow(shown.original)}
+            {shown.rows.length === 0 ? (
+              // UX-DR6: nothing shipped yet — and the limit line below still states the bound
+              <p data-history-empty className="m-0 px-1 py-[6px] text-[12.5px] font-semibold text-ink">{HW.empty}</p>
+            ) : (
+              <ol aria-labelledby="deploy-history-title" className="m-0 flex list-none flex-col gap-[9px] p-0">
+                {shown.rows.map(row)}
+              </ol>
+            )}
+          </>
         )}
         <p data-history-limit className="m-0 mt-auto px-1 py-[6px] text-[11px] leading-[1.55] text-ink-soft [text-wrap:pretty]">{HW.limit}</p>
       </div>
@@ -596,12 +716,8 @@ export function DeployHistory({ projectName, read, pin, act, check, liveHref, on
                   <DriftFound record={checked.drift} idPrefix="history-drift" />
                   <p data-drift-foot className="m-0 text-[12px] leading-[1.55] text-ink-soft [text-wrap:pretty]">{HW.checkFoot(driftCount(checked.drift), asking.n)}</p>
                   {/* Story 7.22 (DW-396): a live zip past the store's size was not kept — no copy, so no Download; the Roll back stays */}
-                  {checked.drift.kept === false ? null : (
-                    <a id="history-drift-download" href={liveHref(checked.drift.theme)} className={`self-start ${buttonClasses('secondary', 40)}`}>
-                      <Download size={13} />
-                      {DW.download}
-                    </a>
-                  )}
+                  {/* Story 7.23b (DW-391): followed so a 404, 502 or the sign-in is said under it, never in place of the editor */}
+                  {checked.drift.kept === false ? null : <SignedDownload id="history-drift-download" href={liveHref(checked.drift.theme)} label={DW.download} />}
                 </>
               )}
             </div>

@@ -8,8 +8,8 @@ import { readFileSync } from 'node:fs'
 import { nextVersion, shipStateOf } from './lib/deploy.ts'
 import { PLANS, type PlanId } from './lib/plan.ts'
 import {
-  actionOf, actOutcomeOf, actSaid, changedLine, checkOutcomeOf, chipTone, EXPANDED, FEWEST_KEPT, heavyIds, historyAnswer, historyCap, historyRows, HISTORY_WORDS, isStoredVersion,
-  newestAccepted, pinOutcomeOf, pinSaid, prunable, timeLabel, type AcceptedRow, type HeavyRow, type HistoryAnswer, type Stored,
+  actionOf, actOutcomeOf, actSaid, archivedLabel, changedLine, checkOutcomeOf, chipTone, EXPANDED, FEWEST_KEPT, heavyIds, historyAnswer, historyCap, historyRows, HISTORY_WORDS, isStoredVersion,
+  newestAccepted, pinOutcomeOf, pinSaid, prunable, restoreSaid, timeLabel, type AcceptedRow, type HeavyRow, type HistoryAnswer, type SavedOriginal, type Stored,
 } from './lib/retention.ts'
 import { droppedKeys } from './lib/preflight.ts'
 import { PREFLIGHT_WORDS } from './lib/preflight.ts'
@@ -166,6 +166,7 @@ const B = 'site-b'
 const answerOf = (rows: Partial<HistoryAnswer['rows'][number]>[], linked: string | null = A): HistoryAnswer => ({
   linkedSiteId: linked,
   liveVersion: null,
+  original: null,
   rows: rows.map((r, i) => ({
     id: `d${i}`, version: `${i + 1}.0.0`, status: 'uploaded', pinned: false, createdAt: at(i + 1), acceptedAt: at(i + 1), errors: 0, warnings: 0, siteId: A, host: 'a.com',
     changed: null, drops: [], action: null, ...r,
@@ -229,6 +230,56 @@ test('the row\'s time, as D2a draws it: "Today · 2:14 PM" on the day, "Aug 28 �
   assert.equal(timeLabel('not a date', now, zone), '')
   // the viewer's own zone decides the day: 1:30 the next morning in Kolkata is not "Today" there
   assert.equal(timeLabel('2026-11-25T20:00:00Z', now, 'Asia/Kolkata'), 'Nov 26 · 1:30 AM')
+})
+
+test('7.23b · "Archived {date}", D2a\'s (`:66`): `timeLabel`\'s date half — "Archived today" on the day, "Archived Aug 2" this year, the year once it is not this one — in the viewer\'s own zone', () => {
+  const zone = 'UTC'
+  const now = new Date('2026-11-25T18:00:00Z')
+  assert.equal(archivedLabel('2026-11-25T01:00:00Z', now, zone), 'Archived today')
+  assert.equal(archivedLabel('2026-08-02T09:02:00Z', now, zone), 'Archived Aug 2')
+  assert.equal(archivedLabel('2025-08-02T09:02:00Z', now, zone), 'Archived Aug 2, 2025')
+  assert.equal(archivedLabel('not a date', now, zone), '')
+  assert.equal(archivedLabel('2026-11-25T20:00:00Z', now, 'Asia/Kolkata'), 'Archived Nov 26')
+  // the row's own time keeps its clock: the two share the date half
+  assert.equal(timeLabel('2026-08-02T09:02:00Z', now, zone), 'Aug 2 · 9:02 AM')
+})
+
+test('7.23b · the original-theme row\'s words: the mono line is the name and its version, or the name alone; the quiet line is D2a\'s verbatim; Restore original and its busy word', () => {
+  assert.equal(HISTORY_WORDS.originalName('casper', '5.9.4'), 'casper 5.9.4')
+  assert.equal(HISTORY_WORDS.originalName('casper', null), 'casper')
+  assert.equal(HISTORY_WORDS.original, 'Your original theme')
+  const frame = readFileSync('../../_bmad-output/planning-artifacts/design/claude-design-export/Inflozo/D2 Deploy History Completed.dc.html', 'utf8')
+  for (const words of [HISTORY_WORDS.original, HISTORY_WORDS.originalQuiet, HISTORY_WORDS.restore, HISTORY_WORDS.archived('Aug 2')]) assert.ok(frame.includes(`>${words}<`), `the frame draws "${words}"`)
+  assert.equal(HISTORY_WORDS.restoring, 'Restoring…')
+  assert.equal(HISTORY_WORDS.originalPlace, 'Design & branding', 'B12b\'s own link words (R-170)')
+})
+
+test('7.23b · what Restore original says (`restoreSaid`, over `actOutcomeOf`\'s outcomes): the two endings, gone as "changed" or — with none left — "no longer kept", Ghost\'s check, disconnected, busy (7.23a\'s), ours as its message, and a request that failed', () => {
+  const said = (status: number, body: unknown, kept?: boolean) => restoreSaid(actOutcomeOf(status, body), 'a.com', kept)
+  assert.equal(said(200, { outcome: 'live' }), 'Your original theme is live on a.com.')
+  assert.equal(said(200, { outcome: 'uploaded' }), "Your original theme is on a.com but isn't live yet.")
+  assert.equal(said(404, null), 'Your saved original theme has changed since you opened History. Check it and try again.')
+  assert.equal(said(404, null, false), 'Your original theme is no longer kept.')
+  assert.equal(said(422, { code: 'ghost_theme_refused', detail: 'x' }), "Ghost's own theme check refused your original theme, so nothing on your site changed.")
+  assert.equal(said(409, { code: 'disconnected' }), 'Reconnect a.com in Sites to restore your original theme.')
+  assert.equal(said(409, { code: 'busy' }), HISTORY_WORDS.refused.busy('a.com'))
+  assert.equal(said(502, { code: 'ghost_unavailable', message: deployError('ghost_unavailable', { host: 'a.com' }).message }), deployError('ghost_unavailable', { host: 'a.com' }).message)
+  assert.equal(said(502, { code: 'deploy_infrastructure', message: HISTORY_WORDS.restoreUnrecorded('a.com') }), "Your original theme reached a.com, but History couldn't record it. Try again.")
+  assert.equal(said(0, null), "Your original theme didn't go back on your site. Try again.")
+  assert.equal(said(502, { code: 'x' }), HISTORY_WORDS.restoreFailed, 'a 502 with no message')
+})
+
+test('7.23b · the route\'s answer picks the linked site\'s original out of the user\'s saved ones (`historyAnswer`): never another site\'s, and null with no linked site or no snapshot', () => {
+  const original = { id: 's1', theme: 'casper', version: '5.9.4', capturedAt: '2026-08-02T09:00:00Z', siteUrl: 'https://a.com' }
+  const mine: SavedOriginal = { id: 's1', site_id: A, theme_name: 'casper', theme_version: '5.9.4', captured_at: '2026-08-02T09:00:00Z', sites: { url: 'https://a.com' } }
+  const other: SavedOriginal = { id: 's2', site_id: 'site-b', theme_name: 'edition', theme_version: null, captured_at: '2026-08-03T09:00:00Z', sites: { url: 'https://b.com' } }
+  const answer = (linkedSiteId: string | null, saved?: SavedOriginal[]) => historyAnswer({ linkedSiteId, listed: [], rows: [], heavy: new Map(), ...(saved === undefined ? {} : { saved }) }).original
+  assert.deepEqual(answer(A, [other, mine]), original, 'the linked site\'s, picked out of the user\'s')
+  assert.equal(answer(A, [other]), null, 'never another site\'s (R-267)')
+  assert.equal(answer(null, [other, mine]), null, 'no linked site, no row')
+  assert.equal(answer(A, []), null, 'no snapshot, no row')
+  assert.equal(answer(A), null)
+  assert.equal(answer(A, [{ ...mine, theme_version: null }])?.version, null, 'saved before the column: the name alone')
 })
 
 test('the job\'s plan read refuses AD-28\'s degradation: a read that logged its failure throws `plan_unread` (and the line is still logged) — a read that worked answers its plan (the control)', async () => {

@@ -100,11 +100,13 @@ export type DeployIo = {
     read: (id: string, userId: string) => Promise<DeployRow | null>
     update: (id: string, userId: string, patch: Partial<DeployRow> & { settings_snapshot?: unknown }) => Promise<void>
     remove: (id: string, userId: string) => Promise<void>
-    /** every other deploy live on this site is no longer live once this one activates */
-    demote: (a: { siteId: string; userId: string; except: string }) => Promise<void>
+    /** every other deploy live on this site is no longer live once this one activates — or, with no `except`, every one: Story
+     *  7.23b's Restore original, after which no Inflozo theme is live on the site */
+    demote: (a: { siteId: string; userId: string; except?: string }) => Promise<void>
     /** the version the site serves from this project: its last activated deploy's number, or null */
     previous: (a: { projectId: string; siteId: string; userId: string; except?: string }) => Promise<number | null>
-    /** R-264 (a): the project whose deploy was activated last on this site, or null — Inflozo's own record of what is live */
+    /** R-264 (a): the project whose deploy was activated last on this site and is STILL `live` (Story 7.23b: a restore demotes it),
+     *  or null — Inflozo's own record of what is live */
     liveProject: (a: { siteId: string; userId: string }) => Promise<string | null>
     /** Story 7.18b — `config.custom` as this project's latest ACTIVATED deploy to the site shipped it (its `preflight.custom`),
      *  other than `except`; null when there is none or it predates the facts */
@@ -801,7 +803,8 @@ async function pruneAfter(io: DeployIo, job: JobRow): Promise<void> {
 }
 
 /** R-264 (a) — DEPLOY ONLY'S GUARD, as the server asks it: Inflozo's own record says this project's theme is the one live on
- *  the site (the site's latest activated deploy, whichever project made it, is this project's), so an upload under the frozen
+ *  the site (the site's latest activated deploy that is still `live`, whichever project made it, is this project's — Story
+ *  7.23b's Restore original demotes it), so an upload under the frozen
  *  name would go live at once. The route refuses `ship` in mode `upload` while this holds (422), and `ship` re-asks it. */
 export async function uploadOnlyRefused(a: { projectId: string; siteId: string; userId: string }, io: DeployIo): Promise<boolean> {
   return (await io.deploys.liveProject({ siteId: a.siteId, userId: a.userId })) === a.projectId

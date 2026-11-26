@@ -11,7 +11,7 @@ import { ConditionRow } from '@/components/kit/condition-row'
 import { DesignPicker } from '@/components/kit/design-picker'
 import { EmptyPanel } from '@/components/kit/empty-panel'
 import { DragGrip } from '@/components/kit/grip'
-import { Bolt, Link, LinkOff, Redo, RollBack, Undo } from '@/components/kit/icons'
+import { Archive, Bolt, Link, LinkOff, Redo, RollBack, Undo } from '@/components/kit/icons'
 import { AssetRow, DropZone } from '@/components/kit/image-control'
 import { Multiline, SearchInput, TextInput } from '@/components/kit/input'
 import { ControlLabel, HelperCaption, PanelLabel, SectionHeader } from '@/components/kit/labels'
@@ -356,6 +356,9 @@ export default function KitGallery() {
             <Button variant="coral-outline" size={26}><RollBack size={11} />Roll back</Button>
             <Button variant="quiet" size={26} weight="font-medium"><RollBack size={11} />Roll back — quiet</Button>
             <Button variant="coral" size={26}><Bolt size={11} strokeWidth={1.9} />Re-activate</Button>
+            {/* STORY 7.23b — D2a's original-theme row: its archive tile (`D2:60`) and Restore original, the secondary at 28 */}
+            <span aria-hidden className="flex size-[26px] items-center justify-center rounded-sm bg-paper-sunk text-ink-soft-aa"><Archive size={13} /></span>
+            <Button variant="secondary" size={28}>Restore original</Button>
             <Button variant="danger" size={32}>Danger</Button>
             <Button variant="danger-outline" size={32}>Danger outline</Button>
           </div>

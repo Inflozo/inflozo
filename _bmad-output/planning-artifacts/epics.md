@@ -4744,6 +4744,9 @@ the switch takes the site's lock, or waits for the job moving on it (DW-379).
 per-site lock: today it refuses while a ship of the project × site is moving, and a ship that starts during a put-back can
 still race it (Ghost answers `EEXIST` to one of them, `deploy_running`); the lock closes that race — and *(Story 7.23a's Review,
 2026-11-25)* the race of two put-backs at once on one site (two tabs, or a session reading along, which R-192 lets act).
+*(Story 7.23b's Dev, 2026-11-26)* Restore original (`restoreOriginal`, the same file) takes the same lock beside the put-back: it
+activates the site's saved original, or uploads it under its own name when Ghost no longer holds it, with no `deploy_jobs` row,
+and today refuses `busy` the same way.
 
 **FRs:** FR-J11. · **Owner test:** none.
 

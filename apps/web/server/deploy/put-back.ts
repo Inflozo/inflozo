@@ -1,3 +1,4 @@
+import { snapshotObjectKey } from '../../app/(app)/app/(authed)/account/deletion-rule.ts'
 import { hostOf } from '../../lib/connect-rule.ts'
 import { activateAnswer, deployError, themeNotHeld, uploadAnswer, versionNumber, type DeployCode, type DeployError } from '../../lib/deploy.ts'
 import { causeShown, historyCopyPath, type ContentManifest, type DriftRecord } from '../../lib/drift.ts'
@@ -38,6 +39,21 @@ import { compareLive, sendActivate, sendUpload, STALLED_MS, twice, type Called, 
  * check that cannot run says "couldn't verify" and lets them go on, as Ship it does. Its file labels are the manifest's own — it
  * reads no working document. A found drift's live zip is kept at `historyCopyPath`, never Ship it's key. Re-activate runs no check:
  * it switches on files Ghost already holds and replaces nothing.
+ *
+ * STORY 7.23b — RESTORE ORIGINAL (FR-J13's safety net, D2a's original-theme row; R-292, the owner's Question 1, option 1):
+ * `restoreOriginal` puts the linked site's one saved pre-Inflozo theme (`site_snapshots`, R-284: the theme Inflozo replaced most
+ * recently) back, over the same io. It ACTIVATES THE THEME BY ITS NAME FIRST — Ghost keeps the previous theme installed beside the
+ * active one (VERIFY 61) — and only when Ghost no longer holds that name (`themeNotHeld`) uploads the saved zip as `{name}.zip`,
+ * then activates it. So nothing on the site is ever overwritten, and no check runs (Roll back's R-291 check compares files a restore
+ * never touches). DW-389: Ghost's own Casper and Source are only ever activated — Ghost refuses `casper.zip` and `source.zip` as
+ * uploads (`storage.js:53-56`) and never deletes them (`:167-170`). Its refusals are the put-back's, in the put-back's order
+ * (`disconnected`, then `busy`), with nothing sent to Ghost; it reads no lock, no plan and no working document, and runs no gscan.
+ * THE RECORDS: live, every `live` row on the site (any project of the user's) is demoted to `uploaded` — so Inflozo's version shows
+ * as 7.23a's D2d row with Re-activate, the undo — and `activated`, `activated_at` and `accepted_at` are left as they are. NO
+ * `deploys` ROW IS WRITTEN: the 7.21 criterion's "records that upload as the newest accepted one" exists because Ghost replaces the
+ * files under the FROZEN name the drift check reads, and a restore activates or uploads under the ORIGINAL's name, never that one
+ * (AD-19) — so the drift baseline holds, and a row carrying the snapshot's manifest would compare Inflozo's theme with the old one
+ * (a false drift on every ship, which FR-J16 forbids). Ghost refusing, or the theme left not live: nothing is written.
  */
 
 /** what the put-back reads of the version's row */
@@ -55,6 +71,10 @@ export type PutBackIo = Pick<DeployIo, 'call' | 'log' | 'liveTheme'> & {
   /** `put` is the check's live copy alone (`historyCopyPath`, `replace`) */
   artifacts: Pick<DeployIo['artifacts'], 'get' | 'put'>
   deploys: Pick<DeployIo['deploys'], 'update' | 'demote'>
+  /** Story 7.23b — the site's saved pre-Inflozo theme (`site_snapshots`, one row per site), the user's own, or null */
+  original: (a: { siteId: string; userId: string }) => Promise<OriginalRow | null>
+  /** Story 7.23b — the `site-snapshots` bucket: an object by its key (no bucket prefix — `snapshotObjectKey`) */
+  snapshots: { get: (key: string) => Promise<Uint8Array> }
   /** the row, the user's own (`user_id`), or null */
   row: (a: { deployId: string; userId: string }) => Promise<PutBackRow | null>
   /** this project × site's newest upload Ghost accepted (`uploaded`/`live`, stored or pruned), by `accepted_at` — its id, or null */
@@ -68,6 +88,9 @@ export type PutBackIo = Pick<DeployIo, 'call' | 'log' | 'liveTheme'> & {
   /** whether a job of this project × site is uploading — `snapshotting`, `uploading` or `activating` — and was touched after `since` */
   moving: (a: { projectId: string; siteId: string; userId: string; since: string }) => Promise<boolean>
 }
+
+/** what Restore original reads of the site's saved original */
+export type OriginalRow = { id: string; theme_name: string; storage_path: string }
 
 /** a refusal with nothing sent to Ghost — the put-back's and the check's alike */
 export type Refusal = 'gone' | 'elsewhere' | 'live-already' | 'disconnected' | 'busy'
@@ -196,5 +219,78 @@ export async function putBack(io: PutBackIo, a: Asked): Promise<PutBackOutcome> 
     io.log('put-back: infrastructure failed', { code: (e as { code?: string } | null)?.code, acted: acted === null ? 'no' : 'yes' })
     const ours = deployError('deploy_infrastructure', { host })
     return { refused: acted === null ? ours : { ...ours, message: HISTORY_WORDS.unrecorded(acted, host) } }
+  }
+}
+
+/** what Restore original ended as: live, or on the site and not live; or why nothing was sent, or Ghost's refusal (nothing changed) */
+export type RestoreOutcome = 'live' | 'uploaded' | 'gone' | 'disconnected' | 'busy' | { refused: DeployError }
+
+/** DW-389: Ghost's own default themes, which it refuses as uploads (`storage.js:53-56`) and never deletes (`:167-170`) — so they are
+ *  only ever activated */
+const GHOST_DEFAULTS: ReadonlySet<string> = new Set(['casper', 'source'])
+
+/**
+ * STORY 7.23b — RESTORE ORIGINAL, exactly as the spec's Always states (the header says why): the project's linked site, its saved
+ * original (its id must be the one asked, else `gone`), the refusals with nothing sent to Ghost, then the activation by name, and
+ * only when Ghost no longer holds that name (never Casper or Source) the saved zip uploaded as `{name}.zip` and activated. Live:
+ * every `live` row on the site demoted. No `deploys` row is ever written.
+ */
+export async function restoreOriginal(io: PutBackIo, a: { userId: string; projectId: string; snapshotId: string; now: Date }): Promise<RestoreOutcome> {
+  let host = ''
+  /** whether Ghost has acted — an activation made or an upload accepted — so a record failing after it is said as what it is */
+  let acted = false
+  try {
+    // 1. the linked site, then its saved original — the one asked, else gone (replaced by a later capture, purged, or another site's)
+    const linked = await twice(io, 'linked site', () => io.linked({ projectId: a.projectId, userId: a.userId }))
+    if (linked === null) return 'gone'
+    const original = await twice(io, 'original theme', () => io.original({ siteId: linked.siteId, userId: a.userId }))
+    if (original === null || original.id !== a.snapshotId) return 'gone'
+    // 2. the put-back's refusals, in its order, with nothing sent to Ghost
+    if (linked.disconnected) return 'disconnected'
+    const since = new Date(a.now.getTime() - STALLED_MS).toISOString()
+    // ponytail: the put-back's `busy` ceiling (`admit`) — Story 7.25's per-site advisory lock closes it, and this joins it
+    if (await twice(io, 'moving jobs', () => io.moving({ projectId: a.projectId, siteId: linked.siteId, userId: a.userId, since }))) return 'busy'
+    host = hostOf(linked.url)
+    const ctx = { host, siteId: linked.siteId }
+    const name = original.theme_name
+    const ghostSaid = (code: DeployCode, detail?: string) => {
+      io.log('restore: Ghost refused', { code })
+      return { refused: deployError(code, { ...ctx, ...(detail === undefined ? {} : { detail }) }) }
+    }
+    /** live: every `live` row on the site is no longer live; nothing else is written (`return await`, as `putBack`'s `goLive`) */
+    const goLive = async (): Promise<RestoreOutcome> => {
+      acted = true
+      await twice(io, 'demote', () => io.deploys.demote({ siteId: linked.siteId, userId: a.userId }))
+      return 'live'
+    }
+    const activation = (): Promise<Called> => sendActivate(io, { siteId: linked.siteId, themeName: name, route: ROUTE })
+
+    // 3. ACTIVATE FIRST: Ghost's own copy of the original, as it holds it
+    const answer = await activation()
+    if ('thrown' in answer) return ghostSaid(answer.thrown)
+    const activated = activateAnswer(answer)
+    if ('ok' in activated) return await goLive()
+    if ('failed' in activated) return ghostSaid(activated.failed)
+    if (answer.status === 429 || answer.status >= 500) return ghostSaid('ghost_unavailable')
+    // Ghost's check (activation runs it too, `activate.js:55-60`) — or a default theme Ghost says it lacks (never seen): Ghost's words
+    if (!themeNotHeld(answer) || GHOST_DEFAULTS.has(name)) return ghostSaid('ghost_theme_refused', activated.detail)
+
+    // 4. Ghost no longer holds it: the saved zip, uploaded under the original's own name — never the frozen one (the baseline holds)
+    const bytes = await twice(io, 'original zip', () => io.snapshots.get(snapshotObjectKey(original.storage_path)))
+    const posted = await sendUpload(io, { siteId: linked.siteId, themeName: name, bytes, route: ROUTE })
+    if ('thrown' in posted) return ghostSaid(posted.thrown)
+    const upload = uploadAnswer(posted)
+    // Ghost said no (its 422 among them): nothing changed — never retried (VERIFY 10)
+    if ('failed' in upload) return ghostSaid(upload.failed, upload.detail)
+    acted = true
+    if (upload.active) return await goLive()
+    const again = await activation()
+    if (!('thrown' in again) && 'ok' in activateAnswer(again)) return await goLive()
+    // on the site, not live: nothing written
+    return 'uploaded'
+  } catch (e) {
+    io.log('restore: infrastructure failed', { code: (e as { code?: string } | null)?.code, acted: acted ? 'yes' : 'no' })
+    const ours = deployError('deploy_infrastructure', { host })
+    return { refused: acted ? { ...ours, message: HISTORY_WORDS.restoreUnrecorded(host) } : ours }
   }
 }

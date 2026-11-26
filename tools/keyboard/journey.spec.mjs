@@ -10314,6 +10314,29 @@ const GATE_ROWS = GATE.GATE_ROWS.map((r) => r.id)
 /** the harness's Theme Download answers this snapshot id (`harnessTheme`); Story 2.5's route for it is the journey's to answer */
 const SNAPSHOT_ID = '00000000-0000-4000-8000-000000000720'
 const SNAPSHOT_ROUTE = new RegExp(`/snapshots/${SNAPSHOT_ID}/download$`)
+/** STORY 7.23b (DW-391) — A SIGNED-DOWNLOAD ROUTE AS THE EDITOR'S FOLLOWER MEETS IT (`lib/signed-download.ts`): asked with `Accept:
+ *  application/json` it answers `200 { url }` — or `plan.status` when a journey plants a 404, 401 or 502 — and that URL, a
+ *  same-origin stand-in for Storage's signed one, answers the zip as an attachment; asked as a plain link it answers the zip at once
+ *  (where the real 303 ends — a redirect `route.fulfill` answers is followed past `page.route`). Answers every ask's URL, in order,
+ *  and every signed URL served. The routes' own JSON and 303 are `signed-download.test.ts`' and `deploy.test.ts`'. */
+async function fakeSigned(page, matches, filename, plan = { status: 200 }) {
+  const asked = []
+  const served = []
+  const signed = `/__signed/${filename}`
+  const zip = { status: 200, headers: { 'content-type': 'application/zip', 'content-disposition': `attachment; filename="${filename}"`, 'cache-control': 'no-store' }, body: Buffer.from('PK\x05\x06' + '\0'.repeat(18), 'binary') }
+  await page.route((url) => url.pathname === signed, (route) => {
+    served.push(signed)
+    return route.fulfill(zip)
+  })
+  await page.route(matches, (route) => {
+    const req = route.request()
+    asked.push(new URL(req.url()))
+    if (!/application\/json/.test(req.headers()['accept'] ?? '')) return route.fulfill(zip)
+    if (plan.status !== 200) return route.fulfill({ status: plan.status, contentType: 'text/plain', headers: { 'cache-control': 'no-store' }, body: 'Not found' })
+    return route.fulfill({ status: 200, contentType: 'application/json', headers: { 'cache-control': 'no-store' }, body: JSON.stringify({ url: signed }) })
+  })
+  return { asked, served }
+}
 const HELD = { ...FIRST, 'x-inflozo-harness-token': 'held' }
 const contentWidth = (page) => wizard(page).evaluate((d) => d.getBoundingClientRect().width - parseFloat(getComputedStyle(d).paddingLeft) * 2)
 /** every sentence the wizard's polite region says from now on, in order (its words change under one live region) */
@@ -10694,11 +10717,9 @@ test('7.20a · (g) a capture Ghost refused: B12b names the download and its stat
 
 test('7.20a · (h) the Theme Download, the token held: "Preparing…", then Story 2.5\'s /snapshots/{id}/download is followed; a marked live theme says it is Inflozo\'s own, and Ghost\'s refusal says its status — nothing followed (the controls)', async ({ page }) => {
   await page.setExtraHTTPHeaders({ ...HELD, 'x-inflozo-harness-backup': 'self' })
-  const followed = []
-  await page.route(SNAPSHOT_ROUTE, (route) => {
-    followed.push(new URL(route.request().url()).pathname)
-    return route.fulfill({ status: 200, headers: { 'content-type': 'application/zip', 'content-disposition': 'attachment; filename="harness-casper.zip"' }, body: 'PK\x03\x04' })
-  })
+  // RE-EXPECTED by Story 7.23b (DW-391): the route is followed by the editor's follower, its signed URL answered as JSON
+  const { asked } = await fakeSigned(page, SNAPSHOT_ROUTE, 'harness-casper.zip')
+  const paths = () => asked.map((u) => u.pathname)
   let hold = null
   await page.route((url) => url.pathname.startsWith(HARNESS), async (route) => {
     const req = route.request()
@@ -10716,7 +10737,7 @@ test('7.20a · (h) the Theme Download, the token held: "Preparing…", then Stor
   await expect(theme).toHaveAccessibleName(BW.preparing)
   hold = null
   release()
-  await expect.poll(() => followed, { timeout: 15_000 }).toEqual([`/app${GATE.snapshotDownloadPath(SNAPSHOT_ID)}`])
+  await expect.poll(paths, { timeout: 15_000 }).toEqual([`/app${GATE.snapshotDownloadPath(SNAPSHOT_ID)}`])
   await expect(theme).toHaveAccessibleName(BW.download)
   await expect(wizard(page), 'the page stays on the gate').toHaveAttribute('data-deploy-wizard', 'backup')
   for (const [answer, words] of [['marked', BW.marked], ['refused', BW.downloadFailed(403)]]) {
@@ -10725,7 +10746,7 @@ test('7.20a · (h) the Theme Download, the token held: "Preparing…", then Stor
     await page.keyboard.press('Enter')
     await expect(page.locator('#deploy-download-theme-said'), answer).toHaveText(words)
   }
-  expect(followed, 'nothing more followed').toHaveLength(1)
+  expect(asked, 'nothing more followed').toHaveLength(1)
 })
 
 /* ── Story 7.21 — pre-deploy drift detection (FR-J16, R-287; D3a/D3b/D3c; UX-DR12, UX-DR14, R-98, R-170; DW-338) ──
@@ -10791,16 +10812,11 @@ async function plantDrift(page, value, plan = {}) {
     }
     return route.fallback()
   })
-  // the live copy: the real route's 303 goes to Storage's signed URL, whose answer is the zip as an attachment. A redirect that
-  // `route.fulfill` answers is followed by the browser WITHOUT `page.route` seeing the next request (executed: the 303 left the
-  // editor for the dev server's 404), so the fake answers the signed URL's own answer at the link's address; the 303 itself is
-  // `deploy.test.ts`' (the route's source) and walk step 119 (d)'s (production)
-  const live = []
-  await page.route((url) => url.pathname.endsWith(`/projects/${HARNESS_PROJECT_ID}/deploy/live`), (route) => {
-    live.push(new URL(route.request().url()).search)
-    return route.fulfill({ status: 200, headers: { 'content-type': 'application/zip', 'content-disposition': `attachment; filename="${DRIFT.liveFileName(DRIFT_THEME)}"`, 'cache-control': 'no-store' }, body: Buffer.from('PK\x05\x06' + '\0'.repeat(18), 'binary') })
-  })
-  return { sent, refused, live }
+  // the live copy: the real route answers Storage's signed URL — RE-EXPECTED by Story 7.23b (DW-391): to the editor's follower as
+  // JSON, whose URL answers the zip as an attachment (`fakeSigned`); the route's own source is `deploy.test.ts`' and its production
+  // answer walk step 119 (d)'s. `live` is every ask's search
+  const { asked } = await fakeSigned(page, (url) => url.pathname.endsWith(`/projects/${HARNESS_PROJECT_ID}/deploy/live`), DRIFT.liveFileName(DRIFT_THEME))
+  return { sent, refused, live: asked }
 }
 /** Ship it → Run checks, landed on D3a, D3b, D3c or the running row */
 async function toDrift(page, value, plan) {
@@ -10863,7 +10879,7 @@ test('7.21 · (a2) Download the live theme first is a plain link: Enter follows 
   await link.focus()
   const [download] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')])
   expect(download.suggestedFilename()).toBe(DRIFT.liveFileName(DRIFT_THEME))
-  expect(live).toEqual(['?job=job-718'])
+  expect(live.map((u) => u.search)).toEqual(['?job=job-718'])
   await expect(wizard(page).locator('[data-drift-report]'), 'the page stays on D3a').toBeVisible()
 })
 
@@ -11722,7 +11738,9 @@ test('7.23a · (n) R-291: something changed on the site — D3a\'s block between
   await expect(region.locator('[data-drift-foot]')).toHaveText(HW.checkFoot(3, 1))
   expect(HW.checkFoot(3, 1)).toBe("Rolling back replaces all three with v1's. Take a copy of the live theme first if you want to keep those edits.")
   const download = region.locator('#history-drift-download')
-  await expect(download).toHaveText(DRW.download)
+  // RE-EXPECTED by Story 7.23b (DW-391): the Download carries its "Preparing…" (R-98) as `BusyLabel` does — hidden until it is out,
+  // so its NAME is the words (7.21's own reading of D3a's)
+  await expect(download).toHaveAccessibleName(DRW.download)
   await expect(download).toHaveAttribute('href', `/app${DRIFT.historyLiveDownloadPath(HARNESS_PROJECT_ID, DRIFT_THEME)}`)
   // D3's order: the summary row, the check, then Pre-flight's dropped settings (v1 drops one)
   const order = await historyConfirm(page).evaluate((c) => [...c.querySelectorAll('[data-history-confirm-row], [data-history-check], [data-history-drops]')].map((e) => [...e.attributes].map((a) => a.name).find((n) => n.startsWith('data-history-'))))
@@ -11859,4 +11877,262 @@ test('7.23a · (r) R-291: a check REFUSED is the put-back\'s own refusal — `bu
   await expect.poll(() => historySaid(page)).toBe(HW.said.gone(4))
   await expect(page.locator('#deploy-history-close')).toBeFocused()
   await expect(drawer(page).locator('[data-history-note]:not(:empty)')).toHaveCount(0)
+})
+
+/* ── Story 7.23b — Restore original (FR-J13's safety net; D2a's original-theme row `:58-73` and its rule `:75`; R-292; DW-389;
+   DW-391; UX-DR12, R-98) ──────────────────────────────────────────────────────────────────────────────────────────────────────
+   The row is the harness's own read (`harnessHistory`), by `x-inflozo-harness-history`: `original` (the linked site's saved
+   `casper 5.9.4` over v2 live and v1), `original-restored` (the same after a restore: v2 D2d's row, nothing live — a journey switches
+   to it while the press is held, so the re-read draws it), `original-unversioned` and `original-empty`. Restore original's answer is
+   `harnessRestore`'s, by `x-inflozo-harness-restore` (no header: live). DW-391's four Downloads are followed against `fakeSigned`.
+   Pointer-free. The real restore is `put-back.test.ts`' and walk step 122's (production + T1). */
+
+const SIGNED = await import(new URL('../../apps/web/lib/signed-download.ts', import.meta.url).href)
+const SGW = SIGNED.SIGNED_WORDS
+const originalRow = (page) => drawer(page).locator('[data-history-original]')
+const restoreButton = (page) => page.locator('#history-restore')
+const ORIGINAL_ID = '00000000-0000-4000-8000-000000000723'
+/** the drawer opened with the restore's header beside the history one */
+async function openOriginal(page, history, restore) {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-history': history, ...(restore === undefined ? {} : { 'x-inflozo-harness-restore': restore }) })
+  await open(page)
+  await page.locator('#deploy-history-open').focus()
+  await page.keyboard.press('Enter')
+  await expect(drawer(page)).toBeVisible()
+  await expect(drawer(page).locator('[data-history-loading]')).toHaveCount(0, { timeout: 15_000 })
+}
+/** Restore original pressed by the keyboard: Tab from ✕ (the drawer opens on it) — the row is the drawer's first stop — then Enter */
+async function pressRestore(page) {
+  await tabToRow(page, restoreButton(page))
+  await page.keyboard.press('Enter')
+}
+
+test('7.23b · (a) D2a\'s original-theme row: above the list and OUTSIDE its count — the archive tile (aria-hidden), "Your original theme", the mono `casper 5.9.4`, "Archived Nov 2", the frame\'s quiet line and Restore original — then the rule; no Live badge on it; the first Tab stop after ✕; the name alone when no version was kept; and the row above "Nothing shipped yet" and the limit line', async ({ page }) => {
+  await openOriginal(page, 'original')
+  const row = originalRow(page)
+  await expect(row).toHaveCount(1)
+  await expect(drawer(page).locator('ol [data-history-original]'), 'outside the list').toHaveCount(0)
+  await expect(drawer(page).locator('ol > li')).toHaveCount(2)
+  await expect(drawer(page).locator('[data-history-row]')).toHaveCount(2)
+  await expect(row.locator(':scope > div > span[aria-hidden]'), 'the archive tile, hidden from a screen reader').toHaveCount(1)
+  await expect(row).toContainText(HW.original)
+  const name = row.locator('[data-history-original-name]')
+  await expect(name).toHaveText('casper 5.9.4')
+  expect(await name.evaluate((e) => getComputedStyle(e).fontFamily)).toMatch(/mono/i)
+  await expect(row.locator('[data-history-archived]')).toHaveText(HW.archived('Nov 2'))
+  await expect(row).toContainText(HW.originalQuiet)
+  await expect(restoreButton(page)).toHaveAccessibleName(HW.restore)
+  expect(Math.round(await restoreButton(page).evaluate((b) => b.getBoundingClientRect().height)), 'the Kit\'s 28').toBe(28)
+  await expect(row, 'no Live badge: no record says it is live').not.toContainText(HW.live)
+  // the order: the row, its rule, then the list (D2a `:58-75`)
+  const order = await drawer(page).evaluate((d) => [...d.querySelectorAll('[data-history-original], [data-history-original-rule], ol, [data-history-limit]')].map((e) => e.hasAttribute('data-history-original') ? 'row' : e.hasAttribute('data-history-original-rule') ? 'rule' : e.tagName === 'OL' ? 'list' : 'limit'))
+  expect(order).toEqual(['row', 'rule', 'list', 'limit'])
+  await expect(page.locator('#deploy-history-close')).toBeFocused()
+  await page.keyboard.press('Tab')
+  await expect(restoreButton(page), 'the first stop after ✕').toBeFocused()
+  await page.keyboard.press('Escape')
+  await expect(drawer(page)).toHaveCount(0)
+
+  await openOriginal(page, 'original-unversioned')
+  await expect(originalRow(page).locator('[data-history-original-name]'), 'the name alone').toHaveText('casper')
+  await page.keyboard.press('Escape')
+
+  await openOriginal(page, 'original-empty')
+  const empty = await drawer(page).evaluate((d) => [...d.querySelectorAll('[data-history-original], [data-history-original-rule], [data-history-empty], [data-history-limit]')].map((e) => [...e.attributes].map((a) => a.name).find((n) => n.startsWith('data-history-'))))
+  expect(empty).toEqual(['data-history-original', 'data-history-original-rule', 'data-history-empty', 'data-history-limit'])
+  await expect(drawer(page).locator('[data-history-empty]')).toHaveText(HW.empty)
+})
+
+test('7.23b · (b) Enter on Restore original: "Restoring…" with aria-busy and aria-disabled while it is out (R-98), every pin and action waiting, the drawer unstoppable (Esc twice does nothing); then said once, the list read again — v2 now D2d\'s row with Re-activate, nothing live — and focus on ✕', async ({ page }) => {
+  await openOriginal(page, 'original')
+  const release = await holdActions(page)
+  await pressRestore(page)
+  const button = restoreButton(page)
+  await expect(button).toHaveAccessibleName(HW.restoring)
+  await expect(button).toHaveAttribute('aria-busy', 'true')
+  await expect(button).toHaveAttribute('aria-disabled', 'true')
+  await expect(drawer(page)).toHaveAttribute('data-unstoppable', 'true')
+  await expect(pinOf(page, 'v1'), 'every pin waits').toHaveAttribute('aria-disabled', 'true')
+  await expect(actOf(page, 'v1'), 'every action waits').toHaveAttribute('aria-disabled', 'true')
+  await page.keyboard.press('Escape')
+  await page.keyboard.press('Escape')
+  await expect(drawer(page)).toHaveAttribute('open', '')
+  // what the restore leaves: the drawer's re-read draws it
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-history': 'original-restored' })
+  release()
+  await expect(page.locator('#deploy-history-close')).toBeFocused({ timeout: 15_000 })
+  await expect.poll(() => historySaid(page)).toBe(RETENTION.restoreSaid({ kind: 'live' }, 'harness.example'))
+  expect(RETENTION.restoreSaid({ kind: 'live' }, 'harness.example')).toBe('Your original theme is live on harness.example.')
+  await expect(drawer(page).locator('[data-history-note]:not(:empty)'), 'said once — in the drawer\'s region, not under a row').toHaveCount(0)
+  await expect(historyRow(page, 'v2')).toHaveAttribute('data-history-uploaded', 'true')
+  await expect(actOf(page, 'v2')).toHaveAccessibleName(HW.reactivateName(2))
+  await expect(drawer(page).locator('ol'), 'nothing in the list is live').not.toContainText(HW.live)
+  await expect(originalRow(page), 'the original row stays on top').toHaveCount(1)
+  await expect(drawer(page)).not.toHaveAttribute('data-unstoppable', 'true')
+  await expect(restoreButton(page)).toHaveAccessibleName(HW.restore)
+})
+
+test('7.23b · (c) Ghost\'s own check refuses the original: under the row, the sentence and Ghost\'s detail in mono, "Download your original theme" (Story 2.5\'s route for this snapshot) and the line ending in Ghost\'s "Design & branding ↗" — `adminAt`\'s address, a new tab; focus back on Restore original; nothing said in the drawer\'s region', async ({ page }) => {
+  await openOriginal(page, 'original', 'refused')
+  await pressRestore(page)
+  const note = originalRow(page).locator('[data-history-note]')
+  await expect(note).toContainText(HW.originalRefused, { timeout: 15_000 })
+  const detail = note.locator('[data-history-detail]')
+  await expect(detail).toHaveText('The theme "casper" is not compatible or contains errors. Missing template post.hbs.')
+  expect(await detail.evaluate((e) => getComputedStyle(e).fontFamily)).toMatch(/mono/i)
+  await expect(restoreButton(page)).toBeFocused()
+  const download = page.locator('#history-original-download')
+  await expect(download).toHaveAccessibleName(HW.downloadOriginal)
+  await expect(download).toHaveAttribute('href', `/app${GATE.snapshotDownloadPath(ORIGINAL_ID)}`)
+  const fallback = originalRow(page).locator('[data-history-original-fallback]')
+  await expect(fallback).toContainText(HW.originalFallback)
+  const place = fallback.locator('[data-history-original-place]')
+  await expect(place).toHaveAttribute('href', PAYWALL.adminAt('https://harness.example', 'design'))
+  await expect(place).toHaveAttribute('target', '_blank')
+  await expect(place).toContainText(`${HW.originalPlace} ↗`)
+  // the line ends with the link
+  expect(await fallback.locator('p').evaluate((p) => p.lastElementChild?.hasAttribute('data-history-original-place') && p.textContent.trim().endsWith('(opens in a new tab)'))).toBe(true)
+  expect(await historySaid(page)).toBe('')
+  // the Tab path: Restore original, then the Download, then the link
+  await page.keyboard.press('Tab')
+  await expect(download).toBeFocused()
+  await page.keyboard.press('Tab')
+  await expect(place).toBeFocused()
+})
+
+test('7.23b · (d) gone, disconnected and busy: gone re-reads the list and says "changed" — or, with no original left, "no longer kept" — with focus on ✕; disconnected and busy are said under the row, focus back on Restore original, the list unchanged', async ({ page }) => {
+  await openOriginal(page, 'original', 'gone')
+  await pressRestore(page)
+  await expect(page.locator('#deploy-history-close')).toBeFocused({ timeout: 15_000 })
+  await expect.poll(() => historySaid(page)).toBe(HW.restored.changed)
+  await expect(originalRow(page)).toHaveCount(1)
+  await page.keyboard.press('Escape')
+  await expect(drawer(page)).toHaveCount(0)
+
+  // purged since the drawer read it: the re-read has no original at all
+  await openOriginal(page, 'original', 'gone')
+  const release = await holdActions(page)
+  await pressRestore(page)
+  await expect(restoreButton(page)).toHaveAccessibleName(HW.restoring)
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-history': 'free', 'x-inflozo-harness-restore': 'gone' })
+  release()
+  await expect(originalRow(page), 'the re-read drops the row').toHaveCount(0, { timeout: 15_000 })
+  await expect.poll(() => historySaid(page)).toBe(HW.restored.gone)
+  await expect(page.locator('#deploy-history-close')).toBeFocused()
+  await page.keyboard.press('Escape')
+
+  for (const [restore, words] of [['disconnected', HW.restoreDisconnected('harness.example')], ['busy', HW.refused.busy('harness.example')]]) {
+    await openOriginal(page, 'original', restore)
+    await pressRestore(page)
+    await expect(originalRow(page).locator('[data-history-note]'), restore).toHaveText(words, { timeout: 15_000 })
+    await expect(restoreButton(page)).toBeFocused()
+    await expect(originalRow(page).locator('[data-history-original-fallback]'), 'no download offered: Ghost said nothing').toHaveCount(0)
+    await expect(historyRow(page, 'v2'), 'the list unchanged').toContainText(HW.live)
+    expect(await historySaid(page)).toBe('')
+    await page.keyboard.press('Escape')
+  }
+  expect(HW.restoreDisconnected('harness.example')).toBe('Reconnect harness.example in Sites to restore your original theme.')
+})
+
+/** DW-391: one Download pressed against each failure its route can answer — the sentence under the button, the page where it was —
+ *  then the zip (200 `{ url }`) downloaded with the page still there. `plan` is the fake route's (`fakeSigned`) */
+async function walkSigned(page, link, plan, signed) {
+  const url = page.url()
+  for (const [status, words] of [[404, SGW.gone], [401, SGW.signedOut], [502, SGW.failed]]) {
+    plan.status = status
+    await link.focus()
+    await page.keyboard.press('Enter')
+    await expect(page.locator(`#${await link.getAttribute('id')}-said`), String(status)).toHaveText(words, { timeout: 15_000 })
+    expect(page.url(), `${status}: the page stays`).toBe(url)
+  }
+  plan.status = 200
+  await link.focus()
+  const [download] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')])
+  expect(download.suggestedFilename()).toBe(signed)
+  await expect(page.locator(`#${await link.getAttribute('id')}-said`), 'the last failure cleared').toHaveText('')
+  expect(page.url()).toBe(url)
+}
+
+test('7.23b · (e1) DW-391 — the Backup step\'s Theme Download: Story 2.5\'s route answering 404, 401 and 502 is said under its row, the wizard stays; 200 `{ url }` downloads the zip', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ ...HELD, 'x-inflozo-harness-backup': 'self' })
+  const plan = { status: 200 }
+  await fakeSigned(page, SNAPSHOT_ROUTE, 'harness-casper.zip', plan)
+  await open(page)
+  await openWizard(page)
+  await toGate(page)
+  const theme = page.locator('#deploy-download-theme')
+  const url = page.url()
+  for (const [status, words] of [[404, SGW.gone], [401, SGW.signedOut], [502, SGW.failed]]) {
+    plan.status = status
+    await theme.focus()
+    await page.keyboard.press('Enter')
+    await expect(page.locator('#deploy-download-theme-said'), String(status)).toHaveText(words, { timeout: 15_000 })
+    await expect(wizard(page), `${status}: the wizard stays on the gate`).toHaveAttribute('data-deploy-wizard', 'backup')
+    expect(page.url()).toBe(url)
+  }
+  plan.status = 200
+  await theme.focus()
+  const [download] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')])
+  expect(download.suggestedFilename()).toBe('harness-casper.zip')
+  await expect(page.locator('#deploy-download-theme-said')).toHaveCount(0)
+})
+
+test('7.23b · (e2) DW-391 — D3a\'s "Download the live theme first": `deploy/live` answering 404, 401 and 502 is said under it, D3a stays; 200 `{ url }` downloads the zip', async ({ page }) => {
+  await toDrift(page, 'found')
+  await expect(wizard(page).locator('[data-drift-report]')).toBeVisible({ timeout: 15_000 })
+  const plan = { status: 200 }
+  // registered after `plantDrift`'s, so it answers first
+  await fakeSigned(page, (url) => url.pathname.endsWith(`/projects/${HARNESS_PROJECT_ID}/deploy/live`), DRIFT.liveFileName(DRIFT_THEME), plan)
+  await walkSigned(page, page.locator('#deploy-drift-download'), plan, DRIFT.liveFileName(DRIFT_THEME))
+  await expect(wizard(page).locator('[data-drift-report]'), 'D3a stays').toBeVisible()
+})
+
+test('7.23b · (e3) DW-391 — the Roll back confirm\'s Download: `history/live` answering 404, 401 and 502 is said under it, the confirm stays; 200 `{ url }` downloads the zip', async ({ page }) => {
+  await openHistoryChecked(page, 'rollback', 'found')
+  const plan = { status: 200 }
+  await fakeSigned(page, (url) => url.pathname.endsWith(`/projects/${HARNESS_PROJECT_ID}/history/live`), DRIFT.liveFileName(DRIFT_THEME), plan)
+  await openConfirmByKeys(page, 'v1')
+  await walkSigned(page, historyConfirm(page).locator('#history-drift-download'), plan, DRIFT.liveFileName(DRIFT_THEME))
+  await expect(historyConfirm(page), 'the confirm stays').toHaveAttribute('open', '')
+})
+
+test('7.23b · (e4) DW-391 — the original row\'s "Download your original theme": Story 2.5\'s route answering 404, 401 and 502 is said under it, the drawer stays; 200 `{ url }` downloads the zip', async ({ page }) => {
+  const plan = { status: 200 }
+  await fakeSigned(page, new RegExp(`/snapshots/${ORIGINAL_ID}/download$`), 'harness-casper.zip', plan)
+  await openOriginal(page, 'original', 'refused')
+  await pressRestore(page)
+  const link = page.locator('#history-original-download')
+  await expect(link).toBeVisible({ timeout: 15_000 })
+  await walkSigned(page, link, plan, 'harness-casper.zip')
+  await expect(originalRow(page), 'the drawer stays').toBeVisible()
+})
+
+test('7.23b · (f) reading along (R-192): while another session holds the lock the editor is read-only (the control: Add section is disabled), yet Restore original is live and WORKS — said once, focus on ✕', async ({ page }) => {
+  // `openOriginal` sets the history headers alone, so this window opens its own way, with the lock's too
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-lock': 'reader', 'x-inflozo-harness-history': 'original' })
+  await open(page)
+  await page.locator('#deploy-history-open').focus()
+  await page.keyboard.press('Enter')
+  await expect(originalRow(page)).toHaveCount(1, { timeout: 15_000 })
+  await expect(page.locator('#editor-lock-bar')).toBeVisible()
+  await expect(page.locator('#editor-add-section'), 'the control: an editing control is disabled reading along').toBeDisabled()
+  await expect(restoreButton(page)).not.toHaveAttribute('aria-disabled', 'true')
+  await pressRestore(page)
+  await expect(page.locator('#deploy-history-close')).toBeFocused({ timeout: 15_000 })
+  await expect.poll(() => historySaid(page)).toBe('Your original theme is live on harness.example.')
+})
+
+test('7.23b · (g) the request fails (the network drops it): the row unchanged, "didn\'t go back… Try again." under it, focus back on Restore original; the list not re-read and nothing said in the drawer\'s region', async ({ page }) => {
+  // `harnessRestore` answers any other header as a request that failed — the route's status 0, as `restoreHistory` reads it
+  await openOriginal(page, 'original', 'failed')
+  await pressRestore(page)
+  await expect(originalRow(page).locator('[data-history-note]')).toHaveText(HW.restoreFailed, { timeout: 15_000 })
+  expect(HW.restoreFailed).toBe("Your original theme didn't go back on your site. Try again.")
+  await expect(restoreButton(page)).toBeFocused()
+  await expect(restoreButton(page)).toHaveAccessibleName(HW.restore)
+  await expect(originalRow(page).locator('[data-history-original-fallback]'), 'no download offered: Ghost said nothing').toHaveCount(0)
+  await expect(historyRow(page, 'v2'), 'the list unchanged').toContainText(HW.live)
+  expect(await historySaid(page)).toBe('')
 })

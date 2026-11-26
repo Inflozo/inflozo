@@ -41,8 +41,8 @@ export const SNAPSHOT_IO: SnapshotIo = {
     failed(await supabaseAdmin().storage.from(SNAPSHOT_BUCKET).upload(key, bytes, { contentType: 'application/zip', upsert: false }), 'object upload')
   },
   async upsert(row) {
-    // on `site_id` (one pre-Inflozo snapshot per site record), naming only the capture's own columns: FR-A5's `purge_after` and
-    // `download_offered_at` stay as they are
+    // on `site_id` (one pre-Inflozo snapshot per site record), naming only the capture's own columns — `theme_version` among them
+    // since Story 7.23b: FR-A5's `purge_after` and `download_offered_at` stay as they are
     const answer = await supabaseAdmin().from('site_snapshots').upsert(row, { onConflict: 'site_id' }).select('id').single()
     failed(answer, 'snapshot upsert')
     return (answer.data as { id: string }).id

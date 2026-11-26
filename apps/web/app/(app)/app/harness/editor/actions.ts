@@ -8,7 +8,7 @@ import { storedSurfaces } from '@/lib/probe-rule'
 import { confirmedFrom, SWITCH_WORDS, type SwitchAnswer } from '@/lib/site-switch'
 import { tokenRefusal } from '@/lib/connect-rule'
 import { addStaffToken, type StaffTokenIo } from '@/server/staff-token'
-import { HISTORY_WORDS, type ActOutcome, type CheckOutcome, type HistoryAnswer, type PinOutcome } from '@/lib/retention'
+import { HISTORY_WORDS, type ActOutcome, type CheckOutcome, type HistoryAnswer, type OriginalTheme, type PinOutcome } from '@/lib/retention'
 import { labelOf } from '@/lib/drift'
 import { HARNESS_PROJECT, HARNESS_SITES, SURFACES } from './sites'
 
@@ -155,16 +155,31 @@ const ROLLBACK = [
  *   - `gone`: `free` with v1 pruned since it was listed — a journey switches to it after the drawer has read `free`, so a pin of
  *     v1 is `gone` and the re-read drops the row; `pin-fails`: `free`, every pin answering as a request that failed;
  *   - `empty`, or no header: nothing shipped yet.
+ * STORY 7.23b — D2a's original-theme row (`harnessRestore` answers its press):
+ *   - `original`: the linked site's saved `casper 5.9.4`, then v2 live and v1;
+ *   - `original-restored`: the same after a restore — v2 demoted to D2d's row with Re-activate, nothing live (a journey switches to
+ *     it while the restore is held, so the drawer's re-read draws it);
+ *   - `original-unversioned`: `original` with no version kept (the mono line is the name alone);
+ *   - `original-empty`: the saved original and no version — the row above "Nothing shipped yet".
  * Only the harness project, and only where the harness exists at all.
  */
 export async function harnessHistory(projectId: string): Promise<HistoryAnswer | null> {
   if (!HARNESS || projectId !== HARNESS_PROJECT.id) return null
   const asked = (await headers()).get('x-inflozo-harness-history')
-  const answer = (rows: HistoryAnswer['rows']): HistoryAnswer => ({
+  const answer = (rows: HistoryAnswer['rows'], original: OriginalTheme | null = null): HistoryAnswer => ({
     linkedSiteId: HISTORY_SITE,
     liveVersion: rows.find((r) => r.status === 'live' && r.siteId === HISTORY_SITE)?.version ?? null,
     rows: [...rows].reverse(),
+    original,
   })
+  // Story 7.23b's shapes
+  if (asked === 'original' || asked === 'original-unversioned') {
+    return answer([stored(1, { changed: HISTORY_WORDS.firstDeploy, action: 'rollback' }), stored(2, { changed: changed('Hero'), status: 'live' })], ORIGINAL(asked === 'original' ? '5.9.4' : null))
+  }
+  if (asked === 'original-restored') {
+    return answer([stored(1, { changed: HISTORY_WORDS.firstDeploy, action: 'rollback' }), stored(2, { changed: changed('Hero'), action: 'reactivate' })], ORIGINAL('5.9.4'))
+  }
+  if (asked === 'original-empty') return answer([], ORIGINAL('5.9.4'))
   // Story 7.23a's shapes (`harnessAct` answers each one's put-back)
   if (asked === 'rollback' || asked === 'refused' || asked === 'busy' || asked === 'disconnected') return answer(ROLLBACK)
   // `rollback` with v4 pruned since the drawer read it: a journey switches to it while v4's confirm is open
@@ -190,6 +205,26 @@ export async function harnessHistory(projectId: string): Promise<HistoryAnswer |
   if (asked === 'pro-full') return answer(Array.from({ length: 10 }, (_, i) => stored(i + 1, { pinned: i < 9, ...(i === 9 ? { status: 'live' } : {}) })))
   if (asked === 'two-sites') return answer([stored(1), stored(2, { siteId: OTHER_SITE, host: 'de.harness.example', status: 'live' }), stored(3, { status: 'live' })])
   return answer([])
+}
+
+/** STORY 7.23b — the harness site's saved original: Casper, saved on November 2 (the year this one — "Archived Nov 2") */
+const ORIGINAL = (version: string | null): OriginalTheme => ({
+  id: '00000000-0000-4000-8000-000000000723', theme: 'casper', version, capturedAt: '2026-11-02T09:00:00.000Z', siteUrl: 'https://harness.example',
+})
+
+/** STORY 7.23b — THE HARNESS'S RESTORE ORIGINAL, the editor's `historyRestore` seam (the route's POST `{ snapshot, act: 'restore' }`
+ *  everywhere else), answered by `x-inflozo-harness-restore` with no database and no Ghost: `live` (and no header) and `uploaded` its
+ *  endings; `refused` Ghost's own check refusing the original (the route's 422, with Ghost's detail); `gone` the route's 404;
+ *  `disconnected` and `busy` its 409s; anything else a request that failed. Stateless: a journey switches the history header while
+ *  the press is held, so the re-read draws what the restore left. The real restore is `put-back.test.ts`' and walk step 122's. */
+export async function harnessRestore(projectId: string, snapshot: string): Promise<ActOutcome> {
+  if (!HARNESS || projectId !== HARNESS_PROJECT.id || typeof snapshot !== 'string') return { kind: 'failed' }
+  const asked = (await headers()).get('x-inflozo-harness-restore') ?? 'live'
+  if (asked === 'live' || asked === 'uploaded') return { kind: asked }
+  if (asked === 'refused') return { kind: 'refused', code: 'ghost_theme_refused', detail: 'The theme "casper" is not compatible or contains errors. Missing template post.hbs.' }
+  if (asked === 'gone') return { kind: 'gone' }
+  if (asked === 'disconnected' || asked === 'busy') return { kind: 'refused', code: asked }
+  return { kind: 'failed' }
 }
 
 /** STORY 7.23a — THE HARNESS'S PUT-BACK, the editor's `historyAct` seam (the route's POST `{ deploy, act: 'live' }` everywhere else),

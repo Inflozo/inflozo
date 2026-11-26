@@ -421,6 +421,14 @@ export const HistoryClock = (p: IconProps) => (
     <polyline points="12 7 12 12 15 14" />
   </Icon>
 )
+/** STORY 7.23b — D2a's archive tile (`D2 Deploy History Completed.dc.html:60`): the box, its lid and its handle, as drawn at 1.7 */
+export const Archive = ({ strokeWidth = 1.7, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} {...p}>
+    <path d="M21 8v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8" />
+    <rect x="2" y="3" width="20" height="5" rx="1" />
+    <line x1="10" y1="12" x2="14" y2="12" />
+  </Icon>
+)
 /** STORY 7.23a — S8e's and D2's Roll back glyph (`S8 Deploy.dc.html:313`, `D2 Deploy History Completed.dc.html:89`), as drawn */
 export const RollBack = ({ strokeWidth = 1.8, ...p }: IconProps) => (
   <Icon strokeWidth={strokeWidth} {...p}>

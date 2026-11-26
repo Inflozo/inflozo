@@ -20,7 +20,7 @@ import { CANVASES, canvasesOf, routeCanvasOf, SITE, templateKeyOf, type RouteCan
 import { themeNameOf, type ShipState } from '@/lib/deploy'
 import { HARNESS } from '@/lib/harness'
 import { carriesMemberVisibility, pilot, pilotIds } from '@/lib/pilots'
-import { harnessAct, harnessAddToken, harnessCheck, harnessConfirm, harnessDecline, harnessHistory, harnessPin, harnessReread, harnessRoutes, harnessSwitch, harnessTheme } from './actions'
+import { harnessAct, harnessAddToken, harnessCheck, harnessConfirm, harnessDecline, harnessHistory, harnessPin, harnessReread, harnessRestore, harnessRoutes, harnessSwitch, harnessTheme } from './actions'
 import { standIns } from '../stand-ins'
 import { GHOST_5_SITE, HARNESS_PROJECT, HARNESS_SITES, MEMBERS_OFF_SITE, SURFACES_LATER_SITE, SURFACES_SITE } from './sites'
 
@@ -181,6 +181,12 @@ import { GHOST_5_SITE, HARNESS_PROJECT, HARNESS_SITES, MEMBERS_OFF_SITE, SURFACE
  * check a Roll back's confirm sends first (`actions.ts`' `harnessCheck`, the editor's `historyCheck` seam): with no header, D3c's
  * pass since the list's newest accepted version, so every journey's Roll back works as before. The real check is
  * `put-back.test.ts`' and walk step 121's.
+ *
+ * STORY 7.23b — the history header gains `original | original-restored | original-unversioned | original-empty`: D2a's
+ * original-theme row (the linked site's saved `casper 5.9.4`, or the name alone) over v2 live and v1, over the same list after a
+ * restore (v2 D2d's row, nothing live), or over nothing shipped. `x-inflozo-harness-restore: live | uploaded | refused | gone |
+ * disconnected | busy` names Restore original's answer (`actions.ts`' `harnessRestore`, the editor's `historyRestore` seam); no
+ * header is `live`. The real restore is `put-back.test.ts`' and walk step 122's.
  *
  * STORY 5.24d — THE MAIN FEED IS THE RULE'S, NOT THE HARNESS'S (DW-257): every doc leaves through `read.ts`'s
  * `designateAll`, the server door the editor's real read uses, and no instance is flagged here — so the post grid becomes
@@ -370,7 +376,7 @@ export default async function EditorHarness({ children }: { children: ReactNode 
       {/* Story 6.2 — the pack cells' faces, as the signed-in layout declares them, from the harness's own canvas route */}
       <style data-pack-faces>{packFacesCss('/app/harness/canvas')}</style>
       <ShellUserContext value={HARNESS_USER}>
-        <Editor project={HARNESS_PROJECT} canvasSrc={harnessCanvasSrc()} canvasBase={HARNESS_BASE} reread={harnessReread} switchTo={harnessSwitch} addToken={harnessAddToken} decline={harnessDecline} backupConfirm={harnessConfirm} themeDownload={harnessTheme} routesDownload={harnessRoutes} historyRead={harnessHistory} historyPin={harnessPin} historyAct={harnessAct} historyCheck={harnessCheck} {...data} />
+        <Editor project={HARNESS_PROJECT} canvasSrc={harnessCanvasSrc()} canvasBase={HARNESS_BASE} reread={harnessReread} switchTo={harnessSwitch} addToken={harnessAddToken} decline={harnessDecline} backupConfirm={harnessConfirm} themeDownload={harnessTheme} routesDownload={harnessRoutes} historyRead={harnessHistory} historyPin={harnessPin} historyAct={harnessAct} historyCheck={harnessCheck} historyRestore={harnessRestore} {...data} />
       </ShellUserContext>
       {children}
     </>

@@ -783,7 +783,8 @@ export type ShipState = {
   /** the project has an uploaded or live deploy to this site — the bar then reads "Ship update" */
   shipped: boolean
   /** R-264 (a): Inflozo's own record says this project's theme is the one live on the site — the site's latest activated
-   *  deploy (any project's) is this project's — so a Deploy only would go live the moment it uploads */
+   *  deploy (any project's) that is still live is this project's (Story 7.23b: a Restore original demotes it) — so a Deploy only
+   *  would go live the moment it uploads */
   liveHere: boolean
   /** `requiredTemplates(library)`, for Checking's pass line */
   required: readonly string[]

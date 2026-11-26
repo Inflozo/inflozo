@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { ARTIFACT_BUCKET } from '@/lib/deploy'
 import { liveCopyPath, liveFileName } from '@/lib/drift'
 import { isUuid } from '@/lib/editor'
+import { signedAnswer, signInAnswer } from '@/lib/signed-download'
 import { currentUser, supabaseAdmin, supabaseServer } from '@/lib/supabase/server'
 
 /**
@@ -16,6 +17,10 @@ import { currentUser, supabaseAdmin, supabaseServer } from '@/lib/supabase/serve
  * AD-29); `server-wiring.test.ts` names this file on its service-role list with that reason. The object is the project × site's one
  * live copy (`liveCopyPath`), which the check wrote before its record. A missing object (`NoSuchKey`) is a 404 — a file that is
  * permanently gone must not be a 502 inviting retries — and any other signing failure is a 502.
+ *
+ * STORY 7.23b (DW-391) — asked by the editor's follower (`Accept: application/json`, `lib/signed-download.ts`), the same signed URL is
+ * answered `200 { url }` and a signed-out ask `401`, so D3a's Download says a 404, a 502 or the sign-in under the button and the
+ * editor stays; asked as a link, the 303 as before.
  */
 
 export const dynamic = 'force-dynamic'
@@ -26,8 +31,9 @@ const SIGNED_URL_TTL_S = 60
 const no = (status: number, body: string) => new NextResponse(body, { status, headers: { 'Cache-Control': 'no-store' } })
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  // a link the browser followed: a signed-out press goes to sign in, as Story 2.5's does
-  if (!(await currentUser())) return NextResponse.redirect(new URL('/sign-in', request.url), 303)
+  // a link the browser followed: a signed-out press goes to sign in, as Story 2.5's does — and the editor's follower is answered 401
+  // (Story 7.23b, DW-391: `lib/signed-download.ts`)
+  if (!(await currentUser())) return signInAnswer(request)
   const projectId = (await params).id
   const jobId = request.nextUrl.searchParams.get('job') ?? ''
   if (!isUuid(projectId) || !isUuid(jobId)) return no(404, 'Not found')
@@ -55,7 +61,5 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     console.error('deploy/live: signing failed', { message: signError?.message })
     return no(502, 'Could not prepare that download')
   }
-  const away = NextResponse.redirect(signed.signedUrl, 303)
-  away.headers.set('Cache-Control', 'no-store')
-  return away
+  return signedAnswer(request, signed.signedUrl)
 }

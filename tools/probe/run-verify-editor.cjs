@@ -13,6 +13,9 @@
 //   STEP121_PLANT=<free email> T1_WRITES=1 …   # Story 7.23a: step 121 as Deploy's plant, in a cut copy (steps 1–5 and 121): a
 //                   NEW address — "Rollback test" v1–v3 ("Version n" on Home), T1 back on its own theme, v3 `uploaded`, v1's zip refused,
 //                   and v3 with an invisible hand edit held under the frozen name, not live (R-291's drift for the owner's Roll back)
+//   STEP122_PLANT=<a email>,<b email> T1_WRITES=1 …   # Story 7.23b: step 122 as Deploy's plant, in a cut copy (steps 1–5 and 122):
+//                   two NEW addresses — A's "Restore test" v1 then v2 live on T1 (its original T1's own theme, saved by the first ship);
+//                   B's "Restore refused" linked to T1, nothing shipped, its saved original planted as `old-magazine`, which Ghost refuses
 //
 // Node 24 (it imports the seed, which reads the app's own TypeScript). Keys reach it through process.env only and it
 // prints none. Two throwaway accounts through the Auth Admin API: A is seeded with `seed-editor-project.mjs` ("Pilot
@@ -460,6 +463,16 @@
 // L, and counts back.
 // `STEP121_PLANT=<address>` is Deploy's plant for the owner's test instead: it stops after (a) and the D2d state with v1 refused,
 // and v3's files with (i)'s invisible hand edit held under the frozen name, not live — found by the owner's first Roll back.
+// Story 7.23b adds step 122, WRITING TO T1 and to production, so it runs only with `T1_WRITES=1` on the owner's in-session go:
+// RESTORE ORIGINAL (FR-J13, D2a's original-theme row; R-292, DW-389, DW-391). A throwaway Free account R (`editor-harness-r-…`)
+// connects T1 and "Restore test" is linked: (a) two ships, the first's capture saving T1's own theme with its version
+// (`site_snapshots.theme_version`); (b) the History GET's `original` and D2a's row in the drawer; (c) Restore original by the
+// keyboard — T1's own theme active again, Inflozo's still installed at zero differences from v2, v2 `uploaded` with its times
+// untouched, no row added, Deploy only free; (d) Re-activate, then D3c "since v2" (the baseline held); (e) the saved copy put back
+// when Ghost no longer holds it (`walk-original`, VERIFY 10's snapshot half); (f) a fatal original refused with its detail, the
+// Download (DW-391 through the product) and Design & branding ↗, nothing changed, the captured row the control; (g) DW-391 on the
+// snapshot route — JSON, the signed zip, the 303, the 401; (h) a second session reading along; (i) another account's 404, a
+// disconnected site's 409, and the row gone. `STEP122_PLANT=<a>,<b>` is Deploy's plant instead (see PLANT122).
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -564,7 +577,7 @@ async function main() {
   const ids = []
   let browser = null
   let entitlementBack = null
-  // what a Deploy plant leaves on purpose (STEP120_PLANT, STEP121_PLANT), so the end-of-run counts expect it
+  // what a Deploy plant leaves on purpose (STEP120_PLANT, STEP121_PLANT, STEP122_PLANT), so the end-of-run counts expect it
   const plantKept = { users: 0, projects: 0 }
   try {
     // ── step 1 — the fixtures ──
@@ -15624,6 +15637,679 @@ async function main() {
         }
       }
       check('step 121 — the step\'s contexts recorded zero CSP violations', csp121.length === 0, JSON.stringify(csp121.slice(0, 3)))
+    }
+
+    /* ── step 122 — Story 7.23b: RESTORE ORIGINAL (FR-J13's safety net, D2a's original-theme row; R-292, DW-389, DW-391), WRITING TO
+       T1 ──
+       Runs only with `T1_WRITES=1`, on the owner's in-session go worded for the whole run: two ships of "Restore test" through the
+       product (the first capturing T1's own theme as the site's original), Restore original pressed about five times (each an
+       activation of a theme T1 holds, and twice an upload of a saved zip under ITS OWN name — `walk-original`, then the refused
+       `walk-fatal`), two Re-activates, production rows and objects planted (the snapshot row repointed, two objects stored, one
+       site's `disconnected_at` stamped and cleared, the snapshot row deleted at the end) and the put-back. A throwaway Free account R
+       (`editor-harness-r-…`) connects T1 through the wizard and "Restore test" (step 1's fixture) is linked; each version's Home
+       headline names its number, as 121's do:
+       (a) TWO SHIPS (Deploy & activate); the first's capture wrote the site's original: T1's own theme by name, WITH the version its
+           `package.json` declares (`site_snapshots.theme_version`, this story's column), read back.
+       (b) THE HISTORY GET's `original` (the row's id, name, version, time, the site's address), and the drawer at 1440 drawing D2a's
+           row above the list: "Your original theme", the mono name and version, "Archived today", Restore original; v2 Live.
+       (c) RESTORE ORIGINAL BY THE KEYBOARD (Tab from ✕, Enter): "Restoring…", then "Your original theme is live on {host}." with
+           focus on ✕; T1's active theme is the original again (`GET themes/`, the staff token) while Inflozo's theme is still
+           installed — its download at ZERO differences from v2's `content_manifest`; v2's row `uploaded`, its `activated`,
+           `activated_at` and `accepted_at` untouched; no `deploys` row added; the drawer: v2 D2d's row with Re-activate, nothing
+           Live; the editor reloaded: Ship it ▾'s Deploy only free (R-264 (a): no `live` row of this project on the site).
+       (d) RE-ACTIVATE v2, then Run checks: D3c "Nothing changed on your site since v2" — no row was written, so the drift baseline
+           held.
+       (e) THE SAVED COPY PUT BACK (VERIFY 10's snapshot half): the original's saved zip with its `package.json` named `walk-original`
+           stored under R's prefix and the row repointed to it (name, path, version) — T1 holds no `walk-original` (the control).
+           Restore original: Ghost's activation answers not found, so the saved zip goes up as `walk-original.zip` and is activated;
+           T1's active theme `walk-original`, its download (the staff token) at zero differences from the saved zip.
+       (f) GHOST REFUSES: the saved zip plus one template Handlebars cannot parse, named `walk-fatal`, proved blocked on the pinned v6
+           gscan HERE (GS005-TPL-ERR fatal) with the real zip clean (the control) — the row repointed to it. Restore original:
+           Ghost's 422 said under the row with its detail in mono, "Download your original theme" — pressed: a zip downloads and the
+           editor stays (DW-391 through the product) — and Design & branding ↗ at the site's own Design panel; T1's active theme and
+           its themes unchanged, no row changed. The control: the row repointed to the original as captured, the same press accepted.
+       (g) DW-391 ON PRODUCTION, the snapshot's route: asked as the editor's follower asks (`Accept: application/json`) on R's session —
+           200 `{ url }`, and that signed URL serving a `PK` zip; asked as a link — the 303 (an opaque redirect); signed out — 401.
+       (h) A SECOND SESSION of R reading along (`[data-readonly]`; the first holds the lock): Restore original from its drawer — said.
+       (i) The doors: the walk's account A (step 1's page) POSTs `{ act: 'restore', snapshot }` to R's project's route — 404, T1
+           untouched; R's site stamped disconnected (the service key) — 409 `{ code: disconnected }`, nothing sent — then cleared; the
+           snapshot row deleted — the route's download 404, and the restore 404 (gone).
+       FINALLY: every plant removed; T1 put back (its own theme active, every inflozo- and walk- theme uploaded deleted, routes.yaml
+       byte for byte) and read back; R's objects removed; T1 disconnected through the product; R deleted; users and projects counted
+       back. `STEP122_PLANT=<a>,<b>` is Deploy's plant for the owner's test instead (see PLANT122). Keys are read in-process by NAME
+       and scrubbed; never printed. SELF-CONTAINED, as 121 is. */
+    if (process.env.T1_WRITES !== '1') {
+      note('step 122 — NOT RUN', 'it writes to T1 (two ships, Restore original\'s activations and two uploads of a saved theme under its own name, two Re-activates) and to production (planted snapshot rows and objects, a stamped and cleared disconnect): set T1_WRITES=1 on the owner\'s in-session go')
+    } else {
+      const imp122 = (f) => import(require('node:url').pathToFileURL(path.join(REPO, f)).href)
+      const [DEP122, RET122, DR122, CR122, PR122, AR122, RU122, ZIP122, GATE122, GS122, PAY122] = await Promise.all([
+        imp122('apps/web/lib/deploy.ts'), imp122('apps/web/lib/retention.ts'), imp122('apps/web/lib/drift.ts'), imp122('apps/web/lib/connect-rule.ts'),
+        imp122('apps/web/lib/probe-rule.ts'), imp122('apps/web/server/ghost-admin/admin-rule.ts'), imp122('apps/web/lib/routes-upload.ts'),
+        imp122('apps/web/server/deploy/zip.ts'), imp122('apps/web/lib/backup-gate.ts'), imp122('packages/theme-compiler/gate/index.ts'),
+        imp122('apps/web/lib/paywall.ts'),
+      ])
+      const HW122 = RET122.HISTORY_WORDS
+      const DW122 = DR122.DRIFT_WORDS
+      const until122 = async (read, test, ms) => {
+        const by = Date.now() + ms
+        for (;;) {
+          const v = await read()
+          if (test(v) || Date.now() > by) return v
+          await new Promise((r) => setTimeout(r, 500))
+        }
+      }
+      const ENV122 = {}
+      const NAMES122 = ['GHOST6_URL', 'GHOST6_ADMIN_API_KEY', 'GHOST6_CONTENT_API_KEY', 'GHOST6_STAFF_ACCESS_TOKEN']
+      for (const line of fs.readFileSync(path.join(REPO, 'tools/probe/.env'), 'utf8').split('\n')) {
+        const m = /^([A-Z0-9_]+)=(.*)$/.exec(line)
+        if (m && NAMES122.includes(m[1]) && m[2].trim()) ENV122[m[1]] = m[2].trim()
+      }
+      const missing122 = NAMES122.filter((k) => !ENV122[k])
+      if (missing122.length) throw new Error(`step 122: ${missing122.join(', ')} not in tools/probe/.env`)
+      const SECRETS122 = [ENV122.GHOST6_ADMIN_API_KEY, ENV122.GHOST6_STAFF_ACCESS_TOKEN].flatMap((k) => [k, k.split(':')[1] ?? '']).concat([ENV122.GHOST6_CONTENT_API_KEY]).filter((x) => x.length >= 8)
+      const scrub122 = (x) => SECRETS122.reduce((t, k) => t.split(k).join('<key>'), String(x))
+      const ORIGIN122 = new URL(ENV122.GHOST6_URL).origin
+      const staff122 = async (method, p, body) => {
+        const { url, init } = AR122.adminRequest({ credential: ENV122.GHOST6_STAFF_ACCESS_TOKEN, siteUrl: ENV122.GHOST6_URL, method, path: p, body, major: 6 })
+        const r = await fetch(url, { ...init, signal: AbortSignal.timeout(90_000) })
+        const bytes = Buffer.from(await r.arrayBuffer())
+        let parsed = null
+        try { parsed = JSON.parse(bytes.toString('utf8')) } catch {}
+        return { ok: r.ok, status: r.status, body: parsed, bytes }
+      }
+      /** T1's themes, each with whether it is active and the version its `package.json` declares */
+      const themes122 = async () => {
+        const r = await staff122('GET', 'themes/').catch(() => null)
+        return r?.ok && Array.isArray(r.body?.themes) ? r.body.themes.map((t) => ({ name: t.name, active: t.active === true, version: typeof t.package?.version === 'string' ? t.package.version : null })) : null
+      }
+      const active122 = async () => (await themes122())?.find((t) => t.active)?.name ?? null
+      const names122 = async () => JSON.stringify(((await themes122()) ?? []).map((t) => `${t.name}${t.active ? '*' : ''}`).sort())
+      const routesFile122 = async () => {
+        const r = await staff122('GET', RU122.ROUTES_PATH).catch(() => null)
+        return r?.ok ? r.bytes : null
+      }
+      /** a theme T1 holds, downloaded with the staff token and read as the drift check reads one (`liveManifest` over `unzipTheme`) */
+      const liveOf122 = async (name) => {
+        const r = await staff122('GET', `themes/${encodeURIComponent(name)}/download/`).catch(() => null)
+        return r?.ok ? DR122.liveManifest(ZIP122.unzipTheme(new Uint8Array(r.bytes))) : null
+      }
+      const none122 = (d) => d !== null && d.changed.length + d.added.length + d.removed.length === 0
+      const headline122 = async () => {
+        const r = await fetch(`${ORIGIN122}/?walk122=${Date.now()}`, { redirect: 'manual', headers: { 'Cache-Control': 'no-cache' } }).catch(() => null)
+        if (!r?.ok) return undefined
+        return /class="[^"]*\ba4-13__headline\b[^"]*"[^>]*>\s*([^<]*?)\s*</.exec(await r.text())?.[1] ?? null
+      }
+      const homeSays122 = (n) => until122(headline122, (h) => h === `Version ${n}`, 45000)
+      const storage122 = { apikey: SECRET, Authorization: `Bearer ${SECRET}` }
+      const listed122 = (bucket, prefix) => fetch(`${SB}/storage/v1/object/list/${bucket}`, { method: 'POST', headers: { ...storage122, 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix, limit: 100, offset: 0 }) })
+        .then((r) => r.json()).then((l) => (Array.isArray(l) ? l.filter((o) => typeof o?.name === 'string' && o.id !== null) : [])).catch(() => [])
+      const object122 = async (bucket, key) => {
+        const r = await fetch(`${SB}/storage/v1/object/${bucket}/${key}`, { headers: storage122 }).catch(() => null)
+        return r?.ok ? Buffer.from(await r.arrayBuffer()) : null
+      }
+      const putObject122 = (bucket, key, bytes) => fetch(`${SB}/storage/v1/object/${bucket}/${key}`, { method: 'POST', headers: { ...storage122, 'Content-Type': 'application/zip' }, body: bytes }).then((r) => r.status).catch(() => 0)
+      const removeObject122 = (bucket, key) => fetch(`${SB}/storage/v1/object/${bucket}/${key}`, { method: 'DELETE', headers: storage122 }).then((r) => r.status).catch(() => 0)
+      const same122 = (a, b) => {
+        const canon = (v) => JSON.stringify(v, (_, x) => (x !== null && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.entries(x).sort(([k], [l]) => (k < l ? -1 : k > l ? 1 : 0))) : x))
+        return canon(a) === canon(b)
+      }
+      /** the saved original's files under another name: `package.json`'s `name` (and, when given, `version`) rewritten, every other
+       *  file as captured — plus `extra` (121's FATAL for the refused plant) */
+      const renamed122 = (files, name, version, extra = {}) => {
+        const pkg = JSON.parse(Buffer.from(files['package.json']).toString('utf8'))
+        return { ...files, 'package.json': Buffer.from(JSON.stringify({ ...pkg, name, ...(version === undefined ? {} : { version }) }, null, 2)), ...extra }
+      }
+      const FATAL122 = { 'custom-inflozo-walk-122-fatal.hbs': '{{!< default}}\n{{#if @site.title}}\n  <p>unclosed\n' }
+      /** a saved original and its refused twin, each judged HERE by the pinned v6 gscan Ghost's `checkSafe` runs: the real one passing
+       *  (the control) and the twin blocked on GS005-TPL-ERR fatal — or nothing is planted (standing rule 2) */
+      const fatal122 = async (files, name, version) => {
+        const planted = Buffer.from(ZIP122.zipTheme(renamed122(files, name, version, FATAL122)))
+        const clean = await GS122.gscanGate(files, 6)
+        const blocked = await GS122.gscanGate(ZIP122.unzipTheme(new Uint8Array(planted)), 6)
+        const proved = clean.blocked === false && blocked.blocked === true && blocked.errors.some((e) => e.rule === 'GS005-TPL-ERR' && e.fatal)
+        return { planted, proved, said: `gscan ${blocked.gscan}: the original ${clean.errors.length} errors${clean.blocked ? ' (blocked)' : ''}; ${name} [${blocked.errors.map((e) => `${e.rule}${e.fatal ? ' (fatal)' : ''}`).join(', ')}]` }
+      }
+
+      // STORY 7.23b's DEPLOY: `STEP122_PLANT=<a>,<b>` plants the owner's test instead of (b)–(i). Both addresses must be NEW. A connects
+      // T1 through the wizard and ships "Restore test" twice as (a) does ("Version 1", "Version 2" — v2 left live), the first ship
+      // capturing T1's own theme as the site's original. B connects T1 too and "Restore refused" is linked, nothing shipped; its site's
+      // saved original is then PLANTED (the service key) as `old-magazine` — the original A's ship saved, renamed, plus one template
+      // Handlebars cannot parse, proved blocked locally first — a theme T1 does not hold and Ghost's own check refuses. Then it stops
+      // and leaves both accounts, their sites, T1 (v2 live) and A's inflozo theme as they are, printing the addresses and project ids.
+      const PLANT122 = (process.env.STEP122_PLANT ?? '').split(',').map((e) => e.trim().toLowerCase()).filter(Boolean)
+      if (PLANT122.length !== 0 && PLANT122.length !== 2) throw new Error('step 122: STEP122_PLANT takes two addresses, A and B, comma-separated')
+      let planted122 = false
+      const STOP122 = Symbol('step 122 planted')
+
+      const email122 = PLANT122[0] ?? `editor-harness-r-${stamp}@inflozo.com`
+      const usersBefore122 = (await users())?.length ?? null
+      const projectsBefore122 = await projectCount()
+      /** the step's accounts (R, or the plant's A and B), each with its site and project, every one taken down by the finally */
+      const accounts122 = []
+      let P122 = null
+      let site122 = null
+      let theme122 = null
+      let prev122 = null
+      let start122 = []
+      let routesBefore122 = null
+      let pg122 = null
+      /** the snapshot row as the capture wrote it — put back by the finally should the step die with it repointed */
+      let snap122 = null
+      let stamped122 = false
+      const ctxs122 = []
+      const csp122 = []
+
+      const ROW122 = 'id,version,status,activated,activated_at,accepted_at,artifact_path,content_manifest,created_at,site_id'
+      const job122 = async () => (P122 === null ? null : (await call('/rest/v1', `/deploy_jobs?project_id=eq.${P122}&select=id,stage,error,deploy_id,stage_timings&order=started_at.desc&limit=1`)).body?.[0] ?? null)
+      const deploy122 = async (id) => (id == null ? null : (await call('/rest/v1', `/deploys?id=eq.${id}&select=${ROW122}`)).body?.[0] ?? null)
+      const rows122 = async () => (P122 === null ? [] : (await call('/rest/v1', `/deploys?project_id=eq.${P122}&select=${ROW122}&order=created_at.asc`)).body ?? [])
+      const snapRow122 = async (site = site122) => (site === null ? null : (await call('/rest/v1', `/site_snapshots?site_id=eq.${site}&select=id,user_id,site_id,storage_path,theme_name,theme_version,bytes,captured_at`)).body?.[0] ?? null)
+      const kept122 = (r) => (r === null ? null : { status: r.status, activated: r.activated, activated_at: r.activated_at, accepted_at: r.accepted_at, artifact_path: r.artifact_path })
+      const atRest122 = (j) => j === null || !['queued', 'compiling', 'checking', 'snapshotting', 'uploading', 'activating'].includes(j.stage)
+      const wiz122 = (p) => p.evaluate(() => {
+        const d = document.querySelector('dialog[data-deploy-wizard]')
+        if (!d) return null
+        const box = d.querySelector('[data-check-rows]')
+        return {
+          at: d.getAttribute('data-deploy-wizard'),
+          reading: d.querySelector('#deploy-drift-reading') !== null,
+          passes: box ? [...box.children].filter((c) => !c.hasAttribute('data-finding')).map((c) => ({ text: c.textContent.trim(), clean: c.getAttribute('data-drift-row') === 'clean' })) : [],
+        }
+      }).catch(() => null)
+      const context122 = async (email) => {
+        const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 }, acceptDownloads: true }))
+        ctxs122.push(ctx)
+        await recorder(ctx, csp122)
+        const pg = steady(await ctx.newPage())
+        pg.on('pageerror', (e) => note('pageerror 122', scrub122(String(e))))
+        await pg.goto(await magic(email), { waitUntil: 'load' })
+        return pg
+      }
+      /** T1 connected through the wizard on `pg`'s session (121's way); the wizard's own project goes, and the site's id */
+      const connect122 = async (pg, userId) => {
+        await pg.goto(at('/sites/connect?step=keys'), { waitUntil: 'load' })
+        await pg.locator('#s2b-api-url').fill(ENV122.GHOST6_URL)
+        await pg.locator('#s2b-admin-key').fill(ENV122.GHOST6_ADMIN_API_KEY)
+        await pg.locator('#s2b-content-key').fill(ENV122.GHOST6_CONTENT_API_KEY)
+        await pg.locator('form:has(#s2b-api-url) button[type="submit"]').click()
+        await pg.waitForURL((u) => !u.pathname.endsWith('/sites/connect'), { timeout: 60000 })
+        const use = pg.getByRole('button', { name: PR122.BRAND_COPY.use, exact: true })
+        if (await use.waitFor({ state: 'visible', timeout: 20000 }).then(() => true, () => false)) await use.click()
+        const linked = await until122(async () => (await call('/rest/v1', `/projects?user_id=eq.${userId}&select=id,linked_site_id`)).body ?? [], (ps) => ps.some((p) => p.linked_site_id !== null), 45000)
+        const site = linked.find((p) => p.linked_site_id !== null)?.linked_site_id ?? null
+        if (site === null) throw new Error('step 122: T1 did not connect')
+        for (const p of linked) await call('/rest/v1', `/projects?id=eq.${p.id}`, { method: 'DELETE' })
+        return site
+      }
+      /** a NEW account, its page signed in, T1 connected and `name` seeded and linked to it — recorded for the finally first */
+      const account122 = async (email, name) => {
+        const made = await admin('/admin/users', { method: 'POST', body: JSON.stringify({ email, email_confirm: true }) })
+        const id = made.status === 200 ? made.body.id ?? null : null
+        if (!UUID.test(id ?? '')) throw new Error(`step 122: the account for "${name}" was not made`)
+        const acc = { email, id, site: null, project: null }
+        accounts122.push(acc)
+        const pg = await context122(email)
+        acc.site = await connect122(pg, id)
+        const seeded = await seed({ email, name })
+        if (!seeded?.created) throw new Error(`step 122: "${name}" was not seeded`)
+        acc.project = seeded.id
+        await call('/rest/v1', `/projects?id=eq.${acc.project}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: acc.site }) })
+        const linked = (await call('/rest/v1', `/projects?id=eq.${acc.project}&select=slug,linked_site_id`)).body?.[0] ?? null
+        if (linked?.linked_site_id !== acc.site || !linked.slug) throw new Error(`step 122: "${name}" was not linked`)
+        return { acc, pg, theme: DEP122.themeNameOf(linked.slug) }
+      }
+      const handBack122 = (p) => p.evaluate(async (url) => {
+        const id = sessionStorage.getItem('inflozo-lock-session')
+        if (!id) return
+        await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ intent: 'release', session: id }) })
+      }, `${PREFIX}/projects/${P122}/lock`).catch(() => {})
+      const painted122 = (pg) => pg.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 }).then(() => true, () => false)
+      const closed122 = async (pg) => {
+        for (const sel of ['dialog[data-deploy-wizard]', 'dialog[data-deploy-history]']) {
+          if (!(await pg.locator(sel).count().catch(() => 0))) continue
+          await pg.keyboard.press('Escape').catch(() => {})
+          await pg.waitForFunction((s) => !document.querySelector(s), sel, { timeout: 15000 }).catch(() => {})
+        }
+      }
+      const leave122 = async (pg, userId) => {
+        await closed122(pg)
+        await pg.evaluate((u) => new Promise((done) => {
+          const req = indexedDB.deleteDatabase(`inflozo-doc-${u}`)
+          req.onsuccess = req.onerror = req.onblocked = () => done(true)
+        }), userId).catch(() => null)
+        await pg.goto('about:blank')
+        await pg.waitForTimeout(1000)
+      }
+      const headlineDoc122 = async (n) => {
+        const want = `Version ${n}`
+        for (let tries = 0; tries < 4; tries++) {
+          const doc = (await call('/rest/v1', `/project_templates?project_id=eq.${P122}&template_key=eq.home&select=doc`)).body?.[0]?.doc ?? null
+          const hero = doc?.instances?.find((i) => i.designId === 'a4/13') ?? null
+          if (hero === null) throw new Error('step 122: Home holds no A4 #13 to name the version in')
+          if (hero.content?.headline === want) return true
+          if (tries === 3) break
+          const next = { ...doc, instances: doc.instances.map((i) => (i === hero ? { ...i, content: { ...i.content, headline: want } } : i)) }
+          await call('/rest/v1', `/project_templates?project_id=eq.${P122}&template_key=eq.home`, { method: 'PATCH', body: JSON.stringify({ doc: next }) })
+          await new Promise((r) => setTimeout(r, 1500))
+        }
+        return false
+      }
+      const runChecks122 = async (pg, ready = () => true) => {
+        const was = (await job122())?.id ?? null
+        await pg.locator('#deploy-run').click()
+        const job = await until122(job122, (j) => j !== null && j.id !== was && ['awaiting_ship', 'failed', 'cancelled'].includes(j.stage), 180000)
+        const shown = await until122(() => wiz122(pg), (w) => w?.at === 'check' && !w.reading && w.passes.length > 0 && ready(w), 30000)
+        return { job, shown }
+      }
+      const ship122 = async (pg, job) => {
+        await until122(() => pg.locator('#deploy-ship').getAttribute('aria-disabled').catch(() => 'true'), (v) => v !== 'true', 60000)
+        // DW-404 (121's): a silent press is recorded, never pressed again
+        const sent = pg.waitForRequest((r) => r.method() === 'POST' && /\/deploy$/.test(new URL(r.url()).pathname), { timeout: 20000 }).then(() => true, () => false)
+        await pg.locator('#deploy-ship').click()
+        if (!(await sent)) {
+          await pg.screenshot({ path: path.join(OUT, `step-122-ship-silent-${Date.now()}.png`) }).catch(() => {})
+          note('step 122 — DW-404, a Ship it press sent nothing in 20 s', 'see the screenshot')
+        }
+        return until122(job122, (j) => j?.id === job?.id && (j.stage === 'done' || j.stage === 'failed'), 300000)
+      }
+      /** ship n: the editor left, Home's headline "Version n" stored, the editor opened, Ship it (Deploy & activate) — the first deploy's
+       *  Safety net and Backup step answered as a customer answers them, its capture saving T1's own theme — and T1's `/` read */
+      const shipOne122 = async (pg, n, userId) => {
+        if (n > 1) await leave122(pg, userId)
+        if (!(await headlineDoc122(n))) throw new Error(`step 122: Home's stored headline did not hold "Version ${n}"`)
+        await pg.goto(at(`/projects/${P122}`), { waitUntil: 'load' })
+        await painted122(pg)
+        await pg.locator('#editor-ship').click()
+        await until122(() => wiz122(pg), (w) => w?.at === 'destination', 20000)
+        let pre
+        if (n === 1) {
+          await pg.locator('#deploy-next').click()
+          await until122(() => wiz122(pg), (w) => w?.at === 'safety', 15000)
+          await pg.locator('#deploy-token').fill(ENV122.GHOST6_STAFF_ACCESS_TOKEN)
+          await pg.locator('#deploy-add-token').click()
+          await until122(() => wiz122(pg), (w) => w?.at === 'backup', 60000)
+          for (const { id } of GATE122.GATE_ROWS) await pg.locator(`#deploy-gate-${id}`).check()
+          await pg.locator('#deploy-gate-confirm').check()
+          const was = (await job122())?.id ?? null
+          await pg.locator('#deploy-backup-run').click()
+          pre = await until122(job122, (j) => j !== null && j.id !== was && ['awaiting_ship', 'failed'].includes(j.stage), 180000)
+        } else {
+          pre = (await runChecks122(pg)).job
+        }
+        const end = await ship122(pg, pre)
+        if (end?.stage !== 'done') throw new Error(`step 122: ship ${n} ended ${end?.stage ?? 'unread'}`)
+        return { row: await deploy122(end.deploy_id), home: await homeSays122(n) }
+      }
+      /** the history route on `pg`'s own session — what the drawer reads — and a POST to it */
+      const history122 = (pg, project = P122) => pg.evaluate(async (u) => {
+        const r = await fetch(u, { cache: 'no-store' })
+        return { status: r.status, body: await r.json().catch(() => null) }
+      }, at(`/projects/${project}/history`))
+      const post122 = (p, body) => p.evaluate(async ([u, b]) => {
+        const r = await fetch(u, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(b) })
+        return { status: r.status, body: await r.json().catch(() => null) }
+      }, [at(`/projects/${P122}/history`), body])
+      const openDrawer122 = async (pg) => {
+        await closed122(pg)
+        await pg.locator('#deploy-history-open').click()
+        await pg.waitForFunction(() => document.querySelector('dialog[data-deploy-history]') && !document.querySelector('[data-history-loading]'), null, { timeout: 20000 })
+      }
+      /** D2a's row as drawn, and each version row's version, Live dot, D2d's chip and action */
+      const drawer122 = (p) => p.evaluate(() => {
+        const d = document.querySelector('dialog[data-deploy-history]')
+        if (!d) return null
+        const o = d.querySelector('[data-history-original]')
+        return {
+          original: o === null ? null : {
+            inList: o.closest('ol') !== null,
+            title: o.querySelector('.font-semibold')?.textContent ?? null,
+            name: o.querySelector('[data-history-original-name]')?.textContent ?? null,
+            archived: o.querySelector('[data-history-archived]')?.textContent ?? null,
+            restore: o.querySelector('#history-restore')?.textContent ?? null,
+            live: o.querySelector('.bg-mint') !== null,
+            ruled: o.nextElementSibling?.hasAttribute('data-history-original-rule') === true,
+          },
+          rows: [...d.querySelectorAll('[data-history-row]')].map((r) => {
+            const a = r.querySelector('[data-history-act]')
+            return { v: r.getAttribute('data-history-row'), live: r.querySelector('.bg-mint') !== null, uploaded: r.hasAttribute('data-history-uploaded'), act: a?.getAttribute('aria-label') ?? null }
+          }),
+        }
+      }).catch(() => null)
+      /** RESTORE ORIGINAL THROUGH A FRESH DRAWER on `p` — by the keyboard (Tab from ✕, the row's button the first stop, Enter) or a
+       *  press — "Restoring…" watched from before it, then read until it ends: said in the drawer's region with focus on ✕, or a
+       *  sentence under the row (Ghost's detail, the fallback's Download and link with it) */
+      const restore122 = async (p, keys = false) => {
+        await openDrawer122(p)
+        const button = p.locator('#history-restore')
+        if ((await button.count()) === 0) return { busy: false, tab: null, ended: null }
+        const busy = p.waitForFunction((w) => {
+          const b = document.querySelector('#history-restore')
+          return b?.getAttribute('aria-busy') === 'true' && b.innerText.trim() === w
+        }, HW122.restoring, { timeout: 120000, polling: 'raf' }).then(() => true, () => false)
+        let tab = null
+        if (keys) {
+          await p.keyboard.press('Tab')
+          tab = await p.evaluate(() => document.activeElement?.id ?? null)
+          await p.keyboard.press('Enter')
+        } else await button.click()
+        const ended = await p.waitForFunction(() => {
+          const d = document.querySelector('dialog[data-deploy-history]')
+          if (!d || d.hasAttribute('data-unstoppable')) return false
+          const said = d.querySelector('[data-history-said]')?.textContent ?? ''
+          const line = d.querySelector('#history-original-note')
+          const words = line?.querySelector('span:not([data-history-detail])')?.textContent ?? ''
+          if (said === '' && words === '') return false
+          if (said !== '' && document.activeElement?.id !== 'deploy-history-close') return false
+          const place = d.querySelector('[data-history-original-place]')
+          return {
+            said, note: words, detail: line?.querySelector('[data-history-detail]')?.textContent ?? null, focus: document.activeElement?.id || null,
+            download: d.querySelector('#history-original-download')?.getAttribute('href') ?? null,
+            place: place === null ? null : { href: place.getAttribute('href'), target: place.getAttribute('target') },
+          }
+        }, null, { timeout: 300000, polling: 250 }).then((h) => h.jsonValue(), () => null)
+        return { busy: await busy, tab, ended }
+      }
+      /** a version row's action pressed through a fresh drawer (Re-activate, with no confirm), read until it is said */
+      const reactivate122 = async (p, v) => {
+        await openDrawer122(p)
+        await p.locator(`dialog[data-deploy-history] [data-history-row="v${v}"] [data-history-act]`).click()
+        return p.waitForFunction(() => {
+          const d = document.querySelector('dialog[data-deploy-history]')
+          const said = d?.querySelector('[data-history-said]')?.textContent ?? ''
+          return d && !d.hasAttribute('data-unstoppable') && said !== '' && document.activeElement?.id === 'deploy-history-close' ? said : false
+        }, null, { timeout: 300000, polling: 250 }).then((h) => h.jsonValue(), () => null)
+      }
+      /** the snapshot row repointed (the service key) to `bytes` stored under the account's own prefix, named `name` */
+      const repoint122 = async (bytes, name, version) => {
+        const key = `${accounts122[0].id}/${site122}/${new Date().toISOString().replace(/[-:.]/g, '')}-${name}.zip`
+        const put = await putObject122('site-snapshots', key, bytes)
+        const row = await call('/rest/v1', `/site_snapshots?id=eq.${snap122.id}`, { method: 'PATCH', body: JSON.stringify({ storage_path: `site-snapshots/${key}`, theme_name: name, theme_version: version, bytes: bytes.length }) })
+        return { put, row: row.status, key }
+      }
+      const backToCaptured122 = () => call('/rest/v1', `/site_snapshots?id=eq.${snap122.id}`, { method: 'PATCH', body: JSON.stringify({ storage_path: snap122.storage_path, theme_name: snap122.theme_name, theme_version: snap122.theme_version, bytes: snap122.bytes }) })
+
+      try {
+        // the start: T1's live theme and routes.yaml, which the finally puts back — never begun on a theme a test left live
+        start122 = (await themes122()) ?? []
+        prev122 = start122.find((t) => t.active)?.name ?? null
+        routesBefore122 = await routesFile122()
+        check(`step 122 — T1's live theme read with the staff token at the start (${prev122 ?? 'unread'}), not an Inflozo theme a test left live and no walk- theme left, and routes.yaml read`,
+          prev122 !== null && !/^inflozo-|^walk-/.test(prev122) && !start122.some((t) => /^walk-/.test(t.name)) && routesBefore122 !== null, JSON.stringify(start122.map((t) => `${t.name}${t.active ? '*' : ''}`)))
+        if (prev122 === null || /^inflozo-|^walk-/.test(prev122) || routesBefore122 === null) throw new Error('step 122: T1 is not on its own theme — ask the owner before restoring it')
+        if (PLANT122.length) {
+          const all = await users()
+          if (all === null) throw new Error('step 122: the user list is unreadable, so the plant cannot tell its addresses are new')
+          const taken = PLANT122.filter((e) => all.some((u) => (u.email ?? '').toLowerCase() === e))
+          if (taken.length) throw new Error(`step 122: the plant's addresses must be new, and ${taken.join(', ')} already has an account`)
+        }
+        const R = await account122(email122, 'Restore test')
+        const pg = R.pg
+        pg122 = pg
+        site122 = R.acc.site
+        P122 = R.acc.project
+        theme122 = R.theme
+        const prevVersion = start122.find((t) => t.active)?.version ?? null
+
+        // ── 122a — two ships; the first's capture saves T1's own theme, with its version ──
+        const shipped = []
+        for (let n = 1; n <= 2; n++) shipped.push(await shipOne122(pg, n, R.acc.id))
+        const [v1, v2] = shipped.map((s) => s.row)
+        snap122 = await snapRow122()
+        check(`step 122a — two ships (Deploy & activate): v1, v2 in order, ${ORIGIN122}/ reading "Version 1" then "Version 2", v2 live on T1 under ${theme122}; the first ship's capture saved T1's own theme as the site's original — theme_name ${prev122} with theme_version ${prev122} declares (${prevVersion ?? 'none'}), this story's column, read back`,
+          shipped.map((s) => s.row?.version).join(',') === '1.0.0,2.0.0' && shipped.every((s, i) => s.home === `Version ${i + 1}`) && (await active122()) === theme122 &&
+          snap122 !== null && snap122.theme_name === prev122 && snap122.theme_version === prevVersion && typeof snap122.storage_path === 'string',
+          JSON.stringify({ versions: shipped.map((s) => s.row?.version ?? null), home: shipped.map((s) => s.home ?? null), snapshot: snap122 === null ? null : { theme: snap122.theme_name, version: snap122.theme_version } }))
+        if (shipped.some((s) => s.row === null || s.row.content_manifest === null) || snap122 === null) throw new Error('step 122: a ship or the capture is missing')
+        const savedZip = await object122('site-snapshots', snap122.storage_path.replace(/^site-snapshots\//, ''))
+        if (savedZip === null) throw new Error('step 122: the saved original could not be read')
+        const savedFiles = ZIP122.unzipTheme(new Uint8Array(savedZip))
+
+        if (PLANT122.length) {
+          // ── the plant: B linked to T1 with nothing shipped, its saved original the refused `old-magazine`; then STOP ──
+          const fatal = await fatal122(savedFiles, 'old-magazine', '2.1.0')
+          if (!fatal.proved) throw new Error(`step 122: the planted theme is not proved fatal locally (${fatal.said}) — nothing is planted`)
+          const B = await account122(PLANT122[1], 'Restore refused')
+          const key = `${B.acc.id}/${B.acc.site}/${new Date().toISOString().replace(/[-:.]/g, '')}-old-magazine.zip`
+          const stored = await putObject122('site-snapshots', key, fatal.planted)
+          const row = await call('/rest/v1', '/site_snapshots', { method: 'POST', body: JSON.stringify({ user_id: B.acc.id, site_id: B.acc.site, storage_path: `site-snapshots/${key}`, theme_name: 'old-magazine', theme_version: '2.1.0', bytes: fatal.planted.length, captured_at: new Date().toISOString() }) })
+          const aAnswer = await history122(pg)
+          const bAnswer = await history122(B.pg, B.acc.project)
+          const themesP = (await themes122()) ?? []
+          planted122 = check(`step 122 (plant) — A ${PLANT122[0]}: T1 connected through the wizard, "Restore test" shipped v1 then v2 ("Version 2" live on T1), its original ${prev122} ${prevVersion ?? ''} saved by the first ship; B ${PLANT122[1]}: T1 connected, "Restore refused" linked and nothing shipped, its saved original planted as old-magazine 2.1.0 (the saved files renamed, plus one template the pinned v6 gscan blocks: ${fatal.said}) — a theme T1 does not hold; each history route answers its original`,
+            stored === 200 && row.status === 201 && !themesP.some((t) => t.name === 'old-magazine') && themesP.find((t) => t.active)?.name === theme122 &&
+            aAnswer.status === 200 && aAnswer.body?.original?.theme === prev122 && aAnswer.body.original.version === prevVersion &&
+            bAnswer.status === 200 && bAnswer.body?.original?.theme === 'old-magazine' && bAnswer.body.original.version === '2.1.0' && (bAnswer.body.rows ?? []).length === 0,
+            JSON.stringify({ stored, row: row.status, a: aAnswer.body?.original ?? null, b: bAnswer.body?.original ?? null, themes: themesP.map((t) => `${t.name}${t.active ? '*' : ''}`) }))
+          if (planted122) {
+            plantKept.users += 2
+            plantKept.projects += 2
+            note('step 122 — PLANT for the owner\'s test', `A ${PLANT122[0]} · "Restore test" ${at(`/projects/${R.acc.project}`)} · v2 live on ${ORIGIN122} as ${theme122}, original ${prev122} · B ${PLANT122[1]} · "Restore refused" ${at(`/projects/${B.acc.project}`)} · original old-magazine (refused by Ghost's check), nothing shipped`)
+          }
+          throw STOP122
+        }
+
+        // ── 122b — the History GET's original, and D2a's row drawn above the list ──
+        const answerB = await history122(pg)
+        const HOST122 = CR122.hostOf(ENV122.GHOST6_URL)
+        const zone = await pg.evaluate(() => Intl.DateTimeFormat().resolvedOptions().timeZone).catch(() => undefined)
+        await closed122(pg)
+        await openDrawer122(pg)
+        const shownB = await drawer122(pg)
+        check(`step 122b — the History GET carries the linked site's original — { id, theme ${prev122}, version ${prevVersion ?? 'null'}, capturedAt, siteUrl } — read on R's own session (RLS)`,
+          answerB.status === 200 && answerB.body?.original?.id === snap122.id && answerB.body.original.theme === prev122 && answerB.body.original.version === prevVersion &&
+          answerB.body.original.capturedAt !== undefined && Date.parse(answerB.body.original.capturedAt) === Date.parse(snap122.captured_at) && CR122.hostOf(answerB.body.original.siteUrl) === HOST122,
+          JSON.stringify(answerB.body?.original ?? answerB.status))
+        check(`step 122b — D2a's row in the drawer at 1440, above the list and outside it, then its rule: "${HW122.original}", "${HW122.originalName(prev122, prevVersion)}", "${RET122.archivedLabel(snap122.captured_at, new Date(), zone)}", "${HW122.restore}", no Live dot on it; v2 Live, v1 under it`,
+          shownB?.original !== null && shownB.original.inList === false && shownB.original.ruled && shownB.original.title === HW122.original && shownB.original.name === HW122.originalName(prev122, prevVersion) &&
+          shownB.original.archived === RET122.archivedLabel(snap122.captured_at, new Date(), zone) && shownB.original.restore === HW122.restore && !shownB.original.live &&
+          shownB.rows.map((r) => `${r.v}${r.live ? '*' : ''}`).join(' ') === 'v2* v1',
+          JSON.stringify(shownB))
+
+        // ── 122c — Restore original by the keyboard ──
+        const deploysC0 = await rows122()
+        const v2C0 = await deploy122(v2.id)
+        await closed122(pg)
+        const c = await restore122(pg, true)
+        const themesC = (await themes122()) ?? []
+        const v2C = await deploy122(v2.id)
+        const deploysC = await rows122()
+        const diffC = DR122.compareManifests(v2.content_manifest, (await liveOf122(theme122)) ?? {})
+        const shownC = await drawer122(pg)
+        check(`step 122c — Restore original by the keyboard: Tab from ✕ reaches it first, Enter — "${HW122.restoring}" — then "${HW122.restored.live(HOST122)}" with focus on ✕`,
+          c.tab === 'history-restore' && c.busy === true && c.ended?.said === HW122.restored.live(HOST122) && c.ended.focus === 'deploy-history-close', JSON.stringify(c))
+        check(`step 122c — T1's active theme is ${prev122} again (GET themes/, the staff token), and ${theme122} is still installed — its download at ZERO differences from v2's content_manifest (a restore overwrites nothing); ${ORIGIN122}/ no longer an Inflozo page`,
+          themesC.find((t) => t.active)?.name === prev122 && themesC.some((t) => t.name === theme122) && none122(diffC) && (await until122(headline122, (h) => h === null, 30000)) === null,
+          JSON.stringify({ themes: themesC.map((t) => `${t.name}${t.active ? '*' : ''}`), diff: diffC }))
+        check('step 122c — the records: v2 `uploaded`, its activated, activated_at and accepted_at untouched; no deploys row added; the drawer draws v2 as D2d\'s row with Re-activate and nothing Live',
+          v2C?.status === 'uploaded' && v2C.activated === v2C0?.activated && v2C.activated_at === v2C0.activated_at && v2C.accepted_at === v2C0.accepted_at && deploysC.length === deploysC0.length &&
+          shownC?.rows.find((r) => r.v === 'v2')?.uploaded === true && shownC.rows.find((r) => r.v === 'v2')?.act === HW122.reactivateName(2) && shownC.rows.every((r) => !r.live),
+          JSON.stringify({ before: kept122(v2C0), after: kept122(v2C), rows: `${deploysC0.length} → ${deploysC.length}`, shown: shownC?.rows }))
+        // R-264 (a): reloaded, Ship it ▾'s Deploy only is free — no `live` row of this project on the site
+        await closed122(pg)
+        await pg.goto(at(`/projects/${P122}`), { waitUntil: 'load' })
+        await painted122(pg)
+        await pg.locator('#editor-ship + button').click()
+        const onlyC = await until122(() => pg.evaluate((words) => {
+          const li = [...document.querySelectorAll('#editor-ship-menu li')].find((l) => l.textContent.includes(words))
+          return li ? { greyed: [li, ...li.querySelectorAll('*')].some((e) => e.getAttribute('aria-disabled') === 'true' || e.disabled === true) } : null
+        }, DEP122.DEPLOY_WORDS.uploadOnly).catch(() => null), (r) => r !== null, 10000)
+        await pg.keyboard.press('Escape')
+        check('step 122c — R-264 (a) reads the record truthfully: the editor reloaded, Ship it ▾\'s Deploy only row is NOT greyed', onlyC !== null && onlyC.greyed === false, JSON.stringify(onlyC))
+
+        // ── 122d — Re-activate v2, then Run checks: the baseline held ──
+        const d = await reactivate122(pg, 2)
+        check(`step 122d — Re-activate v2 (7.23a's undo): "${HW122.said.live(2, HOST122)}", v2 live, ${ORIGIN122}/ "Version 2"`,
+          d === HW122.said.live(2, HOST122) && (await deploy122(v2.id))?.status === 'live' && (await homeSays122(2)) === 'Version 2', JSON.stringify({ said: d }))
+        await closed122(pg)
+        await pg.locator('#editor-ship').click()
+        await until122(() => wiz122(pg), (w) => w?.at === 'destination', 20000)
+        const { job: preD, shown: wizD } = await runChecks122(pg, (w) => w.passes.some((p) => p.clean))
+        check(`step 122d — the next Run checks: D3c "${DW122.clean(2)}" — no row was written by the restore, so the drift baseline is still v2's upload`,
+          preD?.stage === 'awaiting_ship' && same122(preD.stage_timings?.drift, { kind: 'clean', since: 2 }) && (wizD?.passes ?? []).some((p) => p.clean && p.text.includes(DW122.clean(2))),
+          JSON.stringify({ stage: preD?.stage ?? null, drift: preD?.stage_timings?.drift ?? null }))
+        await closed122(pg)
+
+        // ── 122e — the saved copy put back when Ghost no longer holds it: VERIFY 10's snapshot half ──
+        const origE = renamed122(savedFiles, 'walk-original')
+        const origZip = Buffer.from(ZIP122.zipTheme(origE))
+        const heldE0 = ((await themes122()) ?? []).some((t) => t.name === 'walk-original')
+        const pointedE = await repoint122(origZip, 'walk-original', prevVersion)
+        const e = await restore122(pg)
+        const themesE = (await themes122()) ?? []
+        const diffE = DR122.compareManifests(await DR122.liveManifest(ZIP122.unzipTheme(new Uint8Array(origZip))), (await liveOf122('walk-original')) ?? {})
+        check('step 122e — the saved copy put back: the row repointed to the original renamed walk-original (stored, read back) — T1 holding no walk-original (the control) — then Restore original: Ghost\'s activation finds no such theme, so the saved zip goes up as walk-original.zip and is activated; T1\'s active theme walk-original, its download at ZERO differences from the saved zip; v2 demoted',
+          !heldE0 && pointedE.put === 200 && [200, 204].includes(pointedE.row) && e.ended?.said === HW122.restored.live(HOST122) && themesE.find((t) => t.active)?.name === 'walk-original' && none122(diffE) &&
+          (await deploy122(v2.id))?.status === 'uploaded',
+          JSON.stringify({ held: heldE0, pointed: { put: pointedE.put, row: pointedE.row }, ended: e.ended, themes: themesE.map((t) => `${t.name}${t.active ? '*' : ''}`), diff: diffE }))
+
+        // ── 122f — Ghost refuses: a planted fatal original, said with its detail and the fallback; nothing changed ──
+        const fatal = await fatal122(savedFiles, 'walk-fatal', '0.0.1')
+        check(`step 122f — LOCALLY, before anything is planted: the pinned v6 gscan passes the saved original (the control) and BLOCKS its twin named walk-fatal, with one template Handlebars cannot parse, on GS005-TPL-ERR fatal — ${fatal.said}`, fatal.proved)
+        if (!fatal.proved) throw new Error('step 122: the planted theme is not proved fatal locally — nothing is planted')
+        const pointedF = await repoint122(fatal.planted, 'walk-fatal', '0.0.1')
+        const themesF0 = await names122()
+        const rowsF0 = JSON.stringify((await rows122()).map(kept122))
+        const f = await restore122(pg)
+        check(`step 122f — Restore original with Ghost's check refusing: under the row "${HW122.originalRefused}" with Ghost's own detail in mono, "${HW122.downloadOriginal}" to Story 2.5's route for this snapshot, and "${HW122.originalPlace} ↗" at the site's own Design panel in a new tab; focus back on Restore original; nothing in the drawer's region`,
+          pointedF.put === 200 && f.ended?.note === HW122.originalRefused && typeof f.ended.detail === 'string' && f.ended.detail.length > 0 && f.ended.said === '' && f.ended.focus === 'history-restore' &&
+          f.ended.download === `${PREFIX}${GATE122.snapshotDownloadPath(snap122.id)}` && f.ended.place?.href === PAY122.adminAt(ENV122.GHOST6_URL, 'design') && f.ended.place.target === '_blank',
+          JSON.stringify(f.ended))
+        check('step 122f — …and nothing changed: T1\'s themes and its active theme as they were (walk-original), no walk-fatal held, every deploys row as it was',
+          (await names122()) === themesF0 && (await active122()) === 'walk-original' && JSON.stringify((await rows122()).map(kept122)) === rowsF0, themesF0)
+        // DW-391 through the product: the fallback's Download pressed — the zip downloads and the editor stays
+        const urlF = pg.url()
+        const [file] = await Promise.all([pg.waitForEvent('download', { timeout: 30000 }).catch(() => null), pg.locator('#history-original-download').click()])
+        const saidF = await pg.locator('#history-original-download-said').textContent().catch(() => null)
+        check('step 122f — DW-391 through the product: "Download your original theme" pressed — a zip downloads (Story 2.5\'s route, followed as JSON then the signed URL), the editor stays where it was, nothing said under the button',
+          file !== null && /\.zip$/.test(file.suggestedFilename()) && pg.url() === urlF && (saidF ?? '') === '', JSON.stringify({ file: file?.suggestedFilename() ?? null, said: saidF }))
+        // the control: the row as captured — the same press accepted (T1 holds the original: an activation)
+        const backF = await backToCaptured122()
+        const fc = await restore122(pg)
+        check(`step 122f — the control: the row back as captured (${prev122}), the same press accepted — "${HW122.restored.live(HOST122)}", ${prev122} active`,
+          [200, 204].includes(backF.status) && fc.ended?.said === HW122.restored.live(HOST122) && (await active122()) === prev122, JSON.stringify({ row: backF.status, ended: fc.ended }))
+
+        // ── 122g — DW-391 on production, the snapshot's route ──
+        const href = `${PREFIX}${GATE122.snapshotDownloadPath(snap122.id)}`
+        const asked = await pg.evaluate(async (u) => {
+          const r = await fetch(u, { headers: { accept: 'application/json' }, cache: 'no-store' })
+          const body = await r.json().catch(() => null)
+          const link = await fetch(u, { redirect: 'manual', cache: 'no-store' })
+          return { status: r.status, keys: body === null ? null : Object.keys(body), url: typeof body?.url === 'string' ? body.url : null, link: link.type }
+        }, href)
+        // the signed URL followed from here, as the browser's link would (its address is never printed: it carries a token)
+        let zipG = null
+        if (asked.url !== null) {
+          const z = await fetch(asked.url).catch(() => null)
+          const bytes = z === null ? new Uint8Array() : new Uint8Array(await z.arrayBuffer())
+          zipG = { status: z?.status ?? 0, pk: bytes[0] === 0x50 && bytes[1] === 0x4b, disposition: z?.headers.get('content-disposition') ?? null }
+        }
+        const g = { status: asked.status, keys: asked.keys, link: asked.link, zip: zipG }
+        const anon = await (async () => {
+          const ctx = await browser.newContext()
+          try {
+            const p = await ctx.newPage()
+            await p.goto(at('/sign-in'), { waitUntil: 'load' })
+            return await p.evaluate(async (u) => (await fetch(u, { headers: { accept: 'application/json' } })).status, href)
+          } finally {
+            await ctx.close().catch(() => {})
+          }
+        })()
+        check('step 122g — DW-391 on production: the snapshot\'s route asked as the editor\'s follower asks (Accept: application/json) answers 200 { url } on R\'s session, and that signed URL serves a PK zip as an attachment; asked as a link, the 303 (an opaque redirect); asked signed out, 401',
+          g.status === 200 && same122(g.keys, ['url']) && g.zip?.status === 200 && g.zip.pk === true && /attachment/.test(g.zip.disposition ?? '') && g.link === 'opaqueredirect' && anon === 401,
+          JSON.stringify({ ...g, anon }))
+
+        // ── 122h — a second session reading along ──
+        const p2 = await context122(email122)
+        await p2.goto(at(`/projects/${P122}`), { waitUntil: 'load' })
+        await painted122(p2)
+        const reading = await until122(() => p2.evaluate(() => document.querySelector('[data-readonly]') !== null).catch(() => false), (v) => v === true, 30000)
+        const holding = await pg.evaluate(() => document.querySelector('[data-readonly]') === null).catch(() => false)
+        const h = await restore122(p2)
+        check(`step 122h — a SECOND session of R reading along (its editor [data-readonly]) while the first holds the edit lock: Restore original from its drawer — "${HW122.restored.live(HOST122)}" (the restore reads no lock, and R is on Free: no plan)`,
+          reading === true && holding === true && h.ended?.said === HW122.restored.live(HOST122) && (await active122()) === prev122, JSON.stringify({ reading, holding, ended: h.ended }))
+        await p2.context().close().catch(() => {})
+
+        // ── 122i — the doors: another account, a disconnected site, a row gone ──
+        const themesI0 = await names122()
+        await page.goto(at('/'), { waitUntil: 'load' })
+        const crossI = await post122(page, { act: 'restore', snapshot: snap122.id })
+        await page.goto('about:blank')
+        check('step 122i — another account\'s door: the walk\'s account A POSTs { act: restore, snapshot } to R\'s project\'s history route → 404, and nothing reaches Ghost (T1\'s themes as they were)',
+          crossI.status === 404 && (await names122()) === themesI0, JSON.stringify(crossI))
+        const stamp122 = await call('/rest/v1', `/sites?id=eq.${site122}`, { method: 'PATCH', body: JSON.stringify({ disconnected_at: new Date().toISOString() }) })
+        stamped122 = [200, 204].includes(stamp122.status)
+        const offI = await post122(pg, { act: 'restore', snapshot: snap122.id })
+        const unstamp = await call('/rest/v1', `/sites?id=eq.${site122}`, { method: 'PATCH', body: JSON.stringify({ disconnected_at: null }) })
+        if ([200, 204].includes(unstamp.status)) stamped122 = false
+        check('step 122i — a disconnected site: R\'s site stamped disconnected (the service key) → the restore answers 409 { code: disconnected } and nothing reaches Ghost; the stamp cleared, read back',
+          stamp122.status !== 0 && offI.status === 409 && offI.body?.code === 'disconnected' && (await names122()) === themesI0 && stamped122 === false, JSON.stringify({ stamp: stamp122.status, answer: offI, unstamp: unstamp.status }))
+        const gone = await call('/rest/v1', `/site_snapshots?id=eq.${snap122.id}`, { method: 'DELETE' })
+        const goneI = await pg.evaluate(async (u) => (await fetch(u, { headers: { accept: 'application/json' }, cache: 'no-store' })).status, href)
+        const restoreGone = await post122(pg, { act: 'restore', snapshot: snap122.id })
+        const answerI = await history122(pg)
+        check('step 122i — the row gone (deleted with the service key): the snapshot\'s route answers 404 to the follower, the restore 404 (gone), and the History GET carries no original',
+          [200, 204].includes(gone.status) && goneI === 404 && restoreGone.status === 404 && answerI.status === 200 && answerI.body?.original === null && (await names122()) === themesI0,
+          JSON.stringify({ deleted: gone.status, download: goneI, restore: restoreGone.status, original: answerI.body?.original ?? 'unread' }))
+        snap122 = null
+      } catch (e) {
+        if (e !== STOP122) check('step 122 — the step ran to its end', false, scrub122(String(e?.message ?? e).split('\n')[0]))
+      } finally {
+        if (pg122 !== null && P122 !== null) await handBack122(pg122)
+        for (const ctx of ctxs122) await ctx.close().catch(() => {})
+        if (stamped122 && site122 !== null) await call('/rest/v1', `/sites?id=eq.${site122}`, { method: 'PATCH', body: JSON.stringify({ disconnected_at: null }) }).catch(() => {})
+        if (P122 !== null) await until122(job122, atRest122, 330000).catch(() => {})
+        if (planted122) {
+          note('step 122 — the plant is left in place', `T1 serves ${theme122} (v2); ${PLANT122.join(' and ')} keep their sites and projects; the owner's test ends with the two test themes removed from T1 on his go`)
+        } else {
+          if (prev122 !== null) {
+            try {
+              const now = await themes122()
+              if (now !== null && now.find((t) => t.active)?.name !== prev122) await staff122('PUT', `themes/${encodeURIComponent(prev122)}/activate/`)
+              const startNames = new Set(start122.map((t) => t.name))
+              for (const t of (await themes122()) ?? []) if (/^inflozo-|^walk-/.test(t.name) && !startNames.has(t.name)) await staff122('DELETE', `themes/${encodeURIComponent(t.name)}/`)
+              const routesNow = await routesFile122()
+              if (routesBefore122 !== null && routesNow !== null && Buffer.compare(routesBefore122, routesNow) !== 0) await staff122('POST', RU122.ROUTES_PATH, RU122.routesForm(routesBefore122.toString('utf8')))
+              const after = await themes122()
+              const routesAfter = await routesFile122()
+              check(`step 122 — finally: T1 put back with the staff token — ${prev122} active again, every inflozo- and walk- theme the run uploaded deleted, routes.yaml byte for byte as at the start, read back`,
+                after !== null && after.find((t) => t.active)?.name === prev122 && after.every((t) => !/^inflozo-|^walk-/.test(t.name) || startNames.has(t.name)) &&
+                routesAfter !== null && routesBefore122 !== null && Buffer.compare(routesAfter, routesBefore122) === 0,
+                JSON.stringify({ themes: (after ?? []).map((t) => `${t.name}${t.active ? '*' : ''}`), routes: `${routesBefore122?.length ?? 'unread'} → ${routesAfter?.length ?? 'unread'} bytes` }))
+            } catch (e) {
+              check('step 122 — finally: T1 put back', false, scrub122(String(e?.message ?? e).split('\n')[0]))
+            }
+          }
+          for (const acc of accounts122) {
+            if (acc.site !== null) for (const o of await listed122('site-snapshots', `${acc.id}/${acc.site}`)) await removeObject122('site-snapshots', `${acc.id}/${acc.site}/${o.name}`)
+            const prefixes = acc.project === null ? [] : [acc.project, `${acc.project}/live`]
+            for (const prefix of prefixes) for (const o of await listed122('deploy-artifacts', prefix)) await removeObject122('deploy-artifacts', `${prefix}/${o.name}`)
+            const siteRow = async () => (acc.site === null ? null : (await call('/rest/v1', `/sites?id=eq.${acc.site}&select=id,disconnected_at`)).body?.[0] ?? null)
+            const row = await siteRow().catch(() => null)
+            if (row !== null && row.disconnected_at === null) {
+              const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
+              try {
+                const pd = steady(await ctx.newPage())
+                await pd.goto(await magic(acc.email), { waitUntil: 'load' })
+                await pd.goto(at(`/sites/disconnect?site=${acc.site}`), { waitUntil: 'load' })
+                await pd.locator('form').getByRole('button', { name: CR122.DISCONNECT.menu, exact: true }).first().click()
+                await until122(siteRow, (r) => r?.disconnected_at != null, 30000)
+              } catch {} finally {
+                await ctx.close().catch(() => {})
+              }
+            }
+            const leftObjects = [...(acc.site === null ? [] : await listed122('site-snapshots', `${acc.id}/${acc.site}`)), ...(await Promise.all(prefixes.map((p) => listed122('deploy-artifacts', p)))).flat()]
+            const disconnected = acc.site === null || (await siteRow().catch(() => null))?.disconnected_at != null
+            const del = await admin(`/admin/users/${acc.id}`, { method: 'DELETE', body: '{}' })
+            check(`step 122 — finally: ${acc.email.startsWith('editor-harness-r-') ? 'R' : 'the failed plant\'s account'} — no object left under its prefixes, T1 disconnected, deleted (its sites, projects, snapshots, jobs and deploys with it)`,
+              leftObjects.length === 0 && disconnected && del.status === 200, `objects ${leftObjects.length}, disconnected ${disconnected}, HTTP ${del.status}`)
+          }
+          const usersAfter = (await users())?.length ?? null
+          const projectsAfter = await projectCount()
+          check('step 122 — finally: users and projects counted back', usersBefore122 !== null && usersAfter === usersBefore122 && projectsBefore122 !== null && projectsAfter === projectsBefore122,
+            `users ${usersBefore122} → ${usersAfter}, projects ${projectsBefore122} → ${projectsAfter}`)
+        }
+      }
+      check('step 122 — the step\'s contexts recorded zero CSP violations', csp122.length === 0, JSON.stringify(csp122.slice(0, 3)))
     }
 
     // ── step 9 — the skeleton streams first ──

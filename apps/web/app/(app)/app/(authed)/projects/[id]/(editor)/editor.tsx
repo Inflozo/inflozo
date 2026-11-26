@@ -102,6 +102,7 @@ import { StylePackCard, StylePackHead, StylePackRoster } from './style-pack'
 import { CardMenu, CardPanel, CardPanelHead, CardsCanvas, CardsLayers } from './cards-surface'
 import { DeployWizard, ShipButton, type ShipRequest } from '@/components/editor/deploy-wizard'
 import { DeployHistory } from '@/components/editor/deploy-history'
+import { snapshotDownloadPath } from '@/lib/backup-gate'
 import { historyLiveDownloadPath } from '@/lib/drift'
 import { actOutcomeOf, checkOutcomeOf, HISTORY_WORDS, pinOutcomeOf, type ActOutcome, type CheckOutcome, type HistoryAnswer, type PinOutcome } from '@/lib/retention'
 import { DEPLOY_WORDS, POSTS_CHECKED, type Mode as ShipMode } from '@/lib/deploy'
@@ -584,6 +585,9 @@ type EditorProps = EditorData & {
   /** R-291 — the drift check before a Roll back, the route's POST `{ deploy, act: 'check' }` unless named: the harness names
    *  `harnessCheck`, which answers by its header with no database and no Ghost. The app passes none. */
   historyCheck?: (projectId: string, deploy: string) => Promise<CheckOutcome>
+  /** STORY 7.23b — Restore original, the route's POST `{ snapshot, act: 'restore' }` unless named: the harness names
+   *  `harnessRestore`, which answers by its header with no database and no Ghost. The app passes none. */
+  historyRestore?: (projectId: string, snapshot: string) => Promise<ActOutcome>
 }
 
 /** P0-1's pill on the selected section (R-122, and the limit's sentence) — the element it is placed over, and its words. */
@@ -888,6 +892,7 @@ function EditorShell({
   historyPin,
   historyAct,
   historyCheck,
+  historyRestore,
 }: EditorProps) {
   const pathname = usePathname()
   /** Story 7.12 — the project's strings (FR-H5): the overrides the server's judge passed, over the catalog's English. Fixed for
@@ -2629,6 +2634,15 @@ function EditorShell({
     const body: unknown = await answer?.json().catch(() => null)
     const outcome = checkOutcomeOf(answer?.status ?? 0, body)
     if (outcome.kind === 'failed') console.error('history: the check failed', { status: answer?.status ?? 0 })
+    return outcome
+  }
+  /** STORY 7.23b — Restore original, answered as a put-back's outcome is (`actOutcomeOf`); a request that failed is logged by status */
+  const restoreHistory = async (snapshot: string): Promise<ActOutcome> => {
+    if (historyRestore) return historyRestore(project.id, snapshot)
+    const answer = await fetch(historyUrl(), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ snapshot, act: 'restore' }) }).catch(() => null)
+    const body: unknown = await answer?.json().catch(() => null)
+    const outcome = actOutcomeOf(answer?.status ?? 0, body)
+    if (outcome.kind === 'failed') console.error('history: the restore failed', { status: answer?.status ?? 0 })
     return outcome
   }
   const takeOverToShip = () =>
@@ -7039,6 +7053,8 @@ function EditorShell({
           act={actHistory}
           check={checkHistory}
           liveHref={(theme) => `${isApp(pathname) ? '/app' : ''}${historyLiveDownloadPath(project.id, theme)}`}
+          restore={restoreHistory}
+          originalHref={(snapshot) => `${isApp(pathname) ? '/app' : ''}${snapshotDownloadPath(snapshot)}`}
           onClose={() => setHistory((was) => ({ ...was, open: false }))}
         />
       ) : null}

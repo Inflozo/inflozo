@@ -459,6 +459,34 @@ test('Story 7.23a (R-98): the confirm\'s Roll back says "Rolling back…" and th
   assert.match(words, /activating: DEPLOY_WORDS\.activating/)
 })
 
+test('Story 7.23b (R-98): Restore original says "Restoring…" with aria-busy and aria-disabled while it is out — never `disabled` — and every action and pin waits for it (7.23a\'s `acting`), so the drawer carries `data-unstoppable` and its Esc, ✕ and backdrop wait', () => {
+  const drawer = readFileSync('components/editor/deploy-history.tsx', 'utf8')
+  const restore = drawer.slice(drawer.indexOf('id="history-restore"'), drawer.indexOf('</Button>', drawer.indexOf('id="history-restore"')))
+  assert.match(restore, /aria-busy=\{out \|\| undefined\}/)
+  assert.match(restore, /aria-disabled=\{acting !== null \|\| busy !== null \|\| undefined\}/)
+  assert.match(restore, /<BusyLabel pending=\{out\} busy=\{HW\.restoring\}>\{HW\.restore\}<\/BusyLabel>/)
+  const row = drawer.slice(drawer.indexOf('const originalRow = (o: OriginalTheme) => {'), drawer.indexOf('id="history-restore"'))
+  assert.match(row, /const out = acting === o\.id/, 'its press is `acting`, so every action, pin, Esc, ✕ and the backdrop wait')
+  const press = drawer.slice(drawer.indexOf('const restoreBack = async'), drawer.indexOf('const toggle = async'))
+  assert.match(press, /if \(acting !== null \|\| busy !== null\) return\s+setNote\(null\)\s+setActing\(original\.id\)/)
+  assert.match(drawer, /const close = \(\) => \{\s+if \(acting === null\) dialog\.current\?\.close\(\)/, '✕ waits')
+  assert.doesNotMatch(drawer, /\sdisabled(?=[\s=}>/])/)
+  assert.match(readFileSync('lib/retention.ts', 'utf8'), /restoring: 'Restoring…'/)
+})
+
+test('Story 7.23b (DW-391, R-98): a signed Download says "Preparing…" with aria-busy and aria-disabled while its fetch is out — never `disabled` — and a second press does nothing; the Backup step\'s Theme Download keeps its own "Preparing…" through the follow', () => {
+  const wizard = readFileSync('components/editor/deploy-wizard.tsx', 'utf8')
+  const signed = wizard.slice(wizard.indexOf('export function SignedDownload('), wizard.indexOf('/** the routes file, saved as Ghost names it'))
+  assert.match(signed, /aria-busy=\{out \|\| undefined\}/)
+  assert.match(signed, /aria-disabled=\{out \|\| undefined\}/)
+  assert.match(signed, /if \(out\) return\s+setOut\(true\)/)
+  assert.match(signed, /<BusyLabel pending=\{out\} busy=\{SIGNED_WORDS\.preparing\}>/)
+  assert.doesNotMatch(signed, /\sdisabled(?=[\s=}>/])/)
+  const fetchRow = wizard.slice(wizard.indexOf('const fetchRow = async'), wizard.indexOf('setFetching(null)', wizard.indexOf('const fetchRow = async')))
+  assert.match(fetchRow, /await followSigned\(/, 'the follow happens while `fetching` still says "Preparing…"')
+  assert.match(readFileSync('lib/signed-download.ts', 'utf8'), /preparing: BACKUP_WORDS\.preparing/)
+})
+
 test('R-291 (R-98): the check before a Roll back says its work — D3\'s running row, "Comparing with your live theme…", while it reads, never a spinner — and it is the check that is busy: the confirm\'s Roll back waits `aria-disabled` (never `disabled`), its label unchanged, while Cancel and Esc still close the confirm (a read is cancellable)', () => {
   const drawer = readFileSync('components/editor/deploy-history.tsx', 'utf8')
   const region = drawer.slice(drawer.indexOf('role="status" data-history-check'), drawer.indexOf('{asking.drops === null'))

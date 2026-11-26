@@ -342,8 +342,9 @@ export async function editorData(projectId: string): Promise<EditorData> {
       // Story 7.19 — EVERY binding to the site among the user's projects (RLS: the owner's own rows): this project's gives the
       // frozen name, and none at all is FR-J13's first deploy to the site — the Safety net's offer
       sb.from('project_site_bindings').select('project_id, theme_name').eq('site_id', linked),
-      // R-264 (a): the site's latest activated deploy, whichever project made it — is this project's theme the one live?
-      sb.from('deploys').select('project_id').eq('site_id', linked).eq('activated', true).order('activated_at', { ascending: false }).limit(1),
+      // R-264 (a): the site's latest activated deploy, whichever project made it, that is STILL `live` — is this project's theme the
+      // one live? (Story 7.23b: Restore original demotes every live row on the site, and Deploy only is then offered again)
+      sb.from('deploys').select('project_id').eq('site_id', linked).eq('activated', true).eq('status', 'live').order('activated_at', { ascending: false }).limit(1),
     ]),
     // Story 7.18b — the picker's rows: the user's CONNECTED sites, newest first as Sites lists them, and which of the user's
     // projects links each (FR-B5, DW-69's one project per site) — both through the user's own session, so RLS decides

@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs'
 import { DEPLOY_WORDS, deployError, nextVersion } from './lib/deploy.ts'
 import { contentManifest, DRIFT_WORDS, historyCopyPath, LIVE_COPY_MAX_BYTES, liveCopyPath, type ContentManifest } from './lib/drift.ts'
 import { actionOf, HISTORY_WORDS, newestAccepted } from './lib/retention.ts'
-import { checkBeforePutBack, putBack, type CheckBefore, type PutBackIo, type PutBackOutcome } from './server/deploy/put-back.ts'
+import { checkBeforePutBack, putBack, restoreOriginal, type CheckBefore, type OriginalRow, type PutBackIo, type PutBackOutcome, type RestoreOutcome } from './server/deploy/put-back.ts'
 import { STALLED_MS } from './server/deploy/run.ts'
 import { zipTheme } from './server/deploy/zip.ts'
 import type { SnapshotAnswer } from './server/snapshot.ts'
@@ -20,6 +20,8 @@ const S = '00000000-0000-4000-8000-0000000000bb'
 const OTHER = '00000000-0000-4000-8000-0000000000dd'
 const U = '00000000-0000-4000-8000-0000000000cc'
 const NOW = new Date('2026-11-25T12:00:00Z')
+/** Story 7.23b — the linked site's saved original's id */
+const SNAP = '00000000-0000-4000-8000-0000000000ee'
 
 type Answer = { ok: boolean; status: number; body: unknown; text: string }
 const ok = (active = false): Answer => ({ ok: true, status: 200, body: { themes: [{ name: 'inflozo-notes', active }] }, text: '' })
@@ -44,6 +46,10 @@ function world(over: {
   /** R-291: the live theme's answers, in order, to the check's read */
   live?: Array<SnapshotAnswer | Error>
   baselineFails?: number
+  /** Story 7.23b: the linked site's saved original (default: Casper, saved under the user's own prefix), and its reads failing */
+  original?: OriginalRow | null
+  originalFails?: number
+  demoteFails?: number
 } = {}) {
   const rows = new Map((over.rows ?? [row(1), row(2), row(3, { status: 'live' })]).map((r) => [r.id, { ...r }]))
   const bucket = new Map<string, Uint8Array>([...rows.values()].flatMap((r) => (r.artifact_path ? [[r.artifact_path, new TextEncoder().encode(`zip of ${r.id}`)] as const] : [])))
@@ -59,6 +65,13 @@ function world(over: {
   /** every live read the check made (the theme's name), and every object it put with its options */
   const liveReads: string[] = []
   const puts: { path: string; opts: unknown }[] = []
+  /** Story 7.23b: the saved original, the `site-snapshots` bucket, every key read from it, and every row update (a restore writes none) */
+  const original = over.original === undefined ? { id: SNAP, theme_name: 'casper', storage_path: `site-snapshots/${U}/${S}/20261101T000000000Z-casper.zip` } : over.original
+  const snapshots = new Map<string, Uint8Array>(original === null ? [] : [[original.storage_path.replace(/^site-snapshots\//, ''), new TextEncoder().encode(`saved ${original.theme_name}`)]])
+  const snapshotReads: string[] = []
+  const updates: string[] = []
+  let originalFails = over.originalFails ?? 0
+  let demoteFails = over.demoteFails ?? 0
   const io: PutBackIo = {
     row: async ({ deployId, userId }) => {
       reads.push('row')
@@ -84,12 +97,26 @@ function world(over: {
       reads.push(`moving:${since}`)
       return over.moving ?? false
     },
+    original: async ({ siteId, userId }) => {
+      reads.push('original')
+      if (originalFails-- > 0) throw Object.assign(new Error('database'), { infra: true, code: 'PGRST000' })
+      return siteId === S && userId === U ? original : null
+    },
+    snapshots: {
+      get: async (key) => {
+        snapshotReads.push(key)
+        return snapshots.get(key) as Uint8Array
+      },
+    },
     deploys: {
       update: async (id, _u, patch) => {
+        updates.push(id)
         if (updateFails-- > 0) throw Object.assign(new Error('database'), { infra: true, code: 'PGRST000' })
         rows.set(id, { ...(rows.get(id) as Row), ...(patch as Partial<Row>) })
       },
+      // with no `except`, every live row on the site (Story 7.23b's restore) — the real io's own rule, held by the source test
       demote: async ({ siteId, except }) => {
+        if (demoteFails-- > 0) throw Object.assign(new Error('database'), { infra: true, code: 'PGRST000' })
         for (const [k, r] of rows) if (k !== except && r.site_id === siteId && r.status === 'live') rows.set(k, { ...r, status: 'uploaded' })
       },
     },
@@ -119,7 +146,8 @@ function world(over: {
   }
   const put = (deployId: string): Promise<PutBackOutcome> => putBack(io, { userId: U, projectId: P, deployId, now: NOW })
   const check = (deployId: string): Promise<CheckBefore> => checkBeforePutBack(io, { userId: U, projectId: P, deployId, now: NOW })
-  return { io, rows, bucket, calls, reads, logs, put, check, liveReads, puts }
+  const restore = (snapshotId = SNAP, userId = U): Promise<RestoreOutcome> => restoreOriginal(io, { userId, projectId: P, snapshotId, now: NOW })
+  return { io, rows, bucket, calls, reads, logs, put, check, restore, liveReads, puts, snapshotReads, updates }
 }
 
 const snapshotOf = (w: ReturnType<typeof world>) => JSON.stringify([...w.rows.values()])
@@ -468,6 +496,161 @@ test('R-291: an infrastructure failure, twice, is ours — `deploy_infrastructur
   assert.deepEqual(await (await checked({ baselineFails: 1, live: [liveOf(SHIPPED)] })).check('v2'), { drift: { kind: 'clean', since: 3 } })
 })
 
+// ── Story 7.23b — Restore original (R-292: activate the original by its name first; upload the saved zip only when Ghost no longer
+// holds it, never Casper or Source; live demotes every live row on the site; no `deploys` row is ever written) ──────────────────
+
+const theme = (name: string, over: Partial<OriginalRow> = {}): OriginalRow => ({ id: SNAP, theme_name: name, storage_path: `site-snapshots/${U}/${S}/20261101T000000000Z-${name}.zip`, ...over })
+const notHeld = (name: string) => bad(422, { errors: [{ type: 'ValidationError', message: `${name} cannot be activated because it was not found in the theme directory.` }] })
+const refusedCheck = bad(422, { errors: [{ type: 'ThemeValidationError', message: 'Theme is not compatible or contains errors.', context: 'Missing template post.hbs' }] })
+/** what a restore may change: the rows' statuses, nothing else */
+const recordOf = (w: ReturnType<typeof world>) => JSON.stringify([...w.rows.values()].map(({ status: _s, ...rest }) => rest))
+
+test('7.23b · Ghost holds it (Casper): `PUT themes/casper/activate/` ALONE → live; every live row on the site demoted (v3 `uploaded`, its `activated`, `activated_at` and `accepted_at` untouched) — no row inserted, no row updated, no upload, so v3 is D2d\'s Re-activate (the undo) and the drift baseline holds', async () => {
+  const w = world()
+  const record = recordOf(w)
+  assert.equal(await w.restore(), 'live')
+  assert.deepEqual(w.calls.map((c) => `${c.method} ${c.path}`), ['PUT themes/casper/activate/'], 'the activation alone')
+  assert.deepEqual([w.calls[0]?.item, w.calls[0]?.route], ['theme_activate', 'projects/history'])
+  assert.deepEqual([...w.rows.values()].map((r) => r.status), ['uploaded', 'uploaded', 'uploaded'], 'nothing of Inflozo\'s is live on the site')
+  assert.equal(recordOf(w), record, 'activated, activated_at, accepted_at and the manifests untouched')
+  assert.deepEqual(w.updates, [], 'no deploys row written — never `accepted_at`')
+  assert.equal(w.rows.size, 3, 'no row inserted')
+  assert.deepEqual(w.snapshotReads, [], 'the saved zip is not read when Ghost holds the theme')
+  const v3 = w.rows.get('v3') as Row
+  assert.equal(actionOf(v3, { linkedSiteId: S, newest: newestAccepted([...w.rows.values()]) }), 'reactivate', 'D2d\'s row: one press back to Inflozo')
+  assert.equal(newestAccepted([...w.rows.values()]), 'v3', 'the drift baseline (R-287) is still v3')
+  // the undo: Re-activate on v3 — the activation of the frozen name alone, Inflozo's files as Ghost kept them
+  assert.equal(await w.put('v3'), 'live')
+  assert.deepEqual(w.calls.slice(1).map((c) => `${c.method} ${c.path}`), ['PUT themes/inflozo-notes/activate/'])
+  assert.equal(w.rows.get('v3')?.status, 'live')
+})
+
+test('7.23b · Ghost no longer holds a non-default original (deleted in Ghost Admin): the saved zip — read by its key without the bucket — uploaded as `{name}.zip`, then activated → live; an upload Ghost makes live at once needs no activation; the activation refused after the upload is `uploaded`, nothing written', async () => {
+  const w = world({ original: theme('edition'), activate: [notHeld('edition'), ok()], upload: [ok(false)] })
+  assert.equal(await w.restore(), 'live')
+  assert.deepEqual(w.calls.map((c) => `${c.method} ${c.path}`), ['PUT themes/edition/activate/', 'POST themes/upload/', 'PUT themes/edition/activate/'])
+  assert.deepEqual(w.snapshotReads, [`${U}/${S}/20261101T000000000Z-edition.zip`], '`snapshotObjectKey` strips the bucket')
+  const file = (w.calls[1]?.body as FormData).get('file') as File
+  assert.equal(file.name, 'edition.zip', 'under the original\'s own name — never the frozen one')
+  assert.equal(new TextDecoder().decode(new Uint8Array(await file.arrayBuffer())), 'saved edition', 'the saved copy, as it was')
+  assert.equal(w.rows.get('v3')?.status, 'uploaded')
+  assert.deepEqual(w.updates, [])
+
+  const atOnce = world({ original: theme('edition'), activate: [notHeld('edition')], upload: [ok(true)] })
+  assert.equal(await atOnce.restore(), 'live')
+  assert.equal(atOnce.calls.length, 2, 'live at once: no second activation')
+
+  const notLive = world({ original: theme('edition'), activate: [notHeld('edition'), bad(422, { errors: [{ type: 'ValidationError', message: 'busy' }] })], upload: [ok(false)] })
+  const before = snapshotOf(notLive)
+  assert.equal(await notLive.restore(), 'uploaded')
+  assert.equal(snapshotOf(notLive), before, 'nothing written: Inflozo\'s version is still live')
+  assert.deepEqual(notLive.updates, [])
+})
+
+test('7.23b · DW-389: Casper and Source are only ever activated — a `ValidationError` for either (never seen: Ghost never deletes them) is Ghost\'s words with nothing uploaded; never `casper.zip` or `source.zip`', async () => {
+  for (const name of ['casper', 'source']) {
+    const w = world({ original: theme(name), activate: [notHeld(name)], upload: [ok(true)] })
+    const before = snapshotOf(w)
+    const out = await w.restore()
+    assert.ok(typeof out === 'object', name)
+    assert.equal(out.refused.code, 'ghost_theme_refused')
+    assert.equal(out.refused.detail, `${name} cannot be activated because it was not found in the theme directory.`, 'Ghost\'s words')
+    assert.deepEqual(w.calls.map((c) => c.item), ['theme_activate'], `${name}: no upload`)
+    assert.deepEqual(w.snapshotReads, [])
+    assert.equal(snapshotOf(w), before)
+  }
+  // the control: the same refusal for a theme that is not Ghost's own uploads the saved zip
+  const control = world({ original: theme('casper-fork'), activate: [notHeld('casper-fork'), ok()], upload: [ok(false)] })
+  assert.equal(await control.restore(), 'live')
+  assert.deepEqual(control.calls.map((c) => c.item), ['theme_activate', 'theme_upload', 'theme_activate'])
+})
+
+test('7.23b · Ghost\'s check refuses (422 `ThemeValidationError`) at the activation or at the upload: nothing changes, its detail kept, never retried', async () => {
+  const atActivation = world({ original: theme('old-magazine'), activate: [refusedCheck] })
+  const before = snapshotOf(atActivation)
+  const out = await atActivation.restore()
+  assert.deepEqual(out, { refused: deployError('ghost_theme_refused', { host: 'ghost6.inflozo.com', siteId: S, detail: 'Theme is not compatible or contains errors. Missing template post.hbs' }) })
+  assert.equal(atActivation.calls.length, 1, 'no upload, no retry')
+  assert.equal(snapshotOf(atActivation), before)
+
+  const atUpload = world({ original: theme('old-magazine'), activate: [notHeld('old-magazine')], upload: [refusedCheck] })
+  const was = snapshotOf(atUpload)
+  const refused = await atUpload.restore()
+  assert.ok(typeof refused === 'object')
+  assert.equal(refused.refused.code, 'ghost_theme_refused')
+  assert.equal(refused.refused.detail, 'Theme is not compatible or contains errors. Missing template post.hbs')
+  assert.deepEqual(atUpload.calls.map((c) => c.item), ['theme_activate', 'theme_upload'], 'one upload, never retried, no activation after it')
+  assert.equal(snapshotOf(atUpload), was)
+  assert.deepEqual(atUpload.logs, [['restore: Ghost refused', { code: 'ghost_theme_refused' }]], 'logged by code')
+})
+
+test('7.23b · Ghost\'s other answers — 401, 429/5xx, unreachable — are `deployError`\'s, nothing written; a 429/5xx at the activation is never a re-upload', async () => {
+  const cases: [Answer | Error, string][] = [
+    [bad(401), 'ghost_key_refused'],
+    [bad(429), 'ghost_unavailable'],
+    [bad(503), 'ghost_unavailable'],
+    [adminError('ghost_unreachable'), 'ghost_unreachable'],
+  ]
+  for (const [answer, code] of cases) {
+    const w = world({ original: theme('edition'), activate: [answer] })
+    const before = snapshotOf(w)
+    const out = await w.restore()
+    assert.ok(typeof out === 'object', code)
+    assert.equal(out.refused.code, code)
+    assert.equal(out.refused.message, deployError(code as never, { host: 'ghost6.inflozo.com', siteId: S }).message)
+    assert.equal(w.calls.length, 1, `${code}: nothing uploaded`)
+    assert.equal(snapshotOf(w), before)
+  }
+})
+
+test('7.23b · the original already live (switched back by hand in Ghost Admin): the activation answers live, and any stale live row is demoted', async () => {
+  const w = world()
+  assert.equal(await w.restore(), 'live')
+  assert.equal(w.rows.get('v3')?.status, 'uploaded')
+  // nothing live left to demote: still live, still no write but the (empty) demote
+  assert.equal(await w.restore(), 'live')
+  assert.deepEqual(w.updates, [])
+})
+
+test('7.23b · the refusals that send nothing to Ghost: gone (no link, no snapshot, a snapshot replaced since the read, another user\'s), then disconnected, then busy (a ship moving within STALLED_MS) — in the put-back\'s order', async () => {
+  const unlinked = world({ linked: null })
+  assert.equal(await unlinked.restore(), 'gone', 'no linked site')
+  const none = world({ original: null })
+  assert.equal(await none.restore(), 'gone', 'no snapshot')
+  const replaced = world()
+  assert.equal(await replaced.restore('00000000-0000-4000-8000-0000000000ff'), 'gone', 'replaced by a later capture since History was read')
+  const someoneElse = world()
+  assert.equal(await someoneElse.restore(SNAP, 'someone-else'), 'gone', 'another user\'s: the fake scopes by user as the real io does')
+  // the order: a replaced snapshot on a disconnected site is still gone; a busy disconnected site is disconnected
+  const goneOff = world({ linked: { siteId: S, url: 'https://ghost6.inflozo.com', disconnected: true } })
+  assert.equal(await goneOff.restore('00000000-0000-4000-8000-0000000000ff'), 'gone')
+  const off = world({ linked: { siteId: S, url: 'https://ghost6.inflozo.com', disconnected: true }, moving: true })
+  assert.equal(await off.restore(), 'disconnected')
+  const busy = world({ moving: true })
+  assert.equal(await busy.restore(), 'busy')
+  assert.ok(busy.reads.includes(`moving:${new Date(NOW.getTime() - STALLED_MS).toISOString()}`), 'moving within STALLED_MS of now')
+  for (const [name, w] of Object.entries({ unlinked, none, replaced, someoneElse, goneOff, off, busy })) {
+    assert.equal(w.calls.length, 0, `${name}: nothing sent to Ghost`)
+    assert.deepEqual(w.updates, [], `${name}: nothing written`)
+  }
+})
+
+test('7.23b · infrastructure: a read failing twice before Ghost acted is ours ("before anything reached your site"); once is retried; the demote failing twice AFTER Ghost acted says the original reached the site and History could not record it', async () => {
+  const before = world({ originalFails: 2 })
+  const out = await before.restore()
+  assert.ok(typeof out === 'object')
+  assert.equal(out.refused.message, DEPLOY_WORDS.infrastructure)
+  assert.equal(before.calls.length, 0)
+  assert.equal(await world({ originalFails: 1 }).restore(), 'live')
+  const after = world({ demoteFails: 2 })
+  const unrecorded = await after.restore()
+  assert.ok(typeof unrecorded === 'object')
+  assert.equal(unrecorded.refused.code, 'deploy_infrastructure')
+  assert.equal(unrecorded.refused.message, HISTORY_WORDS.restoreUnrecorded('ghost6.inflozo.com'))
+  assert.equal(HISTORY_WORDS.restoreUnrecorded('ghost6.inflozo.com'), "Your original theme reached ghost6.inflozo.com, but History couldn't record it. Try again.")
+  assert.deepEqual(after.logs.at(-1), ['restore: infrastructure failed', { code: undefined, acted: 'yes' }])
+})
+
 // ── the source rules ─────────────────────────────────────────────────────────────────────────────────────────────────
 
 const flat = (path: string) => readFileSync(path, 'utf8').replace(/\/\*[^]*?\*\/|\/\/[^\n]*/g, ' ').replace(/\s+/g, ' ')
@@ -486,6 +669,23 @@ test('no lock, no plan, no gscan: the put-back module, its io and the route\'s a
   // the control: the same test sees the pin branch's plan read
   assert.match(route.slice(route.indexOf('if (typeof pinned !== \'boolean\')')), /resolveEntitlement/)
   assert.match(route, /export const maxDuration = 300/)
+})
+
+test('7.23b · no lock, no plan, no gscan, no working document, no deploys write: `restoreOriginal` and the route\'s restore branch name none of them — the control: the same test sees the pin branch\'s plan read', () => {
+  const back = flat('server/deploy/put-back.ts')
+  const restore = back.slice(back.indexOf('export async function restoreOriginal('))
+  assert.ok(restore.includes('sendActivate(io, {') && restore.includes('sendUpload(io, {'), 'the restore is this function')
+  const route = flat(HISTORY_ROUTE)
+  const branch = route.slice(route.indexOf("if (act === 'restore') {"), route.indexOf("if (typeof deploy !== 'string'"))
+  assert.ok(branch.includes('restoreOriginal(PUT_BACK_IO'), 'the restore branch is the restore')
+  assert.ok(route.indexOf("if (act === 'restore') {") < route.indexOf("if (typeof deploy !== 'string'"), 'checked before `deploy`, which it does not carry')
+  const banned = /holdsLock|resolveEntitlement|readEntitlement|entitlement|caps\.|gscanGate|qualityGate|gscan\(|edit-lock|readProject|compileInputOf|\.read\(/
+  for (const [what, text] of [['restoreOriginal', restore], ['the restore branch', branch]] as const) assert.doesNotMatch(text, banned, `${what} consults a lock, a plan, a gate or the document`)
+  assert.doesNotMatch(restore, /deploys\.update|\.insert\(|accepted_at|content_manifest|offerRoutes|routes\.yaml/, 'no deploys row written, no routes')
+  assert.match(restore, /io\.deploys\.demote\(\{ siteId: linked\.siteId, userId: a\.userId \}\)/, 'every live row on the site: no `except`')
+  assert.match(restore, /GHOST_DEFAULTS\.has\(name\)/, 'DW-389')
+  assert.match(back, /const GHOST_DEFAULTS: ReadonlySet<string> = new Set\(\['casper', 'source'\]\)/)
+  assert.match(route.slice(route.indexOf("if (typeof pinned !== 'boolean')")), /resolveEntitlement/, 'the control')
 })
 
 test('the put-back sends exactly what Ship it sends: both reach Ghost through `sendUpload` and `sendActivate` and read the answers with `uploadAnswer` and `activateAnswer`; it never prunes, inserts, removes or uploads routes', () => {
@@ -511,6 +711,10 @@ test('the real io\'s shared members query as `deploy-io.ts`\' own do — the row
     assert.ok(io.includes(head), head)
     assert.equal(member(io, block, head), member(deploy, block, head), `${head} matches deploy-io.ts`)
   }
+  // Story 7.23b — the demote whole, its optional `except` included (the member read above stops at its first brace)
+  const demote = (text: string) => text.slice(text.indexOf('async demote({ siteId, userId, except }) {'), text.indexOf("'deploy demote')") + 16)
+  assert.equal(demote(io), demote(deploy), 'the demote is the same in both files')
+  assert.match(demote(io), /ok\(await \(except === undefined \? live : live\.neq\('id', except\)\), 'deploy demote'\)/, 'with no `except`, every live row on the site')
   // each table query, up to its `ok()` label
   const queries = io.split('supabaseAdmin().from(').slice(1).map((q) => q.slice(0, q.indexOf("), '") + 1))
   // every `supabaseAdmin()` in the io is one of the queries checked — none escapes the split — and there is at least one

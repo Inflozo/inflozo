@@ -450,13 +450,15 @@ test('7.21: the live copy\'s route — the job read on the caller\'s own session
   assert.match(LIVE_ROUTE, /createSignedUrl\(liveCopyPath\(projectId, job\.site_id\), SIGNED_URL_TTL_S, \{ download: liveFileName\(theme\)/)
   assert.match(LIVE_ROUTE, /code === 'NoSuchKey'\) \{[\s\S]*?return no\(404, 'Not found'\)/)
   assert.match(LIVE_ROUTE, /return no\(502, 'Could not prepare that download'\)/)
-  assert.match(LIVE_ROUTE, /NextResponse\.redirect\(signed\.signedUrl, 303\)/)
+  // RE-EXPECTED by Story 7.23b (DW-391): the 303 — or, to the editor's follower, `200 { url }` — is the one helper's
+  assert.match(LIVE_ROUTE, /return signedAnswer\(request, signed\.signedUrl\)/)
   assert.doesNotMatch(LIVE_ROUTE, /\.download\(/, 'no bytes through a function body')
 })
 
 test('R-291: the Roll back confirm\'s Download — `history/live` reads the project and its link on the CALLER\'S session (RLS: another account\'s is a 404), signs the check\'s OWN copy (`historyCopyPath`, never Ship it\'s) for 60 seconds named {theme}-live.zip with `?theme=` a plain name or "theme", and answers a 303 (AD-13); signed-out a 303 to sign in; NoSuchKey a 404, any other signing failure a 502', () => {
   const route = readFileSync('app/(app)/app/(authed)/projects/[id]/history/live/route.ts', 'utf8')
-  assert.match(route, /if \(!\(await currentUser\(\)\)\) return NextResponse\.redirect\(new URL\('\/sign-in', request\.url\), 303\)/)
+  // RE-EXPECTED by Story 7.23b (DW-391): signed out is the one helper's — the 303 to sign in, or `401` to the editor's follower
+  assert.match(route, /if \(!\(await currentUser\(\)\)\) return signInAnswer\(request\)/)
   assert.match(route, /if \(!isUuid\(projectId\)\) return no\(404, 'Not found'\)/)
   assert.match(route, /\(await supabaseServer\(\)\)\.from\('projects'\)\.select\('linked_site_id'\)\.eq\('id', projectId\)\.maybeSingle\(\)/, 'whose project it is is RLS\'s to answer')
   assert.match(route, /if \(!project \|\| typeof project\.linked_site_id !== 'string'\) return no\(404, 'Not found'\)/)
@@ -467,8 +469,26 @@ test('R-291: the Roll back confirm\'s Download — `history/live` reads the proj
   assert.match(route, /const theme = PLAIN\.test\(asked\) \? asked : 'theme'/)
   assert.match(route, /code === 'NoSuchKey'\) \{[\s\S]*?return no\(404, 'Not found'\)/)
   assert.match(route, /return no\(502, 'Could not prepare that download'\)/)
-  assert.match(route, /NextResponse\.redirect\(signed\.signedUrl, 303\)/)
+  assert.match(route, /return signedAnswer\(request, signed\.signedUrl\)/)
   assert.doesNotMatch(route, /\.download\(/, 'no bytes through a function body')
+})
+
+test('7.23b (DW-391): the three signed-download routes answer through ONE helper — signed out `signInAnswer`, signed `signedAnswer` — and nothing else redirects; their 404s and 502s are unchanged (the helper\'s JSON and 303 answers are `signed-download.test.ts`\')', () => {
+  const routes = {
+    snapshot: readFileSync('app/(app)/app/snapshots/[id]/download/route.ts', 'utf8'),
+    deployLive: LIVE_ROUTE,
+    historyLive: readFileSync('app/(app)/app/(authed)/projects/[id]/history/live/route.ts', 'utf8'),
+  }
+  for (const [name, source] of Object.entries(routes)) {
+    const flat = flatOf(source)
+    assert.match(flat, /import \{ signedAnswer, signInAnswer \} from '@\/lib\/signed-download'/, name)
+    assert.match(flat, /if \(!\(await currentUser\(\)\)\) return signInAnswer\(request\)/, `${name}: signed out`)
+    assert.match(flat, /return signedAnswer\(request, signed\.signedUrl\)/, `${name}: signed`)
+    assert.doesNotMatch(flat, /NextResponse\.redirect|Response\.redirect/, `${name}: no redirect of its own`)
+    assert.equal((flat.match(/createSignedUrl\(/g) ?? []).length, 1, `${name}: one signed URL`)
+    assert.ok(flat.indexOf('signInAnswer(request)') < flat.indexOf('createSignedUrl('), `${name}: signed out before anything is read`)
+  }
+  assert.match(flatOf(routes.snapshot), /if \(!snapshot\?\.storage_path\) return notFound/, 'Story 2.5\'s 404 unchanged')
 })
 
 // ── Story 7.22 — the History drawer's door, the number that goes on, the immutable put — read from the files' own source ──
@@ -511,16 +531,34 @@ test('7.23a: the history route\'s act branch — POST `{ deploy, act: \'live\' }
   assert.match(act, /const asked = \{ userId: user\.id, projectId, deployId: deploy, now: new Date\(\) \}/)
   assert.match(act, /const outcome = act === 'check' \? await checkBeforePutBack\(PUT_BACK_IO, asked\) : await putBack\(PUT_BACK_IO, asked\)/)
   assert.match(act, /if \(typeof outcome === 'object' && 'drift' in outcome\) return json\(200, \{ drift: outcome\.drift \}\)/, 'R-291: the check\'s record, 200')
-  assert.match(act, /if \(outcome === 'live' \|\| outcome === 'uploaded'\) return json\(200, \{ outcome \}\)/)
-  assert.match(act, /if \(outcome === 'gone'\) return no\(404, 'Not found'\)/)
-  assert.match(act, /if \(outcome === 'live-already'\) return json\(409, \{ code: 'live' \}\)/)
-  assert.match(act, /if \(typeof outcome === 'string'\) return json\(409, \{ code: outcome \}\)/)
-  assert.match(act, /if \(code === 'ghost_theme_refused'\) return json\(422, \{ code, \.\.\.\(detail === undefined \? \{\} : \{ detail \}\) \}\)/)
-  assert.match(act, /return json\(502, \{ code, message \}\)/)
+  // RE-EXPECTED by Story 7.23b: the answers are one function, `answered`, which the restore answers through too
+  assert.match(act, /return answered\(outcome\)/)
+  const answeredFn = sliceOf(flat, 'function answered(', 'export async function GET')
+  for (const line of [/if \(outcome === 'live' \|\| outcome === 'uploaded'\) return json\(200, \{ outcome \}\)/]) assert.match(answeredFn, line)
+  assert.match(answeredFn, /if \(outcome === 'gone'\) return no\(404, 'Not found'\)/)
+  assert.match(answeredFn, /if \(outcome === 'live-already'\) return json\(409, \{ code: 'live' \}\)/)
+  assert.match(answeredFn, /if \(typeof outcome === 'string'\) return json\(409, \{ code: outcome \}\)/)
+  assert.match(answeredFn, /if \(code === 'ghost_theme_refused'\) return json\(422, \{ code, \.\.\.\(detail === undefined \? \{\} : \{ detail \}\) \}\)/)
+  assert.match(answeredFn, /return json\(502, \{ code, message \}\)/)
   const get = sliceOf(flat, 'export async function GET', 'export async function POST')
   assert.match(get, /const ids = heavyIds\(rows\)/)
   assert.match(get, /sb\.from\('deploys'\)\.select\('id, content_manifest, preflight'\)\.in\('id', ids\)/, 'the manifests of the named rows alone, through RLS')
   assert.doesNotMatch(get, /supabaseAdmin/)
+})
+
+test('7.23b: the history route — GET carries the LINKED site\'s saved original, read on the caller\'s session (RLS), never another site\'s; POST `{ act: \'restore\', snapshot }` is checked before `deploy`, its id a uuid, `restoreOriginal` over the put-back\'s io, answered as the act branch is', () => {
+  const flat = flatOf(HISTORY_ROUTE)
+  const get = sliceOf(flat, 'export async function GET', 'export async function POST')
+  assert.match(get, /sb\.from\('site_snapshots'\)\.select\('id, site_id, theme_name, theme_version, captured_at, sites\(url\)'\)/, 'the user\'s own rows, through RLS')
+  // the linked site's alone, and none with no link: `historyAnswer`'s pick (`originalOf`, `retention.test.ts` holds it), handed every row read
+  assert.match(get, /historyAnswer\(\{ linkedSiteId, saved: \(originals\.data \?\? \[\]\) as unknown as SavedOriginal\[\],/)
+  assert.match(get, /originals\.error\)/, 'a failed read is the history\'s failure, never a missing row')
+  assert.doesNotMatch(get, /supabaseAdmin/)
+  const post = flat.slice(flat.indexOf('export async function POST'))
+  const restore = sliceOf(post, "if (act === 'restore') {", "if (typeof deploy !== 'string'")
+  assert.match(restore, /if \(typeof snapshot !== 'string' \|\| !isUuid\(snapshot\)\) return no\(400, 'Bad snapshot'\)/)
+  assert.match(restore, /return answered\(await restoreOriginal\(PUT_BACK_IO, \{ userId: user\.id, projectId, snapshotId: snapshot, now: new Date\(\) \}\)\)/)
+  assert.ok(post.indexOf('currentUser()') < post.indexOf("if (act === 'restore')") && post.indexOf("isUuid(projectId)") < post.indexOf("if (act === 'restore')"))
 })
 
 test('7.22 (DW-372): the next version is ONE function — `project-input.ts` and `shipStateOf` both read `nextVersion`, and nothing counts rows any more', () => {

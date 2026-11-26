@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { signedAnswer, signInAnswer } from '@/lib/signed-download'
 import { z } from '@/lib/zod'
 import { currentUser, supabaseAdmin, supabaseServer } from '@/lib/supabase/server'
 import { snapshotObjectKey, SNAPSHOT_BUCKET } from '../../../(authed)/account/deletion-rule'
@@ -30,6 +31,11 @@ import { snapshotObjectKey, SNAPSHOT_BUCKET } from '../../../(authed)/account/de
  *
  * THE FILE IS NAMED FOR ITS SITE. Storage would serve every one as `theme.zip`, and a person with
  * two sites choosing which original theme to keep needs the download to say which is which.
+ *
+ * STORY 7.23b (DW-391) — ASKED BY THE EDITOR'S FOLLOWER (`Accept: application/json`, `lib/signed-download.ts`), the same signed
+ * URL is answered `200 { url }` and a signed-out ask `401`, so the Backup step's Theme Download and History's original-theme row
+ * say a failure under the button instead of the page turning into this route's bare answer. Asked as a link — `/restore`'s — it
+ * answers exactly as before: the 303.
  */
 
 const idSchema = z.string().uuid()
@@ -42,9 +48,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   // `currentUser()`, not `signedIn()`: a route handler answers with a response of its own rather
   // than throwing a page redirect, and 303 is the right one for a link the browser followed.
-  if (!(await currentUser())) {
-    return NextResponse.redirect(new URL('/sign-in', request.url), 303)
-  }
+  if (!(await currentUser())) return signInAnswer(request)
 
   const asked = idSchema.safeParse((await params).id)
   if (!asked.success) return notFound
@@ -81,7 +85,5 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   // ponytail: 60-second signed URLs; a streamed proxy the day a snapshot exceeds a browser's
   // patience.
-  const away = NextResponse.redirect(signed.signedUrl, 303)
-  away.headers.set('Cache-Control', 'no-store')
-  return away
+  return signedAnswer(request, signed.signedUrl)
 }

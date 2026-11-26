@@ -10609,7 +10609,12 @@ reason: pre-existing for every key on the screen, reached only by a failing stor
 plain: When a site's original theme is one of Ghost's own (Casper or Source), "Restore original" cannot simply upload the
   saved copy back: Ghost refuses any upload named casper.zip or source.zip. It has to switch the site back to the copy Ghost
   always keeps installed (Ghost refuses to delete either).
-status: open
+status: done 2026-11-26 (Story 7.23b)
+resolution: Story 7.23b's Dev (2026-11-26), R-292 — `restoreOriginal` (`apps/web/server/deploy/put-back.ts`) activates the saved
+  original by its name first (`PUT themes/{name}/activate/`, already on `ADMIN_WRITES`) and uploads the saved zip as `{name}.zip`
+  only when Ghost answers it no longer holds that name (`themeNotHeld`) — and never for `casper` or `source` (`GHOST_DEFAULTS`): a
+  not-found for either is said as Ghost's words with nothing uploaded. Held by `put-back.test.ts` (Casper and Source never
+  uploaded, the control a non-default name that is) and its source test; walk step 122 restores T1's own theme on production.
 severity: medium
 origin: Story 7.20's Create (2026-10-26), read in Ghost's source on both pinned majors. `services/themes/storage.js`'
   `setFromZip` throws a `ValidationError` ("Please rename your zip, it's not allowed to override the default theme.") when
@@ -10650,7 +10655,16 @@ reason: correcting it needs a production DDL apply on its own go, out of proport
 
 plain: If the saved theme cannot be handed over (it vanished, the signing failed, or the sign-in lapsed), pressing Download on the
   Backup step's Theme row swaps the editor page for a plain error page instead of saying so under the row.
-status: open
+status: done 2026-11-26 (Story 7.23b)
+resolution: Story 7.23b's Dev (2026-11-26) — one way to follow a signed download, `apps/web/lib/signed-download.ts`: the three
+  routes (`snapshots/[id]/download`, `projects/[id]/deploy/live`, `projects/[id]/history/live`) answer the editor's follower
+  (`Accept: application/json`) `200 { url }` or `401` signed out (`signedAnswer`, `signInAnswer`), and a link the 303 as before;
+  `followSigned` fetches that answer and clicks a link to the signed attachment, answering null or one of three sentences —
+  gone (404), signed out (401 or a fetch sent on to `/sign-in`), couldn't prepare it — said under the button in its own
+  `role="status"` line, "Preparing…" while it is out. All four Downloads go through it: the Backup step's Theme Download
+  (`fetchRow`, `follow` removed), D3a's (`#deploy-drift-download`), the Roll back confirm's (`#history-drift-download`) and History's
+  original-theme row's (`#history-original-download`). Held by `signed-download.test.ts`, `deploy.test.ts` (the routes' source) and
+  journeys 7.23b (e1)–(e4) (each Download against 404, 401 and 502, then a zip downloaded, the page unmoved).
 severity: low
 origin: Story 7.20a's Review (2026-10-26; Blind Hunter and Edge Case Hunter). The wizard's `follow()` clicks a link to
   `/snapshots/{id}/download`, which is right when the route answers its 303 to a signed attachment (walk 117a, on

@@ -20,7 +20,9 @@ type Variant = 'coral' | 'primary' | 'secondary' | 'ghost' | 'coral-outline' | '
    `D2 Deploy History Completed.dc.html:337-338`), both at radius 12, 14px and 22 across. */
 /* STORY 7.23a — and the smallest, D2's and S8e's row actions: Roll back and Re-activate draw 26 high at radius 10, 12px and 11
    across (`D2 Deploy History Completed.dc.html:89`, `:98`, `:199`; `S8 Deploy.dc.html:313`, `:321`). */
-type Size = 44 | 42 | 40 | 38 | 36 | 32 | 26
+/* STORY 7.23b — and 28, D2a's Restore original (`D2 Deploy History Completed.dc.html:70`, D2c `:249`): 28 high at radius 10, 12px and
+   11 across, the secondary's surface and hairline. */
+type Size = 44 | 42 | 40 | 38 | 36 | 32 | 28 | 26
 /* The Kit's own weight is 600. A FRAME MAY DRAW A DIFFERENT ONE, and it must be said HERE rather
    than passed through `className`: both are plain utilities in the same `@layer utilities`, so the
    class attribute's order is irrelevant and the stylesheet's decides — Tailwind emits font-weights
@@ -53,6 +55,7 @@ const sizes: Record<Size, string> = {
   38: 'h-[38px] px-5 text-ui-dense rounded-thumb',
   36: 'h-9 px-4 text-ui-dense rounded',
   32: 'h-8 px-[13px] text-control-label rounded-thumb',
+  28: 'h-7 px-[11px] text-[12px] rounded-thumb',
   26: 'h-[26px] px-[11px] text-[12px] rounded-thumb',
 }
 

@@ -2,7 +2,7 @@
 // `read.ts` beside the reads that feed it): until now the keyboard harness replaced it everywhere, so nothing ran it.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { shipStateOf, themeNameOf } from './lib/deploy.ts'
+import { shipStateOf, themeNameOf, uploadOnlyBlock } from './lib/deploy.ts'
 
 const P = 'p-this'
 const SITE = '00000000-0000-4000-8000-0000000000bb'
@@ -106,6 +106,15 @@ test('7.19: the site carries whether a token is stored and whether a Not now was
   assert.equal(at({ staff_token_declined_at: null })?.declined, false)
 })
 
+
+test('7.23b · R-264 (a) in the editor\'s read: "live here" is the site\'s latest activated deploy that is STILL `live` — so after Restore original demotes it, Deploy only is offered again; liveHere false draws no block (the control: true does)', async () => {
+  const { readFileSync } = await import('node:fs')
+  const read = readFileSync('app/(app)/app/(authed)/projects/[id]/(editor)/read.ts', 'utf8')
+  assert.match(read, /sb\.from\('deploys'\)\.select\('project_id'\)\.eq\('site_id', linked\)\.eq\('activated', true\)\.eq\('status', 'live'\)\.order\('activated_at', \{ ascending: false \}\)\.limit\(1\)/)
+  const state = (liveHere: boolean) => shipStateOf(base({ liveHere, deploys: [{ version: '2.0.0', status: 'uploaded', activated: true, activated_at: '2026-11-02T00:00:00Z' }] }))
+  assert.equal(uploadOnlyBlock(state(false)), null, 'a demoted v2: Deploy only is free')
+  assert.notEqual(uploadOnlyBlock(state(true)), null, 'the control: live here blocks it')
+})
 
 test('7.20a: the editor\'s read carries the gate\'s two columns — `backup_confirmed_at` and `hosted_by_ghost` — through the user\'s own session, and shipStateOf reads them', async () => {
   const { readFileSync } = await import('node:fs')

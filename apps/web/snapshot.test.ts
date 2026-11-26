@@ -69,10 +69,18 @@ test('the staff token\'s capture: the list, the active theme\'s download with it
   assert.deepEqual(w.calls, [{ path: THEMES_LIST, kind: 'staff' }, { path: 'themes/casper/download/', kind: 'staff', read: 'theme_download' }])
   const key = `${U}/${S}/20261026T100000000Z-casper.zip`
   assert.deepEqual(w.steps, [`put:${key}`, 'upsert', `remove:${U}/${S}/old-casper.zip`], 'object, row, then the old object')
-  assert.deepEqual(w.rows[0], { user_id: U, site_id: S, storage_path: `site-snapshots/${key}`, theme_name: 'casper', bytes: ZIP.length, captured_at: '2026-10-26T10:00:00.000Z' })
+  // Story 7.23b: the version the list gave is written beside the name (History's original-theme row draws `casper 5.9.4`)
+  assert.deepEqual(w.rows[0], { user_id: U, site_id: S, storage_path: `site-snapshots/${key}`, theme_name: 'casper', theme_version: '5.9.4', bytes: ZIP.length, captured_at: '2026-10-26T10:00:00.000Z' })
   assert.ok(!('purge_after' in (w.rows[0] as object)) && !('download_offered_at' in (w.rows[0] as object)), 'FR-A5\'s clock is left alone')
   assert.deepEqual(w.bucket.get(key), ZIP)
   assert.deepEqual(w.progress, [{ theme: 'casper', version: '5.9.4' }, { bytes: ZIP.length }], 'B12a\'s rows told as they are learned')
+})
+
+test('Story 7.23b: a theme whose package.json declares no version is written with `theme_version` null — the row then draws the name alone', async () => {
+  const w = world({ answers: [themes({ name: 'casper' }), { ok: true, status: 200, body: null, bytes: ZIP }] })
+  assert.equal((await w.run()).ok, true)
+  assert.equal(w.rows[0]?.theme_version, null)
+  assert.ok('theme_version' in (w.rows[0] as object), 'written as null, never left out (an upsert would keep a stale one)')
 })
 
 test('a theme carrying the marker is never captured — nothing downloaded, nothing written; the same theme without it is (the control)', async () => {

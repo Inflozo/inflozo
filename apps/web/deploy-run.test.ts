@@ -144,7 +144,8 @@ function world(over: {
       demote: async ({ except }) => {
         for (const [k, d] of deploys) if (k !== except && d.status === 'live') deploys.set(k, { ...d, status: 'uploaded' })
       },
-      liveProject: async () => (over.liveProject !== undefined ? over.liveProject : [...deploys.values()].some((d) => d.activated) ? P : null),
+      // R-264 (a), as `deploy-io.ts` reads it: the latest activated deploy that is STILL live (Story 7.23b)
+      liveProject: async () => (over.liveProject !== undefined ? over.liveProject : [...deploys.values()].some((d) => d.activated && d.status === 'live') ? P : null),
       previousCustom: async ({ except }) => {
         const live = [...deploys.values()].filter((d) => d.activated && d.id !== except).sort((a, b) => ((a.activated_at ?? '') < (b.activated_at ?? '') ? 1 : -1))[0]
         return live?.preflight?.custom ?? null
@@ -576,6 +577,21 @@ test('R-264 (b): an upload Ghost answers active (it replaced the live theme) is 
     const done = w.jobs.get(job.id) as JobRow
     assert.equal(endingOf(done.stage, w.deploys.get(job.deploy_id as string) as DeployRow, done.stage_timings), 'uploadOnly')
   }
+})
+
+test('7.23b · R-264 (a) reads the record truthfully: after Restore original demotes every live row on the site (a demote with no `except`), this project\'s theme is not "live here" and Deploy only is offered again; the control: before it, refused', async () => {
+  const w = world()
+  const job = await begin(w)
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  assert.equal(w.deploys.get(w.jobs.get(job.id)?.deploy_id as string)?.status, 'live')
+  assert.equal(await uploadOnlyRefused({ projectId: P, siteId: S, userId: U }, w.io), true, 'the control: live here')
+  await w.io.deploys.demote({ siteId: S, userId: U })
+  const row = w.deploys.get(w.jobs.get(job.id)?.deploy_id as string) as DeployRow
+  assert.deepEqual([row.status, row.activated], ['uploaded', true], 'demoted, `activated` kept')
+  assert.equal(await uploadOnlyRefused({ projectId: P, siteId: S, userId: U }, w.io), false, 'a demoted row is not live here')
+  // the real read holds the same rule: `activated` AND still `live`
+  const io = readFileSync('server/deploy/deploy-io.ts', 'utf8')
+  assert.match(io, /from\('deploys'\)\.select\('project_id'\)\.eq\('site_id', siteId\)\.eq\('user_id', userId\)\.eq\('activated', true\)\.eq\('status', 'live'\)\.order\('activated_at', \{ ascending: false \}\)\.limit\(1\), 'live project'\)/)
 })
 
 test('R-264 (a): Deploy only while Inflozo\'s record says this project\'s theme is the live one uploads nothing — the job rests; Deploy & activate, or another project live, goes ahead', async () => {

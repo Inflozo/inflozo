@@ -206,6 +206,9 @@ test('the service-role client is imported by the flag reader and by nothing else
   //   stored zip from `deploy-artifacts` (no Storage policy at all, AD-29), and reads the row, the project's link with its site's
   //   `disconnected_at` and the site's moving `deploy_jobs` for its refusals. Every query carries `user_id`. It is handed to
   //   `server/deploy/put-back.ts`, which imports neither this client nor the chokepoint (held below).
+  //   Story 7.23b adds two reads to it, for Restore original and for the same reasons: the linked site's saved original
+  //   (`site_snapshots`, select-only to the tenant and server-written — scoped by `user_id` and `site_id`) and its zip out of the
+  //   `site-snapshots` bucket, which has NO Storage policy at all (AD-32 — Story 2.5's download's reason), by the key that row names.
   // The EIGHTEENTH, added by Story 7.23a (R-291) with its reason — the THIRTEENTH's, for the other copy: the Roll back confirm's
   //   "Download the live theme first" signs the check's own live copy (`deploy-artifacts/{projectId}/live/{siteId}-history.zip`), and
   //   that bucket has NO Storage policy at all (server-only, AD-29), so the service role is its only reader. It never touches a user
@@ -555,7 +558,9 @@ test('the Admin chokepoint is imported by the routes named here and by nothing e
   //     four (R-22). It is the real `io` handed to `server/deploy/put-back.ts`, which decides and imports no part of the chokepoint
   //     (held below); it is not `deploy-io.ts` itself so the History route's function carries none of the compile. R-291 adds one
   //     READ to it, the check before a Roll back: `GET themes/{name}/download/` with the Staff Access Token (`deploy-io.ts`' own
-  //     `liveTheme`), so `ADMIN_WRITES` is still unchanged.
+  //     `liveTheme`), so `ADMIN_WRITES` is still unchanged. Story 7.23b's Restore original sends the same two writes again —
+  //     activate the saved original by its name, and upload its saved zip only when Ghost no longer holds it — so `ADMIN_WRITES` is
+  //     still unchanged.
   const allowed = [CONNECT_ACTIONS, SITE_PROBE, SITE_HEALTH, KEYS_SCREEN, ROUTES_IO, DEPLOY_IO, STAFF_TOKEN, SNAPSHOT_IO, PUT_BACK_IO]
   assert.equal(reachesChokepoint(PUT_BACK), false, `${PUT_BACK} imports the chokepoint; its call() is handed in`)
   assert.equal(reachesChokepoint(PUT_BACK_IO), true, 'control: put-back-io.ts imports the chokepoint')
@@ -734,6 +739,17 @@ test('DW-77: disconnect takes both keys out in ONE transaction, with the begin()
   const moved = body.replace('    await sql().begin(async (tx) => {\n      for (const kind of args.kinds) {', '    for (const kind of args.kinds) {\n      await sql().begin(async (tx) => {')
   assert.notEqual(moved, body, 'control: the moved body was built')
   assert.equal(inLoop(moved), false, 'control: a begin() inside the loop is caught')
+})
+
+test('Story 7.23b: the snapshot bucket is read on the put-back io\'s service-role reason — the saved original\'s row by `user_id` and `site_id`, its object by the key that row names — and `put-back.ts` itself reads neither the service role nor the bucket', () => {
+  const io = readFileSync(PUT_BACK_IO, 'utf8')
+  assert.match(io, /supabaseAdmin\(\)\.from\('site_snapshots'\)\.select\('id, theme_name, storage_path'\)\.eq\('site_id', siteId\)\.eq\('user_id', userId\)/)
+  assert.match(io, /supabaseAdmin\(\)\.storage\.from\(SNAPSHOT_BUCKET\)\.download\(key\)/)
+  const back = readFileSync(PUT_BACK, 'utf8')
+  assert.doesNotMatch(back, /supabaseAdmin|SNAPSHOT_BUCKET|\.storage\./, 'the decision imports no client and names no bucket')
+  assert.match(back, /io\.snapshots\.get\(snapshotObjectKey\(original\.storage_path\)\)/, 'the ONE strip of the bucket prefix')
+  // the reason is written beside the list, as every entry's is
+  assert.match(readFileSync('server-wiring.test.ts', 'utf8'), /Story 7\.23b adds two reads to it, for Restore original/)
 })
 
 test('DW-59: a failed undo is logged, twice — once for the restore and once for the delete (review, 2026-09-29)', () => {

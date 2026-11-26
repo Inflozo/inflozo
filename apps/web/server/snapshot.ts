@@ -50,8 +50,9 @@ export type SnapshotIo = {
   current: (a: { siteId: string; userId: string }) => Promise<{ id: string; storage_path: string } | null>
   /** an object into the `site-snapshots` bucket, by its key (no bucket prefix) */
   put: (key: string, bytes: Uint8Array) => Promise<void>
-  /** the site's one row, upserted on `site_id`; answers its id */
-  upsert: (row: { user_id: string; site_id: string; storage_path: string; theme_name: string; bytes: number; captured_at: string }) => Promise<string>
+  /** the site's one row, upserted on `site_id`; answers its id. Story 7.23b: `theme_version` is the active theme's `package.json`
+   *  version the list already gave (null where it declares none) — History's original-theme row draws it beside the name */
+  upsert: (row: { user_id: string; site_id: string; storage_path: string; theme_name: string; theme_version: string | null; bytes: number; captured_at: string }) => Promise<string>
   /** an object out of the bucket, by its key */
   remove: (key: string) => Promise<void>
   now: () => Date
@@ -160,7 +161,7 @@ export async function captureSnapshot(
   let id: string
   try {
     // the column carries the bucket before the key (`site-snapshots/{userId}/{siteId}/…`); `snapshotObjectKey` is the one strip
-    id = await io.upsert({ user_id: userId, site_id: siteId, storage_path: `${SNAPSHOT_BUCKET}/${key}`, theme_name: name, bytes: zip.bytes.length, captured_at: capturedAt })
+    id = await io.upsert({ user_id: userId, site_id: siteId, storage_path: `${SNAPSHOT_BUCKET}/${key}`, theme_name: name, theme_version: version, bytes: zip.bytes.length, captured_at: capturedAt })
   } catch (thrown) {
     io.log('snapshot: the row was not written', { code: (thrown as { code?: string } | null)?.code })
     // nothing half-written: the new object comes back out (and if even that fails, the prefix drains sweep it)

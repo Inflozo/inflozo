@@ -1191,6 +1191,57 @@ test.describe('7.23a · the expanded rows and the Roll back confirm at 1440, 128
   }
 })
 
+// ── Story 7.23b — D2a's original-theme row (`D2 Deploy History Completed.dc.html:58-73`) and its refused shape at 1440, 1280 and
+// 820: the row, its Restore original at the Kit's 28 and, once Ghost's check refuses it, the note, Ghost's detail, the Download and
+// the Design & branding line — each inside the drawer, nothing scrolling sideways. The rows are the harness's
+// (`x-inflozo-harness-history: original`, `x-inflozo-harness-restore: refused`); the way in below 1366 is Ship it ▾.
+test.describe('7.23b · the original-theme row and its refusal at 1440, 1280 and 820', () => {
+  test.use({ hasTouch: false, isMobile: false })
+  for (const width of [1440, 1280, 820]) {
+    test(`at ${width}`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 })
+      await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'shipped', 'x-inflozo-harness-history': 'original', 'x-inflozo-harness-restore': 'refused' })
+      await page.goto(HARNESS)
+      await expect(page.frameLocator('iframe[title$="canvas"]').locator('#canvas > *').first()).toBeVisible({ timeout: 30_000 })
+      if (width >= 1366) await page.locator('#deploy-history-open').click()
+      else {
+        await page.locator('#editor-ship + button').click()
+        await page.locator('#editor-ship-menu li button').last().click()
+      }
+      const drawer = page.locator('dialog[data-deploy-history]')
+      await expect(drawer.locator('[data-history-original]')).toBeVisible({ timeout: 15_000 })
+      const measure = () => drawer.evaluate((d) => {
+        const edge = d.getBoundingClientRect().right
+        const row = d.querySelector('[data-history-original]')
+        return {
+          outside: [...row.querySelectorAll('*')].filter((e) => e.getBoundingClientRect().right > edge + 0.5).map((e) => e.outerHTML.slice(0, 80)),
+          rowRight: row.getBoundingClientRect().right <= edge + 0.5,
+          restore: Math.round(d.querySelector('#history-restore').getBoundingClientRect().height),
+          tile: (({ width: w, height: h }) => [w, h])(row.querySelector(':scope > div > span[aria-hidden]').getBoundingClientRect()),
+          sideways: d.scrollWidth - d.clientWidth,
+          scroll: document.documentElement.scrollWidth,
+          inner: window.innerWidth,
+        }
+      })
+      const rested = await measure()
+      expect(rested.outside).toEqual([])
+      expect(rested.rowRight).toBe(true)
+      expect(rested.restore, 'Restore original at the Kit\'s 28').toBe(28)
+      expect(rested.tile, 'the archive tile as drawn (`D2:60`): 26 × 26').toEqual([26, 26])
+      expect(rested.sideways).toBeLessThanOrEqual(0)
+      expect(rested.scroll, 'nothing scrolls sideways').toBeLessThanOrEqual(rested.inner)
+      // refused: the note, Ghost's detail, the Download and the place line — still inside
+      await page.locator('#history-restore').click()
+      await expect(drawer.locator('[data-history-original-fallback]')).toBeVisible({ timeout: 15_000 })
+      const refused = await measure()
+      expect(refused.outside).toEqual([])
+      expect(refused.sideways).toBeLessThanOrEqual(0)
+      expect(refused.scroll, 'nothing scrolls sideways').toBeLessThanOrEqual(refused.inner)
+      await expect(drawer.locator('#history-original-download')).toBeInViewport()
+    })
+  }
+})
+
 // ── Story 7.18a — R-263: a touch screen below 768 that is not a phone. Ship it shares the bar, so Undo and Redo lead ⋯ and
 // the words "Template" and "View as" go; at 768 and up nothing changes. The sweep holds no bar control outside the window
 // at 600, 640 and 720 on Home and on the Paywall; its CONTROL is the same sweep with the rule switched off in the page

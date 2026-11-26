@@ -87,11 +87,15 @@ export const DEPLOY_IO: DeployIo = {
     async remove(id, userId) {
       ok(await supabaseAdmin().from('deploys').delete().eq('id', id).eq('user_id', userId), 'deploy delete')
     },
+    // Story 7.23b: with no `except`, every live row on the site — Restore original's, after which no Inflozo theme is live there
     async demote({ siteId, userId, except }) {
-      ok(await supabaseAdmin().from('deploys').update({ status: 'uploaded' }).eq('site_id', siteId).eq('user_id', userId).eq('status', 'live').neq('id', except), 'deploy demote')
+      const live = supabaseAdmin().from('deploys').update({ status: 'uploaded' }).eq('site_id', siteId).eq('user_id', userId).eq('status', 'live')
+      ok(await (except === undefined ? live : live.neq('id', except)), 'deploy demote')
     },
+    // R-264 (a) reads the record truthfully: the site's latest activated deploy that is STILL `live` — Story 7.23b's Restore original
+    // demotes every live row on the site, after which no project's theme is live there and Deploy only is offered again
     async liveProject({ siteId, userId }) {
-      const rows = ok(await supabaseAdmin().from('deploys').select('project_id').eq('site_id', siteId).eq('user_id', userId).eq('activated', true).order('activated_at', { ascending: false }).limit(1), 'live project') as { project_id: string }[] | null
+      const rows = ok(await supabaseAdmin().from('deploys').select('project_id').eq('site_id', siteId).eq('user_id', userId).eq('activated', true).eq('status', 'live').order('activated_at', { ascending: false }).limit(1), 'live project') as { project_id: string }[] | null
       return rows?.[0]?.project_id ?? null
     },
     async previousCustom({ projectId, siteId, userId, except }) {

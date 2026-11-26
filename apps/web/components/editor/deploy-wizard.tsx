@@ -40,6 +40,7 @@ import { useSaid } from '@/lib/renders'
 import { resetRoutingPath } from '@/lib/routes'
 import { downloadHref, ROUTES_FALLBACK_WORDS as RW } from '@/lib/routes-upload'
 import { HISTORY_WORDS as HW } from '@/lib/retention'
+import { followSigned, followsHere, SIGNED_WORDS } from '@/lib/signed-download'
 
 /* ───────── STORY 7.18a — SHIP IT AND THE DEPLOY WIZARD (FR-J8, AD-20's F-075), from the export (R-74):
  *
@@ -118,12 +119,43 @@ const twoLines = (title: string, caption?: string) => (
   </span>
 )
 
-/** STORY 7.20a — the Theme Download's address followed as a link would be: Story 2.5's route answers a 303 to Storage's signed URL,
- *  which serves the zip as an attachment, so the page stays where it is */
-function follow(href: string) {
-  const a = document.createElement('a')
-  a.href = href
-  a.click()
+/** STORY 7.23b (DW-391) — A SIGNED DOWNLOAD AS A LINK: D3a's "Download the live theme first", the Roll back confirm's and History's
+ *  original-theme row's. It stays an `<a href>` — a press with a modifier, or scripts off, follows the route's 303 as before — and
+ *  a plain press is followed by `followSigned` (`lib/signed-download.ts`): "Preparing…" while it is out (R-98), the zip as an
+ *  attachment (the page stays), and a route's 404, 502 or the sign-in said under it in its own `role="status"` line, never in
+ *  place of the editor. The Backup step's Theme Download is a button (it captures first) and follows the same way (`fetchRow`). */
+export function SignedDownload({ id, href, label, size = 40, className = '' }: { id: string; href: string; label: string; size?: 40 | 28; className?: string }) {
+  const [out, setOut] = useState(false)
+  const [said, setSaid] = useState<string | null>(null)
+  return (
+    <span className={`flex flex-col gap-[6px] ${className}`}>
+      <a
+        id={id}
+        href={href}
+        aria-busy={out || undefined}
+        aria-disabled={out || undefined}
+        aria-describedby={said === null ? undefined : `${id}-said`}
+        onClick={(event) => {
+          if (!followsHere(event)) return
+          event.preventDefault()
+          if (out) return
+          setOut(true)
+          setSaid(null)
+          void followSigned(href).then((words) => {
+            setSaid(words)
+            setOut(false)
+          })
+        }}
+        className={`self-start ${buttonClasses('secondary', size)}`}
+      >
+        <BusyLabel pending={out} busy={SIGNED_WORDS.preparing}>
+          <Download size={size === 28 ? 12 : 13} />
+          {label}
+        </BusyLabel>
+      </a>
+      <span id={`${id}-said`} role="status" data-signed-said className="text-[11.5px] leading-[1.5] text-danger-text empty:absolute [text-wrap:pretty]">{said}</span>
+    </span>
+  )
 }
 
 /** the routes file, saved as Ghost names it — the same `data:` bytes B16's download carries (routine call 10) */
@@ -819,8 +851,10 @@ export function DeployWizard({
     if (which === 'theme') {
       const answer = await downloadTheme(site.id).catch(() => failed)
       if (!alive.current) return
-      if ('ok' in answer) follow(`${prefix}${snapshotDownloadPath(answer.id)}`)
-      else setFetched((was) => ({ ...was, theme: answer.said }))
+      // DW-391: Story 2.5's route followed so its 404, 502 or the sign-in is said under this row, never in place of the editor
+      const said = 'ok' in answer ? await followSigned(`${prefix}${snapshotDownloadPath(answer.id)}`) : answer.said
+      if (!alive.current) return
+      if (said !== null) setFetched((was) => ({ ...was, theme: said }))
     } else {
       const answer = await downloadRoutes(site.id).catch(() => failed)
       if (!alive.current) return
@@ -1442,12 +1476,7 @@ export function DeployWizard({
           </Button>
           <div className="ml-auto flex flex-wrap items-center justify-end gap-[10px]">
             {/* Story 7.22 (DW-396): a live zip past the store's size was not kept — no copy, so no Download; Overwrite stays */}
-            {driftFound.kept === false ? null : (
-              <a id="deploy-drift-download" href={hrefOn(prefix, liveDownloadPath(projectId, job))} className={buttonClasses('secondary', 40)}>
-                <Download size={13} />
-                {DW.download}
-              </a>
-            )}
+            {driftFound.kept === false ? null : <SignedDownload id="deploy-drift-download" href={hrefOn(prefix, liveDownloadPath(projectId, job))} label={DW.download} />}
             <Button
               id="deploy-overwrite"
               variant="primary"
