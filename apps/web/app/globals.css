@@ -394,9 +394,11 @@
      (`D8 Editor Below 1440.dc.html:167`), so a pass per component would miss the next control. Scoped to the editor
      (`[data-editor]`) and to a touch screen, never a fine pointer (D8b keeps 28–32px). `:where()` and `@layer base`,
      so a component can still win. Exempt: a switch (drawn 52 × 30 in a 44px row, `kit/toggle.tsx`), the skip link
-     (`sr-only` until focused, D8c's own 30px), and an inline text link — `min-*` never applies to an inline box. */
+     (`sr-only` until focused, D8c's own 30px), and an inline text link — `min-*` never applies to an inline box.
+     STORY 7.23c — and the phone's Small Screen Notice (`[data-small-screen]`, D4f), whose Deploy history card opens S8e's
+     Roll back confirm: its Cancel, Roll back and Download reach 44px on a phone as they already do on a tablet. */
   @media (pointer: coarse) {
-    :where([data-editor])
+    :where([data-editor], [data-small-screen])
       :where(button, a[href], summary, select, textarea, input:not([type='hidden'], [type='checkbox'], [type='radio']), [role='button'], [role='menuitem'], [role='radio'], [role='tab'], [role='option']):where(:not([role='switch'], [data-skip-canvas])) {
       min-block-size: 44px;
       min-inline-size: 44px;

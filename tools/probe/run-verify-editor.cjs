@@ -5,7 +5,8 @@
 //   APP_ORIGIN=http://localhost:3000 APP_PREFIX=/app …   # a local `next start`: no Vercel check, and not a deployed result
 //   T1_WRITES=1 …   # step 113 too (Story 7.18a): it WRITES TO T1, so only on the owner's in-session go, in the main session
 //                   (step 114, Story 7.18b, always runs: it writes to production through a throwaway account and reads T1);
-//                   steps 117 (Story 7.20a), 119 (Story 7.21) and 120 (Story 7.22) write to T1 too, and run under the same switch
+//                   steps 117 (Story 7.20a), 119 (Story 7.21), 120 (Story 7.22) and 121–123 (Stories 7.23a–c) write to T1 too, and
+//                   run under the same switch
 //   STEP119_PLANT=<email> T1_WRITES=1 …   # Story 7.21: step 119 as Deploy's plant for the owner's test, as that address —
 //                   run it in a cut copy (steps 1–5 and 119); it stops after the hand edit and leaves T1 and the account planted
 //   STEP120_PLANT=<free email>,<pro email> T1_WRITES=1 …   # Story 7.22: step 120 as Deploy's plant, in a cut copy (steps 1–5 and
@@ -16,6 +17,9 @@
 //   STEP122_PLANT=<a email>,<b email> T1_WRITES=1 …   # Story 7.23b: step 122 as Deploy's plant, in a cut copy (steps 1–5 and 122):
 //                   two NEW addresses — A's "Restore test" v1 then v2 live on T1 (its original T1's own theme, saved by the first ship);
 //                   B's "Restore refused" linked to T1, nothing shipped, its saved original planted as `old-magazine`, which Ghost refuses
+//   STEP123_PLANT=<email> T1_WRITES=1 …   # Story 7.23c: step 123 as Deploy's plant, in a cut copy (steps 1–5 and 123): a NEW
+//                   address — "Phone test" v1 then v2 live on T1 ("Version n" on Home), v2's files then given an invisible hand edit under
+//                   the frozen name, live — found by the owner's first Roll back on his phone (R-291)
 //
 // Node 24 (it imports the seed, which reads the app's own TypeScript). Keys reach it through process.env only and it
 // prints none. Two throwaway accounts through the Auth Admin API: A is seeded with `seed-editor-project.mjs` ("Pilot
@@ -473,6 +477,14 @@
 // Download (DW-391 through the product) and Design & branding ↗, nothing changed, the captured row the control; (g) DW-391 on the
 // snapshot route — JSON, the signed zip, the 303, the 401; (h) a second session reading along; (i) another account's 404, a
 // disconnected site's 409, and the row gone. `STEP122_PLANT=<a>,<b>` is Deploy's plant instead (see PLANT122).
+// Story 7.23c adds step 123, WRITING TO T1 and to production, so it runs only with `T1_WRITES=1` on the owner's in-session go:
+// THE PHONE'S DEPLOY HISTORY CARD (D4f `:401-414`, FR-J9, R-118, R-291). A throwaway Free account N (`editor-harness-n-…`) connects
+// T1 and ships "Phone test" v1 then v2, and an iPhone 13 context then walks the card: (a) the notice with no editor and no lock or
+// sync request, the card "Live v2" with Roll back to v1 at D4f's geometry; (b) the Roll back tapped — the confirm on Cancel, the REAL
+// check's D3c "since v2", then T1 at zero differences from v1, v1's own row live, the card "Live v1" with Roll back to v2; (c) a hand
+// edit with the Admin API key found by the phone's check (D3a, the Download tapped to a zip equal to T1's live one, the page
+// staying), the Roll back still going, the next one clean; (d) Cancel sending no put-back; (e) a desktop session holding the lock
+// and the phone's Roll back landing; (f) a disconnected site's 409 under the row. `STEP123_PLANT=<address>` is Deploy's plant.
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -577,7 +589,7 @@ async function main() {
   const ids = []
   let browser = null
   let entitlementBack = null
-  // what a Deploy plant leaves on purpose (STEP120_PLANT, STEP121_PLANT, STEP122_PLANT), so the end-of-run counts expect it
+  // what a Deploy plant leaves on purpose (STEP120_PLANT, STEP121_PLANT, STEP122_PLANT, STEP123_PLANT), so the end-of-run counts expect it
   const plantKept = { users: 0, projects: 0 }
   try {
     // ── step 1 — the fixtures ──
@@ -7394,6 +7406,8 @@ async function main() {
      * so the lock row is read through the lock route's own NON-HOLDER BEAT under the page's own session: a `beat` from a
      * session that holds nothing changes zero rows and answers the row as it stands — the read a reader polls with. */
     const FLOOR = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/floor.ts')).href)
+    // Story 7.23c: the card's one rule and its words, read from this checkout
+    const RET97 = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/retention.ts')).href)
     const described97 = (name) => (({ defaultBrowserType, ...rest }) => rest)(devices[name])
     const READ_SESSION = 'walk-5-22-read-only'
     const lockRow = (p) => p.evaluate(async ({ url, session }) => {
@@ -7440,6 +7454,8 @@ async function main() {
     const calls97 = mountCalls(phone)
     await phone.goto(editorUrl(), { waitUntil: 'load' })
     await phone.waitForSelector('[data-small-screen]', { timeout: 30000 }).catch(() => null)
+    // Story 7.23c: the card has read History (its one read) before the notice is measured
+    await phone.waitForSelector('[data-history-card]:not([data-history-card="loading"])', { timeout: 30000 }).catch(() => null)
     const notice97 = await phone.evaluate((phoneQuery) => {
       const n = document.querySelector('[data-small-screen]')
       const box = (el) => (el ? el.getBoundingClientRect().toJSON() : null)
@@ -7453,13 +7469,34 @@ async function main() {
         titleFont: n?.querySelector('h1') ? getComputedStyle(n.querySelector('h1')).fontFamily : null, heading: n?.querySelector('h2')?.textContent ?? null,
         rows: rows.map((a) => ({ words: a.textContent.trim(), href: a.getAttribute('href'), h: box(a).height })),
         overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+        // Story 7.23c — D4f's Deploy history card, first in the section and above the links card
+        card: (() => {
+          const c = n?.querySelector('section [data-history-card]')
+          const sites = n?.querySelector('section a[href$="/sites"]')
+          return c ? { kind: c.getAttribute('data-history-card'), title: c.querySelector('#small-screen-history')?.textContent ?? null, line: c.querySelector('[data-history-card-line]')?.textContent ?? null, act: c.querySelector('[data-history-act]')?.textContent.trim() ?? null, above: sites ? box(c).bottom <= box(sites).top : false } : null
+        })(),
+        billing: /billing/i.test(n?.textContent ?? ''),
       }
     }, FLOOR.PHONE)
+    // the card's state, as the route answers A's project on the phone's own session (the read the card makes)
+    const answer97 = await phone.evaluate(async (u) => {
+      const r = await fetch(u, { cache: 'no-store' })
+      return r.ok ? r.json() : null
+    }, `${PREFIX}/projects/${P}/history`).catch(() => null)
+    const want97 = answer97 === null ? null : RET97.phoneCard(answer97)
     await phone.screenshot({ path: `${OUT}/phone-notice-390.png` })
     check('step 97 — R-201: the iPhone 13 is a phone by `PHONE`, and the project opens on D4f\'s notice with no editor and no canvas mounted', notice97.phone && notice97.notice && !notice97.editor && !notice97.canvas, JSON.stringify({ phone: notice97.phone, notice: notice97.notice, editor: notice97.editor, canvas: notice97.canvas }))
     check('step 97 — D4f\'s bar: 60px, a 44px back link to the dashboard, the project\'s name, and the user\'s 32px initial (decorative)', notice97.bar === 60 && notice97.back === '/' && notice97.backBox?.width === 44 && notice97.backBox?.height === 44 && notice97.name === 'Pilot sections' && notice97.avatar?.w === 32 && notice97.avatar?.text === emailA.charAt(0).toUpperCase(), JSON.stringify({ bar: notice97.bar, back: notice97.back, backBox: notice97.backBox, name: notice97.name, avatar: notice97.avatar }))
     check('step 97 — D4f\'s words (280-pixel by R-204), in Bricolage', notice97.title === 'The editor needs a bigger screen.' && notice97.body === "Dragging sections and a 280-pixel control panel don't fit on a phone yet. Open this project on a laptop or tablet." && /Bricolage/i.test(notice97.titleFont ?? ''), JSON.stringify({ title: notice97.title, body: notice97.body, font: notice97.titleFont }))
-    check('step 97 — What works here holds ONE 56px row, Your sites — Deploy history and Billing ABSENT until 7.23c and 12.5 (R-118)', /what works here/i.test(notice97.heading ?? '') && notice97.rows.length === 1 && notice97.rows[0].words === 'Your sites' && /\/sites$/.test(notice97.rows[0].href ?? '') && notice97.rows[0].h === 56 && !notice97.overflow, JSON.stringify({ heading: notice97.heading, rows: notice97.rows, overflow: notice97.overflow }))
+    // RE-EXPECTED BY STORY 7.23c: two of D4f's three — the Deploy history card above the ONE 56px link row, Your sites; Billing ABSENT
+    // until Story 12.5 (R-118). The card reads A's project's state as the route answers it (`phoneCard`), whatever the walk left
+    check('step 97 — What works here: the Deploy history card first, in A\'s project\'s state as the History route answers it, then ONE 56px link row, Your sites — Billing ABSENT until 12.5 (R-118)',
+      /what works here/i.test(notice97.heading ?? '') && notice97.rows.length === 1 && notice97.rows[0].words === 'Your sites' && /\/sites$/.test(notice97.rows[0].href ?? '') && notice97.rows[0].h === 56 && !notice97.overflow &&
+      notice97.card !== null && notice97.card.above && notice97.card.title === RET97.HISTORY_WORDS.cardTitle && want97 !== null && !notice97.billing &&
+      notice97.card.kind === want97.kind &&
+      (want97.kind === 'live' ? (notice97.card.act ?? null) === (want97.undo === null ? null : RET97.HISTORY_WORDS.rollBackName(want97.undo.n))
+        : notice97.card.line === { empty: RET97.HISTORY_WORDS.empty, unlinked: RET97.HISTORY_WORDS.unlinked, notLive: RET97.HISTORY_WORDS.noneLive }[want97.kind]),
+      JSON.stringify({ heading: notice97.heading, rows: notice97.rows, overflow: notice97.overflow, card: notice97.card, want: want97?.kind ?? 'unread', billing: notice97.billing }))
     await phone.waitForTimeout(5000)
     const after97 = await lockRow(phone)
     check('step 97 — NOTHING OF THE EDITOR STARTED: no request to the lock or the sync route in the seconds after, and no edit_locks row for the project after 5s', calls97.length === 0 && 'row' in after97 && after97.row === null, JSON.stringify({ calls: calls97, after: after97 }))
@@ -16321,6 +16358,620 @@ async function main() {
         }
       }
       check('step 122 — the step\'s contexts recorded zero CSP violations', csp122.length === 0, JSON.stringify(csp122.slice(0, 3)))
+    }
+
+    /* ── step 123 — Story 7.23c: THE PHONE'S DEPLOY HISTORY CARD (D4f `:401-414`, FR-J9, R-118, R-291), WRITING TO T1 ──
+       Runs only with `T1_WRITES=1`, on the owner's in-session go worded for the whole run: two ships of "Phone test" through the
+       product (uploads and activations under the frozen name), five Roll backs from the phone through the product (each an upload
+       under the frozen name), one hand-edited theme uploaded with the Admin API key under the frozen name, a stamped and cleared
+       disconnect (the service key), and the put-back of T1. A throwaway Free account N (`editor-harness-n-…`) connects T1 through
+       the wizard at 1440 and "Phone test" (step 1's fixture) is linked; each version's Home headline names its number ("Version n"),
+       so a read of T1's `/` says which version is live. Every phone step runs in an iPhone 13 context (Playwright's descriptor:
+       coarse pointer, 390 × 844), signed in as N:
+       (a) THE PHONE OPENS THE PROJECT: `PHONE` true, no editor and no canvas, not one lock or sync request; the card reads "Live v2 ·
+           {time}" with the v1 row and "Roll back to v1", at D4f's geometry (14 padding, radius 12, the 34 tile, the row 9 × 11 at
+           radius 10, the 44px coral-outline button 14 across), first under What works here and above Your sites; nothing sideways.
+       (b) ROLL BACK TO v1, TAPPED: S8e's confirm on Cancel, the check REAL on T1 — D3c "Nothing changed on your site since v2" —
+           then its Roll back tapped: "v1 is live on {host}." said once, focus on the card's heading, the card reading "Live v1" with
+           "Roll back to v2"; T1's active theme downloaded with the staff token at ZERO differences from v1's `content_manifest`,
+           `/` "Version 1"; v1's OWN row live with the newest `accepted_at`, and the same rows (none added).
+       (c) A HAND EDIT, THEN THE PHONE'S ROLL BACK: v1's stored zip (the service key) with one template given a Handlebars comment
+           uploaded with the Admin API key under the frozen name (active, so live at once — R-264), T1's download differing from v1 by
+           that file alone. The phone's Roll back to v2: D3a names that file by the manifest's own label, with "Download the live
+           theme first" — tapped: a zip downloads (followed as JSON, then the signed URL — DW-391) whose manifest equals T1's live
+           one, the page and the confirm staying; then its Roll back still goes — v2 live, "Version 2". The control: the next Roll
+           back (to v1) checks clean "since v2", and goes.
+       (d) CANCEL SENDS NOTHING: the phone's Roll back (to v2) tapped, the check left to end, Cancel tapped — no `act: 'live'` POST,
+           T1's themes and live files as they were, the card unchanged, focus back on its Roll back.
+       (e) A DESKTOP SESSION HOLDS THE LOCK: N's 1440 editor open (it holds the edit lock — the phone never asks for one), and the
+           phone's Roll back to v2 still lands: v2 live, "Version 2" — the put-back reads no lock and no plan (N is on Free).
+       (f) THE SITE DISCONNECTED: T1's site row stamped disconnected (the service key); the phone's Roll back — its check answers 409
+           `disconnected`, said under the row "Reconnect {host} in Sites to roll back.", focus back on the Roll back, nothing sent to
+           Ghost; the stamp cleared and read back (reconnected).
+       FINALLY: every job at rest; T1 put back (its own theme active, the frozen theme and every inflozo- theme the run uploaded
+       deleted, routes.yaml byte for byte) and read back; N's objects removed; T1 disconnected through the product; N deleted; users
+       and projects counted back. Ghost 5's half (T3, R-238) waits for DW-326's pass at Story 15.7.
+       `STEP123_PLANT=<address>` (with `T1_WRITES=1`, in a cut copy of steps 1–5 and this one) is Deploy's plant for the owner's test
+       instead: a NEW address, the two ships, and (c)'s invisible hand edit on v2 — live — then it stops, leaving the account, its
+       site and T1 as they are. Keys are read in-process by NAME and scrubbed; never printed. SELF-CONTAINED, as 121 and 122 are. */
+    if (process.env.T1_WRITES !== '1') {
+      note('step 123 — NOT RUN', 'it writes to T1 (two ships and five Roll backs through the product, one hand-edited theme uploaded with the Admin API key, and the put-back) and to production (a stamped and cleared disconnect): set T1_WRITES=1 on the owner\'s in-session go')
+    } else {
+      const imp123 = (f) => import(require('node:url').pathToFileURL(path.join(REPO, f)).href)
+      const [DEP123, RET123, DR123, CR123, PR123, AR123, RU123, ZIP123, GATE123, FL123] = await Promise.all([
+        imp123('apps/web/lib/deploy.ts'), imp123('apps/web/lib/retention.ts'), imp123('apps/web/lib/drift.ts'), imp123('apps/web/lib/connect-rule.ts'),
+        imp123('apps/web/lib/probe-rule.ts'), imp123('apps/web/server/ghost-admin/admin-rule.ts'), imp123('apps/web/lib/routes-upload.ts'),
+        imp123('apps/web/server/deploy/zip.ts'), imp123('apps/web/lib/backup-gate.ts'), imp123('apps/web/lib/floor.ts'),
+      ])
+      const HW123 = RET123.HISTORY_WORDS
+      const DW123 = DR123.DRIFT_WORDS
+      const until123 = async (read, test, ms) => {
+        const by = Date.now() + ms
+        for (;;) {
+          const v = await read()
+          if (test(v) || Date.now() > by) return v
+          await new Promise((r) => setTimeout(r, 500))
+        }
+      }
+      const ENV123 = {}
+      const NAMES123 = ['GHOST6_URL', 'GHOST6_ADMIN_API_KEY', 'GHOST6_CONTENT_API_KEY', 'GHOST6_STAFF_ACCESS_TOKEN']
+      for (const line of fs.readFileSync(path.join(REPO, 'tools/probe/.env'), 'utf8').split('\n')) {
+        const m = /^([A-Z0-9_]+)=(.*)$/.exec(line)
+        if (m && NAMES123.includes(m[1]) && m[2].trim()) ENV123[m[1]] = m[2].trim()
+      }
+      const missing123 = NAMES123.filter((k) => !ENV123[k])
+      if (missing123.length) throw new Error(`step 123: ${missing123.join(', ')} not in tools/probe/.env`)
+      const SECRETS123 = [ENV123.GHOST6_ADMIN_API_KEY, ENV123.GHOST6_STAFF_ACCESS_TOKEN].flatMap((k) => [k, k.split(':')[1] ?? '']).concat([ENV123.GHOST6_CONTENT_API_KEY]).filter((x) => x.length >= 8)
+      const scrub123 = (x) => SECRETS123.reduce((t, k) => t.split(k).join('<key>'), String(x))
+      const ORIGIN123 = new URL(ENV123.GHOST6_URL).origin
+      const ghost123 = async (credential, method, p, body) => {
+        const { url, init } = AR123.adminRequest({ credential, siteUrl: ENV123.GHOST6_URL, method, path: p, body, major: 6 })
+        const r = await fetch(url, { ...init, signal: AbortSignal.timeout(90_000) })
+        const bytes = Buffer.from(await r.arrayBuffer())
+        let parsed = null
+        try { parsed = JSON.parse(bytes.toString('utf8')) } catch {}
+        return { ok: r.ok, status: r.status, body: parsed, bytes }
+      }
+      const staff123 = (method, p, body) => ghost123(ENV123.GHOST6_STAFF_ACCESS_TOKEN, method, p, body)
+      const themes123 = async () => {
+        const r = await staff123('GET', 'themes/').catch(() => null)
+        return r?.ok && Array.isArray(r.body?.themes) ? r.body.themes.map((t) => ({ name: t.name, active: t.active === true })) : null
+      }
+      const active123 = async () => (await themes123())?.find((t) => t.active)?.name ?? null
+      const routesFile123 = async () => {
+        const r = await staff123('GET', RU123.ROUTES_PATH).catch(() => null)
+        return r?.ok ? r.bytes : null
+      }
+      /** the theme under the frozen name, downloaded with the staff token, as a manifest (the drift check's own `liveManifest`) */
+      const liveManifest123 = async () => {
+        const r = await staff123('GET', `themes/${encodeURIComponent(theme123)}/download/`).catch(() => null)
+        return r?.ok ? DR123.liveManifest(ZIP123.unzipTheme(new Uint8Array(r.bytes))) : null
+      }
+      /** …compared with a stored manifest exactly as the drift check compares them; null when Ghost refused the download */
+      const liveDiff123 = async (manifest) => {
+        const live = await liveManifest123()
+        return live !== null && manifest ? DR123.compareManifests(manifest, live) : null
+      }
+      const none123 = (d) => d !== null && d.changed.length + d.added.length + d.removed.length === 0
+      /** T1's Home as a visitor reads it: the A4 #13 headline's words, null on a page with none, undefined when unread */
+      const headline123 = async () => {
+        const r = await fetch(`${ORIGIN123}/?walk123=${Date.now()}`, { redirect: 'manual', headers: { 'Cache-Control': 'no-cache' } }).catch(() => null)
+        if (!r?.ok) return undefined
+        return /class="[^"]*\ba4-13__headline\b[^"]*"[^>]*>\s*([^<]*?)\s*</.exec(await r.text())?.[1] ?? null
+      }
+      const homeSays123 = (n) => until123(headline123, (h) => h === `Version ${n}`, 45000)
+      const storage123 = { apikey: SECRET, Authorization: `Bearer ${SECRET}` }
+      const listed123 = (bucket, prefix) => fetch(`${SB}/storage/v1/object/list/${bucket}`, { method: 'POST', headers: { ...storage123, 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix, limit: 100, offset: 0 }) })
+        .then((r) => r.json()).then((l) => (Array.isArray(l) ? l.filter((o) => typeof o?.name === 'string' && o.id !== null) : [])).catch(() => [])
+      const object123 = async (key) => {
+        const r = await fetch(`${SB}/storage/v1/object/deploy-artifacts/${key}`, { headers: storage123 }).catch(() => null)
+        return r?.ok ? Buffer.from(await r.arrayBuffer()) : null
+      }
+      const removeObject123 = (bucket, key) => fetch(`${SB}/storage/v1/object/${bucket}/${key}`, { method: 'DELETE', headers: storage123 }).then((r) => r.status).catch(() => 0)
+      /** jsonb hands an object's keys back reordered (Story 7.21's Review): compared by fields */
+      const same123 = (a, b) => {
+        const canon = (v) => JSON.stringify(v, (_, x) => (x !== null && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.entries(x).sort(([k], [l]) => (k < l ? -1 : k > l ? 1 : 0))) : x))
+        return canon(a) === canon(b)
+      }
+      /** R-291 (123c, and the plant): A HAND EDIT of a version's files as a designer makes one in Ghost Admin — its stored zip read (the
+       *  service key), one template given a Handlebars comment (the page still reads "Version n"), re-zipped by the product's writer
+       *  and uploaded with the Admin API key under the frozen name: live at once where that name is active (R-264). Answers the
+       *  upload, the file edited, its label as the check names it (the manifest's own), and T1's download compared with that version */
+      const EDIT123 = '\n{{!-- walk 123: edited in Ghost Admin --}}\n'
+      const handEdit123 = async (v) => {
+        const zip = await object123(v.artifact_path)
+        if (zip === null) throw new Error(`step 123: ${v.version}'s stored zip could not be read`)
+        const files = ZIP123.unzipTheme(new Uint8Array(zip))
+        const file = ['home.hbs', 'index.hbs'].find((f) => files[f] !== undefined)
+        if (file === undefined) throw new Error('step 123: the version holds neither home.hbs nor index.hbs to edit')
+        const form = new FormData()
+        form.append('file', new Blob([ZIP123.zipTheme({ ...files, [file]: Buffer.concat([Buffer.from(files[file]), Buffer.from(EDIT123)]) })], { type: 'application/zip' }), `${theme123}.zip`)
+        const up = await ghost123(ENV123.GHOST6_ADMIN_API_KEY, 'POST', 'themes/upload/', form)
+        const entry = v.content_manifest?.[file]
+        return {
+          status: up.status, name: up.body?.themes?.[0]?.name ?? null, active: up.body?.themes?.[0]?.active === true, path: file,
+          label: DR123.labelOf({ path: file, ...(entry === undefined ? {} : { entry }) }, 'changed'), diff: await liveDiff123(v.content_manifest),
+        }
+      }
+      const editedOnly123 = (e) => e.diff !== null && same123(e.diff, { changed: [e.path], added: [], removed: [] })
+
+      const PLANT123 = (process.env.STEP123_PLANT ?? '').trim().toLowerCase()
+      let planted123 = false
+      const STOP123 = Symbol('step 123 planted') // thrown past (a)–(f) once the plant is read back; the catch knows it
+      const email123 = PLANT123 || `editor-harness-n-${stamp}@inflozo.com`
+      const usersBefore123 = (await users())?.length ?? null
+      const projectsBefore123 = await projectCount()
+      let id123 = null
+      let site123 = null
+      let P123 = null
+      let theme123 = null
+      let prev123 = null
+      let start123 = []
+      let routesBefore123 = null
+      let pg123 = null
+      /** (f)'s stamp, cleared in the step or by the finally should it die between */
+      let stamped123 = false
+      const ctxs123 = []
+      const csp123 = []
+
+      const ROW123 = 'id,version,status,activated,activated_at,accepted_at,artifact_path,content_manifest,created_at,site_id'
+      const siteRow123 = async () => (site123 === null ? null : (await call('/rest/v1', `/sites?id=eq.${site123}&select=id,disconnected_at`)).body?.[0] ?? null)
+      const job123 = async () => (P123 === null ? null : (await call('/rest/v1', `/deploy_jobs?project_id=eq.${P123}&select=id,stage,error,deploy_id&order=started_at.desc&limit=1`)).body?.[0] ?? null)
+      const deploy123 = async (id) => (id == null ? null : (await call('/rest/v1', `/deploys?id=eq.${id}&select=${ROW123}`)).body?.[0] ?? null)
+      const rows123 = async () => (P123 === null ? [] : (await call('/rest/v1', `/deploys?project_id=eq.${P123}&select=${ROW123}&order=created_at.asc`)).body ?? [])
+      const atRest123 = (j) => j === null || !['queued', 'compiling', 'checking', 'snapshotting', 'uploading', 'activating'].includes(j.stage)
+      const wiz123 = (p) => p.evaluate(() => {
+        const d = document.querySelector('dialog[data-deploy-wizard]')
+        if (!d) return null
+        const box = d.querySelector('[data-check-rows]')
+        return { at: d.getAttribute('data-deploy-wizard'), reading: d.querySelector('#deploy-drift-reading') !== null, passes: box ? [...box.children].filter((c) => !c.hasAttribute('data-finding')).length : 0 }
+      }).catch(() => null)
+      /** a context signed in as N — the 1440 desktop, or Playwright's iPhone 13 (its browser default dropped) */
+      const context123 = async (phone = false) => {
+        const { defaultBrowserType, ...iphone } = devices['iPhone 13']
+        const ctx = steadyRequests(await browser.newContext(phone ? iphone : { viewport: { width: 1440, height: 900 } }))
+        ctxs123.push(ctx)
+        await recorder(ctx, csp123)
+        const pg = steady(await ctx.newPage())
+        pg.on('pageerror', (e) => note('pageerror 123', scrub123(String(e))))
+        await pg.goto(await magic(email123), { waitUntil: 'load' })
+        return pg
+      }
+      /** T1 connected through the wizard on `pg`'s session; the wizard's own project goes (the account held none), and the site's id */
+      const connect123 = async (pg) => {
+        await pg.goto(at('/sites/connect?step=keys'), { waitUntil: 'load' })
+        await pg.locator('#s2b-api-url').fill(ENV123.GHOST6_URL)
+        await pg.locator('#s2b-admin-key').fill(ENV123.GHOST6_ADMIN_API_KEY)
+        await pg.locator('#s2b-content-key').fill(ENV123.GHOST6_CONTENT_API_KEY)
+        await pg.locator('form:has(#s2b-api-url) button[type="submit"]').click()
+        await pg.waitForURL((u) => !u.pathname.endsWith('/sites/connect'), { timeout: 60000 })
+        const use = pg.getByRole('button', { name: PR123.BRAND_COPY.use, exact: true })
+        if (await use.waitFor({ state: 'visible', timeout: 20000 }).then(() => true, () => false)) await use.click()
+        const linked = await until123(async () => (await call('/rest/v1', `/projects?user_id=eq.${id123}&select=id,linked_site_id`)).body ?? [], (ps) => ps.some((p) => p.linked_site_id !== null), 45000)
+        const site = linked.find((p) => p.linked_site_id !== null)?.linked_site_id ?? null
+        if (site === null) throw new Error('step 123: T1 did not connect')
+        for (const p of linked) await call('/rest/v1', `/projects?id=eq.${p.id}`, { method: 'DELETE' })
+        return site
+      }
+      const handBack123 = (p) => p.evaluate(async (url) => {
+        const id = sessionStorage.getItem('inflozo-lock-session')
+        if (!id) return
+        await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ intent: 'release', session: id }) })
+      }, `${PREFIX}/projects/${P123}/lock`).catch(() => {})
+      const painted123 = (pg) => pg.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 }).then(() => true, () => false)
+      const closed123 = async (pg) => {
+        if (!(await pg.locator('dialog[data-deploy-wizard]').count().catch(() => 0))) return
+        await pg.keyboard.press('Escape').catch(() => {})
+        await pg.waitForFunction(() => !document.querySelector('dialog[data-deploy-wizard]'), null, { timeout: 15000 }).catch(() => {})
+      }
+      /** LEAVE THE EDITOR AND LET ITS LAST FLUSH LAND (5.8's `leaveEditor`), so a doc written next through the service key holds */
+      const leave123 = async (pg) => {
+        await closed123(pg)
+        await pg.evaluate((u) => new Promise((done) => {
+          const req = indexedDB.deleteDatabase(`inflozo-doc-${u}`)
+          req.onsuccess = req.onerror = req.onblocked = () => done(true)
+        }), id123).catch(() => null)
+        await pg.goto('about:blank')
+        await pg.waitForTimeout(1000)
+      }
+      /** Home's A4 #13 headline written "Version n" in the STORED doc (the service key), read back until it holds */
+      const headlineDoc123 = async (n) => {
+        const want = `Version ${n}`
+        for (let tries = 0; tries < 4; tries++) {
+          const doc = (await call('/rest/v1', `/project_templates?project_id=eq.${P123}&template_key=eq.home&select=doc`)).body?.[0]?.doc ?? null
+          const hero = doc?.instances?.find((i) => i.designId === 'a4/13') ?? null
+          if (hero === null) throw new Error('step 123: Home holds no A4 #13 to name the version in')
+          if (hero.content?.headline === want) return true
+          if (tries === 3) break
+          const next = { ...doc, instances: doc.instances.map((i) => (i === hero ? { ...i, content: { ...i.content, headline: want } } : i)) }
+          await call('/rest/v1', `/project_templates?project_id=eq.${P123}&template_key=eq.home`, { method: 'PATCH', body: JSON.stringify({ doc: next }) })
+          await new Promise((r) => setTimeout(r, 1500))
+        }
+        return false
+      }
+      const ship123 = async (pg, job) => {
+        await until123(() => pg.locator('#deploy-ship').getAttribute('aria-disabled').catch(() => 'true'), (v) => v !== 'true', 60000)
+        // DW-404 (121's): a silent press is recorded, never pressed again
+        const sent = pg.waitForRequest((r) => r.method() === 'POST' && /\/deploy$/.test(new URL(r.url()).pathname), { timeout: 20000 }).then(() => true, () => false)
+        await pg.locator('#deploy-ship').click()
+        if (!(await sent)) {
+          await pg.screenshot({ path: path.join(OUT, `step-123-ship-silent-${Date.now()}.png`) }).catch(() => {})
+          note('step 123 — DW-404, a Ship it press sent nothing in 20 s', 'see the screenshot')
+        }
+        return until123(job123, (j) => j?.id === job?.id && (j.stage === 'done' || j.stage === 'failed'), 300000)
+      }
+      /** ship n: the editor left, Home's headline "Version n" stored, the editor opened, Ship it (Deploy & activate) — the first deploy's
+       *  Safety net and Backup step answered as a customer answers them — and T1's `/` read until it says so */
+      const shipOne123 = async (pg, n) => {
+        if (n > 1) await leave123(pg)
+        if (!(await headlineDoc123(n))) throw new Error(`step 123: Home's stored headline did not hold "Version ${n}"`)
+        await pg.goto(at(`/projects/${P123}`), { waitUntil: 'load' })
+        await painted123(pg)
+        await pg.locator('#editor-ship').click()
+        await until123(() => wiz123(pg), (w) => w?.at === 'destination', 20000)
+        let pre
+        if (n === 1) {
+          await pg.locator('#deploy-next').click()
+          await until123(() => wiz123(pg), (w) => w?.at === 'safety', 15000)
+          await pg.locator('#deploy-token').fill(ENV123.GHOST6_STAFF_ACCESS_TOKEN)
+          await pg.locator('#deploy-add-token').click()
+          await until123(() => wiz123(pg), (w) => w?.at === 'backup', 60000)
+          for (const { id } of GATE123.GATE_ROWS) await pg.locator(`#deploy-gate-${id}`).check()
+          await pg.locator('#deploy-gate-confirm').check()
+          const was = (await job123())?.id ?? null
+          await pg.locator('#deploy-backup-run').click()
+          pre = await until123(job123, (j) => j !== null && j.id !== was && ['awaiting_ship', 'failed'].includes(j.stage), 180000)
+        } else {
+          const was = (await job123())?.id ?? null
+          await pg.locator('#deploy-run').click()
+          pre = await until123(job123, (j) => j !== null && j.id !== was && ['awaiting_ship', 'failed', 'cancelled'].includes(j.stage), 180000)
+          await until123(() => wiz123(pg), (w) => w?.at === 'check' && !w.reading && w.passes > 0, 30000)
+        }
+        const end = await ship123(pg, pre)
+        if (end?.stage !== 'done') throw new Error(`step 123: ship ${n} ended ${end?.stage ?? 'unread'}`)
+        return { row: await deploy123(end.deploy_id), home: await homeSays123(n) }
+      }
+      /** the History route, read on `p`'s own session from the page — the read the card makes */
+      const history123 = (p) => p.evaluate(async (u) => {
+        const r = await fetch(u, { cache: 'no-store' })
+        return { status: r.status, body: await r.json().catch(() => null) }
+      }, at(`/projects/${P123}/history`))
+      /** THE CARD AS DRAWN on the phone: its state, line, the undo row's Roll back, the said and noted words, where focus is, D4f's
+       *  geometry, its place above Your sites, and whether anything scrolls sideways */
+      const card123 = (p) => p.evaluate(() => {
+        const c = document.querySelector('[data-history-card]')
+        if (!c) return null
+        const css = (e) => (e ? getComputedStyle(e) : null)
+        const box = (e) => (e ? e.getBoundingClientRect() : null)
+        const row = c.querySelector('[data-history-undo]')
+        const b = row?.querySelector('[data-history-act]') ?? null
+        const note = row?.querySelector('[data-history-note]') ?? null
+        const sites = document.querySelector('[data-small-screen] section a[href$="/sites"]')
+        const a = document.activeElement
+        return {
+          kind: c.getAttribute('data-history-card'),
+          title: c.querySelector('#small-screen-history')?.textContent ?? null,
+          line: c.querySelector('[data-history-card-line]')?.textContent ?? null,
+          // its name is its visible label (`rollBackName`): the button carries no aria-label
+          act: b?.textContent.trim() ?? null,
+          said: c.querySelector('[data-history-said]')?.textContent ?? '',
+          note: note?.querySelector('span:not([data-history-detail])')?.textContent ?? '',
+          focus: a?.id || (a?.hasAttribute('data-history-act') ? 'roll-back' : a?.tagName ?? null),
+          geometry: {
+            card: [css(c).padding, css(c).borderTopLeftRadius, css(c).rowGap],
+            tile: (({ width: w, height: h }) => [w, h])(box(c.querySelector(':scope > div > span[aria-hidden]')) ?? { width: 0, height: 0 }),
+            row: row ? [css(row).padding, css(row).borderTopLeftRadius, css(row).columnGap] : null,
+            button: b ? [box(b).height, css(b).paddingLeft, css(b).fontSize, css(b).fontWeight, css(b).borderTopLeftRadius] : null,
+          },
+          above: sites ? box(c).bottom <= box(sites).top : false,
+          sideways: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        }
+      }).catch(() => null)
+      const D4F123 = { card: ['14px', '12px', '11px'], tile: [34, 34], row: ['9px 11px', '10px', '9px'], button: [44, '14px', '13px', '600', '10px'] }
+      /** R-291 — what the confirm's drift check drew, read from its one status region (121's `drawnCheck121`, on the phone) */
+      const drawnCheck123 = (p) => p.evaluate(() => {
+        const r = document.querySelector('dialog[data-history-confirm] [data-history-check]')
+        if (!r) return null
+        return {
+          state: r.getAttribute('data-history-check'),
+          clean: r.querySelector('[data-drift-row="clean"] > span')?.textContent ?? null,
+          groups: [...r.querySelectorAll('[data-drift-group]')].map((g) => ({
+            group: g.getAttribute('data-drift-group'),
+            files: [...g.querySelectorAll('[data-drift-file]')].map((f) => ({ path: f.getAttribute('data-drift-file'), label: f.querySelector('[data-drift-label]')?.textContent ?? null })),
+          })),
+          download: r.querySelector('#history-drift-download')?.getAttribute('href') ?? null,
+          onCancel: document.activeElement?.hasAttribute('data-cancel') === true && document.activeElement.closest('dialog[data-history-confirm]') !== null,
+        }
+      }).catch(() => null)
+      /** an ending on the card: the confirm closed, and either said in the card's region with focus on its heading (after the read
+       *  again), or noted under the row. Null when neither came within AD-11's budget */
+      const ended123 = (p) => p.waitForFunction(() => {
+        const c = document.querySelector('[data-history-card]')
+        if (!c || document.querySelector('dialog[data-history-confirm]')?.open) return false
+        const said = c.querySelector('[data-history-said]')?.textContent ?? ''
+        const note = c.querySelector('[data-history-note] span:not([data-history-detail])')?.textContent ?? ''
+        if (said === '' && note === '') return false
+        if (said !== '' && document.activeElement?.id !== 'small-screen-history') return false
+        return true
+      }, null, { timeout: 300000, polling: 250 }).then(() => card123(p), () => null)
+      /** ONE ROLL BACK FROM THE PHONE: the card's Roll back TAPPED (the confirm opens on Cancel), its title and focus read, its check
+       *  (R-291) waited for and read; `before`, if given, runs on that; then the confirm's Roll back tapped — or, `cancel`, its Cancel
+       *  — and the card's ending read. The said and noted words are cleared first, so an ending is this press's own */
+      const CHECK_ENDED123 = /^(clean|found|unverified|none|failed)$/
+      const phoneBack123 = async (p, { before = null, cancel = false } = {}) => {
+        await p.evaluate(() => document.querySelectorAll('[data-history-card] [data-history-said] span').forEach((s) => s.replaceChildren())).catch(() => {})
+        const act = p.locator('[data-history-card] [data-history-act]')
+        if (!(await act.count())) return { asked: null, checked: null, ended: null }
+        await act.tap()
+        const open = await p.waitForFunction(() => document.querySelector('dialog[data-history-confirm]')?.open === true, null, { timeout: 15000 }).then(() => true, () => false)
+        if (!open) return { asked: null, checked: null, ended: null }
+        await p.waitForFunction(() => document.activeElement?.closest('dialog[data-history-confirm]') != null, null, { timeout: 3000 }).catch(() => {})
+        const asked = await p.evaluate(() => ({
+          title: document.querySelector('#history-confirm-title')?.textContent ?? null,
+          onCancel: document.activeElement?.hasAttribute('data-cancel') === true && document.activeElement.closest('dialog[data-history-confirm]') !== null,
+        }))
+        // the check ends — or, refused, closes the confirm — before anything is pressed
+        await p.waitForFunction((re) => {
+          const d = document.querySelector('dialog[data-history-confirm]')
+          if (!d?.open) return true
+          return new RegExp(re).test(d.querySelector('[data-history-check]')?.getAttribute('data-history-check') ?? '') && document.querySelector('#history-confirm-go')?.getAttribute('aria-disabled') !== 'true'
+        }, CHECK_ENDED123.source, { timeout: 120000 }).catch(() => {})
+        const stillOpen = await p.evaluate(() => document.querySelector('dialog[data-history-confirm]')?.open === true)
+        const checked = stillOpen ? await drawnCheck123(p) : null
+        if (stillOpen && before) await before(checked)
+        if (stillOpen) await p.locator(cancel ? 'dialog[data-history-confirm] [data-cancel]' : '#history-confirm-go').tap()
+        if (cancel) {
+          await p.waitForFunction(() => document.querySelector('dialog[data-history-confirm]')?.open !== true, null, { timeout: 15000 }).catch(() => {})
+          return { asked, checked, ended: await card123(p) }
+        }
+        return { asked, checked, ended: await ended123(p) }
+      }
+
+      try {
+        // the start: T1's live theme and routes.yaml, which the finally puts back — never begun on a theme a test left live
+        start123 = (await themes123()) ?? []
+        prev123 = start123.find((t) => t.active)?.name ?? null
+        routesBefore123 = await routesFile123()
+        check(`step 123 — T1's live theme read with the staff token at the start (${prev123 ?? 'unread'}), not an Inflozo theme a test left live, and routes.yaml read`,
+          prev123 !== null && !/^inflozo-/.test(prev123) && routesBefore123 !== null, JSON.stringify(start123.map((t) => `${t.name}${t.active ? '*' : ''}`)))
+        if (prev123 === null || /^inflozo-/.test(prev123) || routesBefore123 === null) throw new Error('step 123: T1 is not on its own theme — ask the owner before restoring it')
+        if (PLANT123) {
+          const all = await users()
+          if (all === null) throw new Error('step 123: the user list is unreadable, so the plant cannot tell its address is new')
+          if (all.some((u) => (u.email ?? '').toLowerCase() === PLANT123)) throw new Error(`step 123: the plant's address must be new, and ${PLANT123} already has an account`)
+        }
+        const made = await admin('/admin/users', { method: 'POST', body: JSON.stringify({ email: email123, email_confirm: true }) })
+        id123 = made.status === 200 ? made.body.id ?? null : null
+        if (!UUID.test(id123 ?? '')) throw new Error('step 123: the account was not made')
+        const pg = await context123()
+        pg123 = pg
+        site123 = await connect123(pg)
+        const seeded = await seed({ email: email123, name: 'Phone test' })
+        if (!seeded?.created) throw new Error('step 123: "Phone test" was not seeded')
+        P123 = seeded.id
+        await call('/rest/v1', `/projects?id=eq.${P123}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: site123 }) })
+        const linked = (await call('/rest/v1', `/projects?id=eq.${P123}&select=slug,linked_site_id`)).body?.[0] ?? null
+        theme123 = linked?.linked_site_id === site123 && linked.slug ? DEP123.themeNameOf(linked.slug) : null
+        if (theme123 === null) throw new Error('step 123: the project was not linked')
+
+        // ── the two ships, each Home naming its version ──
+        const shipped = [await shipOne123(pg, 1), await shipOne123(pg, 2)]
+        const [v1, v2] = shipped.map((s) => s.row)
+        if (shipped.some((s) => s.row === null || !s.row.artifact_path || s.row.content_manifest === null)) throw new Error('step 123: a shipped version has no stored zip or manifest')
+        const answer0 = await history123(pg)
+        const rows0 = RET123.historyRows(answer0.body ?? { linkedSiteId: null, liveVersion: null, rows: [], original: null })
+        const HOST123 = rows0[0]?.host ?? CR123.hostOf(ENV123.GHOST6_URL)
+        check(`step 123 — two ships (Deploy & activate): v1 then v2, ${ORIGIN123}/ reading "Version 1" then "Version 2", v2 live on T1 under ${theme123}; the History route answers v2 Live and v1 the undo`,
+          shipped.map((s) => s.row?.version).join(',') === '1.0.0,2.0.0' && shipped.every((s, i) => s.home === `Version ${i + 1}`) && (await active123()) === theme123 &&
+          answer0.status === 200 && rows0.map((r) => `v${r.n}${r.live ? '*' : ''}${r.emphasis ? '!' : ''}`).join(' ') === 'v2* v1!',
+          JSON.stringify({ versions: shipped.map((s) => s.row?.version ?? null), home: shipped.map((s) => s.home ?? null), rows: rows0.map((r) => ({ v: r.n, live: r.live, undo: r.emphasis })) }))
+        // the desktop hands its edit lock back (5.17's release), so (a) can show the phone takes none
+        await handBack123(pg)
+        await leave123(pg)
+
+        if (PLANT123) {
+          // ── the plant: (c)'s invisible hand edit on v2, LIVE — the owner's first Roll back finds it — read back, then STOP ──
+          const editP = await handEdit123(v2)
+          const answerP = await history123(pg)
+          const cardP = RET123.phoneCard(answerP.body ?? { linkedSiteId: null, liveVersion: null, rows: [], original: null })
+          planted123 = check(`step 123 (plant) — ${PLANT123}: T1 connected through the wizard, "Phone test" shipped v1 then v2 ("Version n" on T1 each time); then v2's files with an invisible hand edit to ${editP.path} uploaded under ${theme123} with the Admin API key — active, so live at once (R-264) — T1's download differing from v2 by that file alone (R-291), ${ORIGIN123}/ still "Version 2"; the card's rule answers Live v2 with the undo v1`,
+            editP.status === 200 && editP.name === theme123 && editP.active === true && editedOnly123(editP) && (await homeSays123(2)) === 'Version 2' &&
+            cardP.kind === 'live' && cardP.live.n === 2 && cardP.undo?.n === 1,
+            JSON.stringify({ edit: { status: editP.status, name: editP.name, active: editP.active, path: editP.path, diff: editP.diff }, card: cardP.kind }))
+          if (planted123) {
+            plantKept.users += 1
+            plantKept.projects += 1
+            note('step 123 — PLANT for the owner\'s test', `address ${PLANT123} · project "Phone test" id ${P123} · ${at(`/projects/${P123}`)} · ${HOST123} serves ${theme123} (v2) with an invisible hand edit to ${editP.path} (a Handlebars comment): the owner's first Roll back to v1 on his phone shows D3a's block naming "${editP.label}" with "${DW123.download}"`)
+          }
+          throw STOP123
+        }
+
+        // ── 123a — the phone opens the project ──
+        const phone = await context123(true)
+        // the lock row read through the lock route's own NON-HOLDER BEAT on the phone's session (step 97's read): it changes nothing
+        const READ123 = 'walk-7-23c-read-only'
+        const lockRow123 = () => phone.evaluate(async ({ url, session }) => {
+          const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ intent: 'beat', session }) })
+          return r.ok ? { row: (await r.json()).row } : { status: r.status }
+        }, { url: `${PREFIX}/projects/${P123}/lock`, session: READ123 }).catch(() => ({ status: 0 }))
+        const calls = []
+        phone.on('request', (r) => {
+          if (/\/(lock|sync)$/.test(new URL(r.url()).pathname) && !(r.postData() ?? '').includes(READ123)) calls.push(`${r.method()} ${new URL(r.url()).pathname}`)
+        })
+        const lockBefore = await lockRow123()
+        await phone.goto(at(`/projects/${P123}`), { waitUntil: 'load' })
+        await phone.waitForSelector('[data-history-card]:not([data-history-card="loading"])', { timeout: 30000 }).catch(() => null)
+        const shellA = await phone.evaluate(async (q) => ({
+          phone: matchMedia(q).matches, notice: document.querySelector('[data-small-screen]') !== null, editor: document.querySelector('[data-editor]') !== null, canvas: document.querySelector('iframe[title$="canvas"]') !== null,
+          databases: (await indexedDB.databases()).map((d) => d.name).filter((n) => /^inflozo-/.test(n ?? '')),
+        }), FL123.PHONE)
+        const a = await card123(phone)
+        await phone.screenshot({ path: path.join(OUT, 'step-123a-phone-card.png') }).catch(() => {})
+        await phone.waitForTimeout(5000)
+        const lockAfter = await lockRow123()
+        check(`step 123a — the iPhone 13 is a phone by \`PHONE\` and opens D4f's notice: no editor and no canvas mounted, not one lock or sync request in the seconds after (the History read is its one), no edit_locks row for the project (the control: none before, the desktop's handed back) and no inflozo- database`,
+          shellA.phone && shellA.notice && !shellA.editor && !shellA.canvas && calls.length === 0 && shellA.databases.length === 0 &&
+          'row' in lockBefore && lockBefore.row === null && 'row' in lockAfter && lockAfter.row === null,
+          JSON.stringify({ ...shellA, calls, lockBefore, lockAfter }))
+        check(`step 123a — the card reads "${HW123.live} v2 · {time}" with v1's row and "${HW123.rollBackName(1)}", first under What works here and above Your sites, at D4f's geometry (14 padding, radius 12, the 34 tile, the row 9 × 11 at radius 10, the 44px button 14 across at 13px 600), nothing sideways`,
+          a?.kind === 'live' && a.title === HW123.cardTitle && (a.line ?? '').startsWith(`${HW123.live} v2 · `) && a.act === HW123.rollBackName(1) && a.above && a.sideways <= 0 && same123(a.geometry, D4F123),
+          JSON.stringify(a))
+
+        // ── 123b — Roll back to v1, tapped on the phone ──
+        const beforeB = await rows123()
+        const b = await phoneBack123(phone)
+        const diffB = await liveDiff123(v1.content_manifest)
+        const afterB = await rows123()
+        const v1B = afterB.find((r) => r.id === v1.id) ?? null
+        const newestB = afterB.filter((r) => r.accepted_at !== null).sort((x, y) => Date.parse(y.accepted_at) - Date.parse(x.accepted_at))[0] ?? null
+        check(`step 123b — the phone's "${HW123.rollBackName(1)}" opens "${HW123.confirmTitle(1)}" on ${HW123.cancel}, and its check runs REAL on T1 with the staff token: D3c "${DW123.clean(2)}"`,
+          b.asked?.title === HW123.confirmTitle(1) && b.asked.onCancel === true && b.checked?.state === 'clean' && b.checked.clean === DW123.clean(2),
+          JSON.stringify({ asked: b.asked, checked: b.checked }))
+        check(`step 123b — confirmed: "${HW123.said.live(1, HOST123)}" said once in the card's region, focus on its heading, the card reading "${HW123.live} v1" with "${HW123.rollBackName(2)}" (the way forward)`,
+          b.ended?.said === HW123.said.live(1, HOST123) && b.ended.note === '' && b.ended.focus === 'small-screen-history' && (b.ended.line ?? '').startsWith(`${HW123.live} v1 · `) && b.ended.act === HW123.rollBackName(2),
+          JSON.stringify(b.ended))
+        check(`step 123b — T1's active theme is ${theme123} and its download (the staff token) compares at ZERO differences with v1's content_manifest; ${ORIGIN123}/ "Version 1"; v1's OWN row live with the newest accepted_at, and the same rows as before (updated, never copied)`,
+          (await active123()) === theme123 && none123(diffB) && (await homeSays123(1)) === 'Version 1' && v1B?.status === 'live' && newestB?.id === v1.id &&
+          afterB.length === beforeB.length && same123(afterB.map((r) => r.id).sort(), beforeB.map((r) => r.id).sort()),
+          JSON.stringify({ diff: diffB, v1: v1B === null ? null : { status: v1B.status, accepted_at: v1B.accepted_at }, rows: `${beforeB.length} → ${afterB.length}` }))
+
+        // ── 123c — a hand edit on T1, then the phone's Roll back finds it ──
+        const v1C = await deploy123(v1.id)
+        const editC = await handEdit123(v1C)
+        check(`step 123c — a HAND EDIT on T1 as Ghost Admin makes one: v1's stored zip, ${editC.path} given a Handlebars comment, uploaded with the Admin API key under ${theme123} (active, so live at once — R-264); T1's download differs from v1's manifest by exactly that file, and ${ORIGIN123}/ still says "Version 1"`,
+          editC.status === 200 && editC.name === theme123 && editC.active === true && editedOnly123(editC) && (await homeSays123(1)) === 'Version 1',
+          JSON.stringify({ status: editC.status, name: editC.name, active: editC.active, path: editC.path, diff: editC.diff }))
+        const liveC = await liveManifest123()
+        let downloadC = null
+        const c = await phoneBack123(phone, {
+          before: async () => {
+            // "Download the live theme first", tapped on the phone: followed as JSON, then the signed URL (DW-391) — the page stays
+            const urlC = phone.url()
+            const [file] = await Promise.all([phone.waitForEvent('download', { timeout: 30000 }).catch(() => null), phone.locator('#history-drift-download').tap()])
+            const saved = file === null ? null : await file.path().catch(() => null)
+            const bytes = saved === null ? null : fs.readFileSync(saved)
+            downloadC = {
+              name: file?.suggestedFilename() ?? null,
+              manifest: bytes === null ? null : await DR123.liveManifest(ZIP123.unzipTheme(new Uint8Array(bytes))),
+              stayed: phone.url() === urlC && (await phone.evaluate(() => document.querySelector('dialog[data-history-confirm]')?.open === true)),
+              said: await phone.locator('#history-drift-download-said').textContent().catch(() => null),
+            }
+          },
+        })
+        check(`step 123c — the phone's "${HW123.rollBackName(2)}": the confirm's check, REAL on T1, FINDS the edit — D3a naming "${editC.label}" over ${editC.path} (the manifest's own name) with "${DW123.download}" — focus still on ${HW123.cancel}`,
+          c.checked?.state === 'found' && same123(c.checked.groups, [{ group: 'changed', files: [{ path: editC.path, label: editC.label }] }]) &&
+          c.checked.download === `${PREFIX}${DR123.historyLiveDownloadPath(P123, theme123)}` && c.checked.onCancel === true,
+          JSON.stringify(c.checked))
+        check(`step 123c — "${DW123.download}" tapped on the phone: a zip downloads (${DR123.liveFileName(theme123)}) whose manifest equals T1's live one, the hand edit in it; the page and the confirm stay, nothing said under the button`,
+          downloadC !== null && (downloadC.name ?? '') === DR123.liveFileName(theme123) && liveC !== null && downloadC.manifest !== null && same123(downloadC.manifest, liveC) && downloadC.stayed && (downloadC.said ?? '') === '',
+          JSON.stringify({ name: downloadC?.name ?? null, equal: downloadC?.manifest != null && liveC !== null && same123(downloadC.manifest, liveC), stayed: downloadC?.stayed ?? null, said: downloadC?.said ?? null }))
+        const diffC = await liveDiff123(v2.content_manifest)
+        check(`step 123c — …and the Roll back still goes (R-291): "${HW123.said.live(2, HOST123)}", the card "${HW123.live} v2" with "${HW123.rollBackName(1)}"; T1's live theme v2's files at zero differences (the hand edit replaced), ${ORIGIN123}/ "Version 2"`,
+          c.ended?.said === HW123.said.live(2, HOST123) && (c.ended.line ?? '').startsWith(`${HW123.live} v2 · `) && c.ended.act === HW123.rollBackName(1) && none123(diffC) && (await homeSays123(2)) === 'Version 2',
+          JSON.stringify({ ended: c.ended, diff: diffC }))
+        const cc = await phoneBack123(phone)
+        check(`step 123c — the control: the next Roll back from the phone, to v1, checks clean — D3c "${DW123.clean(2)}" — and goes: "${HW123.said.live(1, HOST123)}", ${ORIGIN123}/ "Version 1"`,
+          cc.checked?.state === 'clean' && cc.checked.clean === DW123.clean(2) && cc.ended?.said === HW123.said.live(1, HOST123) && (await homeSays123(1)) === 'Version 1',
+          JSON.stringify({ checked: cc.checked, ended: cc.ended }))
+
+        // ── 123d — Cancel sends nothing ──
+        const posts = []
+        const watch = (r) => {
+          if (r.method() === 'POST' && new URL(r.url()).pathname.endsWith(`/projects/${P123}/history`)) posts.push(r.postData() ?? '')
+        }
+        phone.on('request', watch)
+        const themesD0 = JSON.stringify(await themes123())
+        const liveD0 = await liveManifest123()
+        const d = await phoneBack123(phone, { cancel: true })
+        await phone.waitForTimeout(2000)
+        phone.off('request', watch)
+        const sentLive = posts.some((b) => { try { return JSON.parse(b).act === 'live' } catch { return false } })
+        check(`step 123d — Cancel sends nothing: the phone's Roll back (to v2) opened and its check ended, then ${HW123.cancel} tapped — the confirm closes, no { act: 'live' } POST (the check's own was the only one), T1's themes and live files as they were, the card unchanged with focus back on its Roll back`,
+          d.asked?.title === HW123.confirmTitle(2) && CHECK_ENDED123.test(d.checked?.state ?? '') && !sentLive && posts.length === 1 && JSON.stringify(await themes123()) === themesD0 &&
+          liveD0 !== null && same123(await liveManifest123(), liveD0) && (d.ended?.line ?? '').startsWith(`${HW123.live} v1 · `) && d.ended?.act === HW123.rollBackName(2) && d.ended?.focus === 'roll-back',
+          JSON.stringify({ posts: posts.map((b) => { try { return JSON.parse(b).act } catch { return 'unread' } }), ended: d.ended }))
+
+        // ── 123e — a desktop session holds the edit lock; the phone's Roll back still lands ──
+        await pg.goto(at(`/projects/${P123}`), { waitUntil: 'load' })
+        await painted123(pg)
+        const holding = await until123(() => pg.evaluate(() => document.querySelector('[data-editor]') !== null && document.querySelector('[data-readonly]') === null).catch(() => false), (v) => v === true, 30000)
+        const e = await phoneBack123(phone)
+        check(`step 123e — N's 1440 editor holds the edit lock (not read-only) and the phone's Roll back to v2 still lands — "${HW123.said.live(2, HOST123)}", v2 live, ${ORIGIN123}/ "Version 2" (the put-back reads no lock and no plan; N is on Free)`,
+          holding === true && e.ended?.said === HW123.said.live(2, HOST123) && (await deploy123(v2.id))?.status === 'live' && (await homeSays123(2)) === 'Version 2',
+          JSON.stringify({ holding, ended: e.ended }))
+        await handBack123(pg)
+        await pg.goto('about:blank')
+
+        // ── 123f — the site disconnected: the check's 409 said under the row ──
+        const themesF0 = JSON.stringify(await themes123())
+        const stampF = await call('/rest/v1', `/sites?id=eq.${site123}`, { method: 'PATCH', body: JSON.stringify({ disconnected_at: new Date().toISOString() }) })
+        stamped123 = [200, 204].includes(stampF.status)
+        const f = await phoneBack123(phone)
+        const unstamp = await call('/rest/v1', `/sites?id=eq.${site123}`, { method: 'PATCH', body: JSON.stringify({ disconnected_at: null }) })
+        if ([200, 204].includes(unstamp.status)) stamped123 = false
+        check(`step 123f — T1's site stamped disconnected (the service key): the phone's Roll back (to v1) — its check answers 409 disconnected, the confirm closes and "${HW123.refused.disconnected(HOST123)}" is said under the row, focus back on the Roll back, nothing in the card's region and nothing sent to Ghost; the stamp cleared, read back`,
+          stamped123 === false && [200, 204].includes(stampF.status) && f.ended?.note === HW123.refused.disconnected(HOST123) && f.ended.said === '' && f.ended.focus === 'roll-back' &&
+          JSON.stringify(await themes123()) === themesF0 && (await siteRow123())?.disconnected_at === null,
+          JSON.stringify({ stamp: stampF.status, ended: f.ended, unstamp: unstamp.status }))
+      } catch (e) {
+        if (e !== STOP123) check('step 123 — the step ran to its end', false, scrub123(String(e?.message ?? e).split('\n')[0]))
+      } finally {
+        if (pg123 !== null && P123 !== null) await handBack123(pg123)
+        for (const ctx of ctxs123) await ctx.close().catch(() => {})
+        if (stamped123 && site123 !== null) await call('/rest/v1', `/sites?id=eq.${site123}`, { method: 'PATCH', body: JSON.stringify({ disconnected_at: null }) }).catch(() => {})
+        if (P123 !== null) await until123(job123, atRest123, 330000).catch(() => {})
+        if (planted123) {
+          note('step 123 — the plant is left in place', `T1 serves ${theme123} (v2 with the hand edit); ${PLANT123} keeps the site and "Phone test"; the owner's test ends with T1 put back on Casper and the test theme removed on his go`)
+        } else {
+          if (prev123 !== null) {
+            try {
+              const now = await themes123()
+              if (now !== null && now.find((t) => t.active)?.name !== prev123) await staff123('PUT', `themes/${encodeURIComponent(prev123)}/activate/`)
+              const startNames = new Set(start123.map((t) => t.name))
+              for (const t of (await themes123()) ?? []) if (/^inflozo-/.test(t.name) && !startNames.has(t.name)) await staff123('DELETE', `themes/${encodeURIComponent(t.name)}/`)
+              const routesNow = await routesFile123()
+              if (routesBefore123 !== null && routesNow !== null && Buffer.compare(routesBefore123, routesNow) !== 0) await staff123('POST', RU123.ROUTES_PATH, RU123.routesForm(routesBefore123.toString('utf8')))
+              const after = await themes123()
+              const routesAfter = await routesFile123()
+              check(`step 123 — finally: T1 put back with the staff token — ${prev123} active again, the frozen theme and every inflozo- theme the run uploaded deleted, routes.yaml byte for byte as at the start, read back`,
+                after !== null && after.find((t) => t.active)?.name === prev123 && after.every((t) => !/^inflozo-/.test(t.name) || startNames.has(t.name)) &&
+                routesAfter !== null && routesBefore123 !== null && Buffer.compare(routesAfter, routesBefore123) === 0,
+                JSON.stringify({ themes: (after ?? []).map((t) => `${t.name}${t.active ? '*' : ''}`), routes: `${routesBefore123?.length ?? 'unread'} → ${routesAfter?.length ?? 'unread'} bytes` }))
+            } catch (e) {
+              check('step 123 — finally: T1 put back', false, scrub123(String(e?.message ?? e).split('\n')[0]))
+            }
+          }
+          if (id123 !== null) {
+            if (site123 !== null) for (const o of await listed123('site-snapshots', `${id123}/${site123}`)) await removeObject123('site-snapshots', `${id123}/${site123}/${o.name}`)
+            const prefixes = P123 === null ? [] : [P123, `${P123}/live`]
+            for (const prefix of prefixes) for (const o of await listed123('deploy-artifacts', prefix)) await removeObject123('deploy-artifacts', `${prefix}/${o.name}`)
+            // T1 disconnected through the product, on N's own session
+            const row = await siteRow123().catch(() => null)
+            if (row !== null && row.disconnected_at === null) {
+              const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
+              try {
+                const pd = steady(await ctx.newPage())
+                await pd.goto(await magic(email123), { waitUntil: 'load' })
+                await pd.goto(at(`/sites/disconnect?site=${site123}`), { waitUntil: 'load' })
+                await pd.locator('form').getByRole('button', { name: CR123.DISCONNECT.menu, exact: true }).first().click()
+                await until123(siteRow123, (r) => r?.disconnected_at != null, 30000)
+              } catch {} finally {
+                await ctx.close().catch(() => {})
+              }
+            }
+            const leftObjects = [...(site123 === null ? [] : await listed123('site-snapshots', `${id123}/${site123}`)), ...(await Promise.all(prefixes.map((p) => listed123('deploy-artifacts', p)))).flat()]
+            const disconnected = site123 === null || (await siteRow123().catch(() => null))?.disconnected_at != null
+            // the account is always this step's own (a plant refuses an address that exists), so a failed plant's goes too
+            const del = await admin(`/admin/users/${id123}`, { method: 'DELETE', body: '{}' })
+            const usersAfter = (await users())?.length ?? null
+            const projectsAfter = await projectCount()
+            check(`step 123 — finally: no object left under the account's prefixes, T1 disconnected, ${PLANT123 ? 'the failed plant\'s account' : 'N'} deleted (its sites, projects, jobs and deploys with it), users and projects counted back`,
+              leftObjects.length === 0 && disconnected && del.status === 200 && usersBefore123 !== null && usersAfter === usersBefore123 && projectsBefore123 !== null && projectsAfter === projectsBefore123,
+              `objects ${leftObjects.length}, disconnected ${disconnected}, HTTP ${del.status}, users ${usersBefore123} → ${usersAfter}, projects ${projectsBefore123} → ${projectsAfter}`)
+          }
+        }
+      }
+      check('step 123 — the step\'s contexts recorded zero CSP violations', csp123.length === 0, JSON.stringify(csp123.slice(0, 3)))
     }
 
     // ── step 9 — the skeleton streams first ──

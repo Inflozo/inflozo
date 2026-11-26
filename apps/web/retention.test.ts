@@ -8,8 +8,8 @@ import { readFileSync } from 'node:fs'
 import { nextVersion, shipStateOf } from './lib/deploy.ts'
 import { PLANS, type PlanId } from './lib/plan.ts'
 import {
-  actionOf, actOutcomeOf, actSaid, archivedLabel, changedLine, checkOutcomeOf, chipTone, EXPANDED, FEWEST_KEPT, heavyIds, historyAnswer, historyCap, historyRows, HISTORY_WORDS, isStoredVersion,
-  newestAccepted, pinOutcomeOf, pinSaid, prunable, restoreSaid, timeLabel, type AcceptedRow, type HeavyRow, type HistoryAnswer, type SavedOriginal, type Stored,
+  actionOf, actOutcomeOf, actSaid, archivedLabel, cardTime, changedLine, checkOutcomeOf, chipTone, EXPANDED, FEWEST_KEPT, heavyIds, historyAnswer, historyCap, historyRows, HISTORY_WORDS, isStoredVersion,
+  newestAccepted, phoneCard, pinOutcomeOf, pinSaid, prunable, restoreSaid, timeLabel, type AcceptedRow, type HeavyRow, type HistoryAnswer, type SavedOriginal, type Stored,
 } from './lib/retention.ts'
 import { droppedKeys } from './lib/preflight.ts'
 import { PREFLIGHT_WORDS } from './lib/preflight.ts'
@@ -525,4 +525,72 @@ test('R-291: the confirm\'s foot under a found drift is D3a\'s foot said of a Ro
     assert.equal(ours.split(' with ')[0]?.replace('Rolling back', ''), theirs.split(' with ')[0]?.replace('Shipping', ''), `${n}: the same "replaces …"`)
     assert.equal(ours.slice(ours.indexOf('. ') + 2), theirs.slice(theirs.indexOf('. ') + 2), `${n}: the same second sentence`)
   }
+})
+
+// ── Story 7.23c — the phone's Deploy history card (D4f `:401-414`) ─────────────────────────────────────────────────────────
+
+/** the card's answer as a line a reader can compare: the state, then the Live version and the undo's */
+const cardOf = (answer: HistoryAnswer): string => {
+  const card = phoneCard(answer)
+  return card.kind === 'live' ? `live v${card.live.n} undo ${card.undo === null ? 'none' : `v${card.undo.n}`}` : card.kind
+}
+
+test('7.23c: the phone card — the undo: v5 live on the linked site, v4 stored, is "Live v5" with Roll back to v4 (History\'s own `emphasis` row); after the Roll back the version left behind is the way forward again', () => {
+  const answer = answerOf([{ action: 'rollback' }, { action: 'rollback' }, { action: 'rollback' }, { action: 'rollback' }, { status: 'live' }])
+  assert.equal(cardOf(answer), 'live v5 undo v4')
+  const card = phoneCard(answer)
+  assert.ok(card.kind === 'live' && card.undo?.emphasis === true && card.undo.action === 'rollback', 'the undo is the row History emphasises')
+  // the Roll back to v4 accepted now: v4 live and newest, v5 the next row — so the card's button turns into the way forward
+  const after = answerOf([{ action: 'rollback' }, { action: 'rollback' }, { action: 'rollback' }, { status: 'live', acceptedAt: at(9) }, { action: 'rollback' }])
+  assert.equal(cardOf(after), 'live v4 undo v5')
+})
+
+test('7.23c: the phone card — another site between: v3 live (linked), v2 on another site, v1 (linked) — the undo is v1; the control: with v2 on the linked site it is v2', () => {
+  assert.equal(cardOf(answerOf([{ action: 'rollback' }, { siteId: B, host: 'b.com' }, { status: 'live' }])), 'live v3 undo v1')
+  assert.equal(cardOf(answerOf([{ action: 'rollback' }, { action: 'rollback' }, { status: 'live' }])), 'live v3 undo v2')
+})
+
+test('7.23c: the phone card — D2d above live: v3 `uploaded` (the newest), v2 live, v1 — "Live v2" with the undo v1, never v3', () => {
+  assert.equal(cardOf(answerOf([{ action: 'rollback' }, { status: 'live' }, { action: 'reactivate' }])), 'live v2 undo v1')
+})
+
+test('7.23c: the phone card — live with no undo: a first ship; the one before pruned (absent from the list); the one before another site\'s — the header alone', () => {
+  assert.equal(cardOf(answerOf([{ status: 'live' }])), 'live v1 undo none', 'a first ship')
+  assert.equal(cardOf(answerOf([{ version: '1.0.0', status: 'live', acceptedAt: at(5) }])), 'live v1 undo none', 'v2 pruned: only v1 is listed')
+  assert.equal(cardOf(answerOf([{ siteId: B, host: 'b.com' }, { status: 'live' }])), 'live v2 undo none', 'the only older row is another site\'s')
+  // the undo is only ever a Roll back: an older row with no action (a 7.22 shape) is none
+  assert.equal(cardOf(answerOf([{}, { status: 'live' }])), 'live v2 undo none')
+})
+
+test('7.23c: the phone card — nothing live (after Restore original, a Deploy only, or a live version no longer kept), not linked, nothing shipped — each its own sentence, checked in that order', () => {
+  // after Restore original the site's rows are demoted, after a Deploy only the row is `uploaded`, and a live version no longer
+  // kept is not listed at all (the route lists stored versions only): each leaves kept rows of which none is live
+  assert.equal(cardOf(answerOf([{ action: 'rollback' }, { action: 'reactivate' }])), 'notLive')
+  // another site's Live row is not the linked site's
+  assert.equal(cardOf(answerOf([{ action: 'rollback' }, { status: 'live', siteId: B, host: 'b.com' }])), 'notLive')
+  assert.equal(cardOf(answerOf([{}, { status: 'live' }], null)), 'unlinked', 'versions kept, no linked site — even with one once live')
+  assert.equal(cardOf(answerOf([], null)), 'empty', 'nothing shipped comes first, linked or not')
+  assert.equal(cardOf(answerOf([])), 'empty')
+  assert.equal(cardOf(answerOf([{ status: 'failed' }])), 'empty', 'a row that is no version is nothing shipped')
+  assert.equal(HISTORY_WORDS.empty, 'Nothing shipped yet')
+  assert.equal(HISTORY_WORDS.unlinked, "This project isn't linked to a site.")
+  assert.equal(HISTORY_WORDS.noneLive, 'None of your kept versions is live on your site.')
+  assert.equal(HISTORY_WORDS.cardFailed, "Couldn't load your deploy history. Reload this page to try again.")
+  // D4f's own words (`:405`, `:406`, `:410`), the ones History already says reused (R-170)
+  assert.equal(HISTORY_WORDS.cardTitle, 'Deploy history')
+  assert.equal(HISTORY_WORDS.live, 'Live')
+  assert.equal(HISTORY_WORDS.rollBackName(4), 'Roll back to v4')
+})
+
+test('7.23c: the live line\'s time, D4f\'s own form — "today 2:14 PM" on the day, "Aug 14 9:02 AM" this year, the year once it is not this one — in the viewer\'s own zone; the row\'s time stays History\'s ("Aug 14 · 9:02 AM")', () => {
+  const zone = 'UTC'
+  const now = new Date('2026-11-25T18:00:00Z')
+  assert.equal(cardTime('2026-11-25T14:14:00Z', now, zone), 'today 2:14 PM')
+  assert.equal(cardTime('2026-08-14T09:02:00Z', now, zone), 'Aug 14 9:02 AM')
+  assert.equal(cardTime('2025-08-14T09:02:00Z', now, zone), 'Aug 14, 2025 9:02 AM')
+  assert.equal(cardTime('not a date', now, zone), '')
+  // 1:30 the next morning in Kolkata is not "today" there
+  assert.equal(cardTime('2026-11-25T20:00:00Z', now, 'Asia/Kolkata'), 'Nov 26 1:30 AM')
+  // one clock half for both forms
+  assert.equal(timeLabel('2026-08-14T09:02:00Z', now, zone), 'Aug 14 · 9:02 AM')
 })

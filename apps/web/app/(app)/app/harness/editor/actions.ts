@@ -161,17 +161,32 @@ const ROLLBACK = [
  *     it while the restore is held, so the drawer's re-read draws it);
  *   - `original-unversioned`: `original` with no version kept (the mono line is the name alone);
  *   - `original-empty`: the saved original and no version — the row above "Nothing shipped yet".
+ * STORY 7.23c — two more states of the phone's Deploy history card (`phoneCard`):
+ *   - `first`: v1 live alone — a first ship, so the card draws its header and no undo row;
+ *   - `unlinked`: v1 and v2 kept with no linked site — "This project isn't linked to a site.";
+ *   - `rolled-back`: `rollback` after its Roll back to v4 landed — v4 live and accepted newest, so v5 is the next row and the undo
+ *     (the way forward); a journey switches to it while the put-back is held, so the card's re-read draws it.
+ *   - `long`: eleven versions, v11 live and v10 the undo — the widest row the card draws (the floor's narrow stop, with the page's
+ *     clock in another year so each date carries its year).
  * Only the harness project, and only where the harness exists at all.
  */
 export async function harnessHistory(projectId: string): Promise<HistoryAnswer | null> {
   if (!HARNESS || projectId !== HARNESS_PROJECT.id) return null
   const asked = (await headers()).get('x-inflozo-harness-history')
-  const answer = (rows: HistoryAnswer['rows'], original: OriginalTheme | null = null): HistoryAnswer => ({
-    linkedSiteId: HISTORY_SITE,
-    liveVersion: rows.find((r) => r.status === 'live' && r.siteId === HISTORY_SITE)?.version ?? null,
+  const answer = (rows: HistoryAnswer['rows'], original: OriginalTheme | null = null, linkedSiteId: string | null = HISTORY_SITE): HistoryAnswer => ({
+    linkedSiteId,
+    liveVersion: rows.find((r) => r.status === 'live' && r.siteId === linkedSiteId)?.version ?? null,
     rows: [...rows].reverse(),
     original,
   })
+  // Story 7.23c's shapes
+  if (asked === 'first') return answer([stored(1, { changed: HISTORY_WORDS.firstDeploy, status: 'live' })])
+  // no linked site: every row names its site and carries no action (`actionOf`), and nothing is live here
+  if (asked === 'unlinked') return answer([stored(1, { changed: HISTORY_WORDS.firstDeploy }), stored(2, { changed: changed('Hero') })], null, null)
+  if (asked === 'long') return answer(Array.from({ length: 11 }, (_, i) => stored(i + 1, i === 10 ? { status: 'live' } : { action: 'rollback' })))
+  if (asked === 'rolled-back') {
+    return answer(ROLLBACK.map((r) => (r.version === '4.0.0' ? { ...r, status: 'live', action: null, acceptedAt: '2026-11-09T09:00:00.000Z' } : r.version === '5.0.0' ? { ...r, status: 'uploaded', action: 'rollback' } : r)))
+  }
   // Story 7.23b's shapes
   if (asked === 'original' || asked === 'original-unversioned') {
     return answer([stored(1, { changed: HISTORY_WORDS.firstDeploy, action: 'rollback' }), stored(2, { changed: changed('Hero'), status: 'live' })], ORIGINAL(asked === 'original' ? '5.9.4' : null))
@@ -232,7 +247,7 @@ export async function harnessRestore(projectId: string, snapshot: string, captur
 }
 
 /** STORY 7.23a — THE HARNESS'S PUT-BACK, the editor's `historyAct` seam (the route's POST `{ deploy, act: 'live' }` everywhere else),
- *  answered by `x-inflozo-harness-history`: `rollback` and `uploaded` go live; `refused` is Ghost's own check refusing the upload
+ *  answered by `x-inflozo-harness-history`: `rollback`, `uploaded` and `rolled-back` go live; `refused` is Ghost's own check refusing the upload
  *  (the route's 422, with Ghost's detail); `busy` a ship of the site under way, `disconnected` the linked site disconnected and
  *  `elsewhere` another site's row (the route's 409s); `gone` and `rollback-gone` the route's 404 (`rollback-gone`'s read lacks v4,
  *  so the re-read drops it); anything else a request that failed. Stateless, as `harnessPin` is: the drawer's re-read answers the same
@@ -240,7 +255,7 @@ export async function harnessRestore(projectId: string, snapshot: string, captur
 export async function harnessAct(projectId: string, deploy: string): Promise<ActOutcome> {
   if (!HARNESS || projectId !== HARNESS_PROJECT.id || typeof deploy !== 'string') return { kind: 'failed' }
   const asked = (await headers()).get('x-inflozo-harness-history')
-  if (asked === 'rollback' || asked === 'uploaded') return { kind: 'live' }
+  if (asked === 'rollback' || asked === 'uploaded' || asked === 'rolled-back') return { kind: 'live' }
   if (asked === 'refused') return { kind: 'refused', code: 'ghost_theme_refused', detail: 'The theme "inflozo-pilot-sections" is not compatible or contains errors. Missing template index.hbs.' }
   if (asked === 'busy' || asked === 'elsewhere' || asked === 'disconnected') return { kind: 'refused', code: asked }
   if (asked === 'gone' || asked === 'rollback-gone') return { kind: 'gone' }

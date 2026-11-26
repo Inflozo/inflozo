@@ -188,6 +188,14 @@ import { GHOST_5_SITE, HARNESS_PROJECT, HARNESS_SITES, MEMBERS_OFF_SITE, SURFACE
  * disconnected | busy` names Restore original's answer (`actions.ts`' `harnessRestore`, the editor's `historyRestore` seam); no
  * header is `live`. The real restore is `put-back.test.ts`' and walk step 122's.
  *
+ * STORY 7.23c — the phone's Deploy history card reads the same header through the gate (`Editor` hands the notice the same seams):
+ * `rollback` (Live v5, the undo v4), `free` and `two-sites` (Live v3 and no undo — 7.22's rows carry no action), `elsewhere` (Live v3, the undo
+ * v1 past another site's v2), `uploaded` and `original-restored` (nothing live), `empty` or none (nothing shipped), `fail` (the read
+ * that failed), and four values of its own: `first` (v1 live alone — the header, no row), `unlinked` (two versions, no linked
+ * site), `rolled-back` (`rollback` after its Roll back to v4: Live v4, the undo v5 — the way forward) and `long` (v11 live, the undo
+ * v10 — the widest row). Its Roll back's check
+ * and put-back answer by `x-inflozo-harness-check` and this header as the drawer's do.
+ *
  * STORY 5.24d — THE MAIN FEED IS THE RULE'S, NOT THE HARNESS'S (DW-257): every doc leaves through `read.ts`'s
  * `designateAll`, the server door the editor's real read uses, and no instance is flagged here — so the post grid becomes
  * Home's main feed because the rule picks it, and a no-op door turns the main-feed journeys red. And THE SIGNED-IN USER

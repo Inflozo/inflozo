@@ -28,7 +28,7 @@
 
 import { readdirSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import { expect, test } from '@playwright/test'
+import { devices, expect, test } from '@playwright/test'
 import diePips from '../probe/die-pips.cjs'
 
 /* KEYBOARD ONLY BELOW */
@@ -12136,4 +12136,253 @@ test('7.23b · (g) the request fails (the network drops it): the row unchanged, 
   await expect(originalRow(page).locator('[data-history-original-fallback]'), 'no download offered: Ghost said nothing').toHaveCount(0)
   await expect(historyRow(page, 'v2'), 'the list unchanged').toContainText(HW.live)
   expect(await historySaid(page)).toBe('')
+})
+
+
+/* ── Story 7.23c — the phone's Deploy history card (D4f `D4 Dashboard Sheets and Blocks.dc.html:401-414`, FR-J9, R-118; UX-DR12,
+   UX-DR14, R-98) ───────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   On Playwright's own iPhone 13 descriptor (its browser default dropped, as `floor.spec.mjs` drops it): the notice, never the editor,
+   with D4f's card reading `x-inflozo-harness-history` through the gate's seams — `rollback` (Live v5, the undo v4). Its Roll back is
+   the drawer's own confirm and check (`RollBackConfirm`, `x-inflozo-harness-check`), so each journey below walks it by the keyboard
+   alone, pointer-free; the endings are the card's: said once in its own polite region with focus on its heading, a refusal under the
+   row with focus back on its Roll back. The real card is walk step 123's (production + T1). */
+
+const { defaultBrowserType: _browser, ...IPHONE_13 } = devices['iPhone 13']
+const card = (page) => page.locator('[data-history-card]')
+const cardAct = (page) => card(page).locator('[data-history-act]')
+const cardHeading = (page) => card(page).locator('#small-screen-history')
+const cardSaid = (page) => card(page).locator('[data-history-said]').innerText()
+const cardNote = (page) => card(page).locator('[data-history-note]')
+/** the project opened on the phone with a history (and a check) header, landed on the card in `kind`; focus on the body, so the first
+ *  Tab is really the first */
+async function openPhone(page, history, check = null, kind = 'live') {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-history': history, ...(check === null ? {} : { 'x-inflozo-harness-check': check }) })
+  await page.goto(HARNESS)
+  await expect(card(page)).toHaveAttribute('data-history-card', kind, { timeout: 15_000 })
+  await page.locator('body').focus()
+}
+/** the card's Roll back reached by Tab from the top (the back link first) and pressed: the confirm opens on Cancel */
+async function phoneConfirm(page, { ended = true } = {}) {
+  await page.keyboard.press('Tab')
+  await page.keyboard.press('Tab')
+  await expect(cardAct(page)).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(historyConfirm(page)).toHaveAttribute('open', '')
+  await expect(historyConfirm(page).locator('[data-cancel]'), 'opened on Cancel (UX-DR14)').toBeFocused()
+  if (ended) await checkEnded(page)
+}
+/** …and its Roll back pressed: Tab from Cancel, Enter */
+async function phoneRollBack(page) {
+  await phoneConfirm(page)
+  await page.keyboard.press('Tab')
+  await expect(page.locator('#history-confirm-go')).toBeFocused()
+  await page.keyboard.press('Enter')
+}
+
+test.describe('7.23c · the phone\'s Deploy history card, on the iPhone 13, by the keyboard', () => {
+  test.use(IPHONE_13)
+
+  test('7.23c · (a) the card\'s anatomy and words — D4f\'s title, "Live v5 · {time}", the v4 row with History\'s time and Roll back to v4 (the undo); the Tab order runs the back link → Roll back to v4 → Your sites; Enter opens S8e\'s confirm on Cancel and the check says "Comparing…" then D3c; Esc puts focus back on the card\'s Roll back', async ({ page }) => {
+    await openPhone(page, 'rollback')
+    expect(await page.evaluate(() => document.querySelector('[data-editor]') === null), 'a phone: the notice, never the editor').toBe(true)
+    await expect(cardHeading(page)).toHaveText(HW.cardTitle)
+    await expect(cardHeading(page)).toHaveAttribute('tabindex', '-1')
+    const line = card(page).locator('[data-history-card-line]')
+    const zone = await page.evaluate(() => Intl.DateTimeFormat().resolvedOptions().timeZone)
+    const now = new Date(await page.evaluate(() => Date.now()))
+    await expect(line).toHaveText(`${HW.live} v5 · ${RETENTION.cardTime('2026-11-05T09:00:00.000Z', now, zone)}`)
+    await expect(line.locator('.font-mono')).toHaveText('v5')
+    const row = card(page).locator('[data-history-undo="v4"]')
+    await expect(row).toContainText('v4')
+    await expect(row.locator('[data-history-time]')).toHaveText(RETENTION.timeLabel('2026-11-04T09:00:00.000Z', now, zone))
+    await expect(cardAct(page)).toHaveAccessibleName(HW.rollBackName(4))
+    await expect(cardAct(page)).toHaveAttribute('aria-haspopup', 'dialog')
+    // D4f draws nothing more: no pin, no Re-activate, no Restore original, no full list, no limit line
+    await expect(card(page).locator('button')).toHaveCount(1)
+    await expect(card(page).locator('[data-history-pin], [data-history-original], [data-history-limit], [data-history-row]')).toHaveCount(0)
+    await expect(page.locator('[data-small-screen]')).not.toContainText(HW.limit)
+    // the Tab order: the back link, the card's Roll back (the heading is a focus target, never a stop), Your sites
+    await page.keyboard.press('Tab')
+    await expect(page.locator('[data-small-screen] a[aria-label="Back to dashboard"]')).toBeFocused()
+    await page.keyboard.press('Tab')
+    await expect(cardAct(page)).toBeFocused()
+    await page.keyboard.press('Tab')
+    await expect(page.locator('[data-small-screen] section a[href="/sites"]')).toBeFocused()
+    await page.keyboard.press('Shift+Tab')
+    await expect(cardAct(page)).toBeFocused()
+    // Enter: S8e's confirm on Cancel, the check at once — D3's running row while it reads, the Roll back waiting — then D3c
+    const release = await holdActions(page)
+    await page.keyboard.press('Enter')
+    await expect(historyConfirm(page)).toHaveAttribute('open', '')
+    await expect(historyConfirm(page).locator('[data-cancel]')).toBeFocused()
+    await expect(historyConfirm(page).locator('#history-confirm-title')).toHaveText(HW.confirmTitle(4))
+    await expect(historyConfirm(page).locator('#history-confirm-body')).toHaveText(HW.confirmBody(4, 5, []))
+    await expect(checkRegion(page)).toHaveAttribute('data-history-check', 'reading')
+    await expect(checkRegion(page)).toHaveText(DRW.reading)
+    await expect(page.locator('#history-confirm-go')).toHaveAttribute('aria-disabled', 'true')
+    release()
+    await expect(checkRegion(page)).toHaveAttribute('data-history-check', 'clean', { timeout: 15_000 })
+    await expect(checkRegion(page).locator('[data-drift-row="clean"]')).toContainText(DRW.clean(5))
+    await expect(page.locator('#history-confirm-go')).not.toHaveAttribute('aria-disabled', 'true')
+    await expect(historyConfirm(page).locator('[data-cancel]'), 'focus stays on Cancel as the check lands').toBeFocused()
+    // Esc: closed, nothing sent, nothing said, and focus back on the card's Roll back
+    await page.keyboard.press('Escape')
+    await expect(historyConfirm(page)).not.toHaveAttribute('open', '')
+    await expect(cardAct(page)).toBeFocused()
+    expect(await cardSaid(page)).toBe('')
+    await expect(cardNote(page)).toBeEmpty()
+    // …and Enter on Cancel the same
+    await page.keyboard.press('Enter')
+    await expect(historyConfirm(page).locator('[data-cancel]')).toBeFocused()
+    await page.keyboard.press('Enter')
+    await expect(historyConfirm(page)).not.toHaveAttribute('open', '')
+    await expect(cardAct(page)).toBeFocused()
+    await expect(line).toContainText(`${HW.live} v5 · `)
+  })
+
+  test('7.23c · (b) Roll back confirmed: "Rolling back…" with aria-busy and aria-disabled while it is out (R-98), Esc doing nothing; then the confirm closes, the outcome is said once in the card\'s own region, the card reads History again — Live v4 with Roll back to v5, the way forward — and focus is on the card\'s heading', async ({ page }) => {
+    await openPhone(page, 'rollback')
+    await phoneConfirm(page)
+    const release = await holdActions(page)
+    await page.keyboard.press('Tab')
+    const go = page.locator('#history-confirm-go')
+    await expect(go).toBeFocused()
+    await page.keyboard.press('Enter')
+    await expect(go).toHaveAccessibleName(HW.rollingBack)
+    await expect(go).toHaveAttribute('aria-busy', 'true')
+    await expect(go).toHaveAttribute('aria-disabled', 'true')
+    await expect(historyConfirm(page)).toHaveAttribute('data-unstoppable', 'true')
+    // once it starts, it finishes: Esc twice changes nothing
+    await page.keyboard.press('Escape')
+    await page.keyboard.press('Escape')
+    await expect(historyConfirm(page)).toHaveAttribute('open', '')
+    // what the Roll back leaves: the card's re-read draws it
+    await page.setExtraHTTPHeaders({ 'x-inflozo-harness-history': 'rolled-back' })
+    release()
+    await expect(historyConfirm(page)).not.toHaveAttribute('open', '', { timeout: 15_000 })
+    await expect(cardHeading(page)).toBeFocused({ timeout: 15_000 })
+    await expect.poll(() => cardSaid(page)).toBe(RETENTION.actSaid({ kind: 'live' }, 4, 'harness.example'))
+    expect(RETENTION.actSaid({ kind: 'live' }, 4, 'harness.example')).toBe('v4 is live on harness.example.')
+    await expect(card(page).locator('[data-history-card-line]')).toContainText(`${HW.live} v4 · `)
+    await expect(cardAct(page)).toHaveAccessibleName(HW.rollBackName(5))
+    await expect(cardNote(page), 'said once — in the card\'s region, not under the row').toBeEmpty()
+    await expect(historyConfirm(page)).not.toHaveAttribute('data-unstoppable', 'true')
+  })
+
+  test('7.23c · (c) refused — Ghost\'s own check (its 422, the detail in mono), `busy` and `disconnected` — each said under the row in its own status line, focus back on the card\'s Roll back, nothing said in the card\'s region and the card unchanged', async ({ page }) => {
+    await openPhone(page, 'refused')
+    await phoneRollBack(page)
+    await expect(historyConfirm(page)).not.toHaveAttribute('open', '', { timeout: 15_000 })
+    const note = cardNote(page)
+    await expect(note).toHaveAttribute('role', 'status')
+    await expect(note.locator('span').first()).toHaveText(HW.ghostRefused(4))
+    await expect(note.locator('[data-history-detail]')).toContainText('Missing template index.hbs')
+    expect(await note.locator('[data-history-detail]').evaluate((e) => getComputedStyle(e).fontFamily)).toMatch(/mono/i)
+    await expect(cardAct(page)).toBeFocused()
+    await expect(cardAct(page)).toHaveAttribute('aria-describedby', 'small-screen-history-note')
+    expect(await cardSaid(page), 'said once — under the row, not again in the region').toBe('')
+    await expect(card(page).locator('[data-history-card-line]'), 'the card unchanged').toContainText(`${HW.live} v5 · `)
+    for (const [value, words] of [['busy', HW.refused.busy('harness.example')], ['disconnected', HW.refused.disconnected('harness.example')]]) {
+      await openPhone(page, value)
+      await phoneRollBack(page)
+      await expect(cardNote(page), value).toHaveText(words, { timeout: 15_000 })
+      await expect(cardAct(page)).toBeFocused()
+      expect(await cardSaid(page)).toBe('')
+      await expect(cardAct(page)).toHaveAccessibleName(HW.rollBackName(4))
+    }
+  })
+
+  test('7.23c · (d) gone (404): v4 pruned since the card read it — the confirm closes, said once in the card\'s region, the card read again (the undo is now v3) and focus on its heading', async ({ page }) => {
+    await openPhone(page, 'rollback')
+    await phoneConfirm(page)
+    await page.setExtraHTTPHeaders({ 'x-inflozo-harness-history': 'rollback-gone' })
+    await page.keyboard.press('Tab')
+    await page.keyboard.press('Enter')
+    await expect(historyConfirm(page)).not.toHaveAttribute('open', '', { timeout: 15_000 })
+    await expect(cardHeading(page)).toBeFocused({ timeout: 15_000 })
+    await expect.poll(() => cardSaid(page)).toBe(HW.said.gone(4))
+    await expect(cardAct(page), 'the re-read: v4 is gone, the undo is v3').toHaveAccessibleName(HW.rollBackName(3))
+    await expect(cardNote(page)).toBeEmpty()
+  })
+
+  test('7.23c · (e) the request fails (the network drops it): its fate unknown, the card reads History again — v4 still the undo, so one sentence under the row, focus back on the Roll back, nothing in the card\'s region; a lost answer that LANDED is said as live, with focus on the heading', async ({ page }) => {
+    // the put-back's own request — a server action whose arguments carry v4's id — never arrives (armed once the check has ended:
+    // the check carries v4's id too)
+    const v4 = '00000000-0000-4000-8000-000000072204'
+    let reads = 0
+    page.on('response', async (r) => {
+      if (r.request().method() !== 'POST' || !r.request().headers()['next-action']) return
+      if ((await r.text().catch(() => '')).includes('"liveVersion"')) reads++
+    })
+    await openPhone(page, 'rollback')
+    await expect.poll(() => reads, 'the card read History, opening').toBeGreaterThan(0)
+    await phoneConfirm(page)
+    const before = reads
+    await page.route((url) => url.pathname.startsWith(HARNESS), (route) => {
+      const r = route.request()
+      return r.method() === 'POST' && r.headers()['next-action'] && (r.postData() ?? '').includes(v4) ? route.abort('connectionreset') : route.fallback()
+    })
+    await page.keyboard.press('Tab')
+    await page.keyboard.press('Enter')
+    await expect(historyConfirm(page)).not.toHaveAttribute('open', '', { timeout: 15_000 })
+    await expect(cardNote(page)).toHaveText(HW.actFailed(4), { timeout: 15_000 })
+    await expect.poll(() => reads, 'a request whose fate is unknown reads History again, once').toBe(before + 1)
+    await expect(cardAct(page)).toBeFocused()
+    expect(await cardSaid(page)).toBe('')
+    // …and a lost answer that landed: the re-read shows v4 live, and that is what is said, in the region, with focus on the heading
+    await page.unrouteAll({ behavior: 'ignoreErrors' })
+    await openPhone(page, 'rollback')
+    await phoneConfirm(page)
+    await page.route((url) => url.pathname.startsWith(HARNESS), (route) => {
+      const r = route.request()
+      return r.method() === 'POST' && r.headers()['next-action'] && (r.postData() ?? '').includes(v4) ? route.abort('connectionreset') : route.fallback()
+    })
+    await page.setExtraHTTPHeaders({ 'x-inflozo-harness-history': 'rolled-back' })
+    await page.keyboard.press('Tab')
+    await page.keyboard.press('Enter')
+    await expect(cardHeading(page)).toBeFocused({ timeout: 15_000 })
+    await expect.poll(() => cardSaid(page)).toBe(HW.said.live(4, 'harness.example'))
+    await expect(cardAct(page)).toHaveAccessibleName(HW.rollBackName(5))
+    await expect(cardNote(page)).toBeEmpty()
+  })
+
+  test('7.23c · (f) R-291 on the phone: something changed on the site — D3a\'s block in the confirm, its foot said of a Roll back and "Download the live theme first" (the check\'s own copy) reached by Shift+Tab from Cancel; Tab from Cancel reaches the Roll back, which still goes', async ({ page }) => {
+    await openPhone(page, 'rollback', 'found')
+    await phoneConfirm(page)
+    await expect(checkRegion(page)).toHaveAttribute('data-history-check', 'found')
+    await expect(checkRegion(page).locator('[data-drift-row="found"] [data-drift-chip]')).toHaveText(DRW.chip(3))
+    await expect(checkRegion(page).locator('[data-drift-foot]')).toHaveText(HW.checkFoot(3, 4))
+    const download = checkRegion(page).locator('#history-drift-download')
+    await expect(download).toHaveAccessibleName(DRW.download)
+    await expect(download).toHaveAttribute('href', `/app${DRIFT.historyLiveDownloadPath(HARNESS_PROJECT_ID, DRIFT_THEME)}`)
+    await page.keyboard.press('Shift+Tab')
+    await expect(download).toBeFocused()
+    await page.keyboard.press('Tab')
+    await expect(historyConfirm(page).locator('[data-cancel]')).toBeFocused()
+    await page.keyboard.press('Tab')
+    await expect(page.locator('#history-confirm-go')).toBeFocused()
+    await expect(page.locator('#history-confirm-go')).not.toHaveAttribute('aria-disabled', 'true')
+    await page.keyboard.press('Enter')
+    await expect(cardHeading(page)).toBeFocused({ timeout: 15_000 })
+    await expect.poll(() => cardSaid(page)).toBe('v4 is live on harness.example.')
+  })
+
+  test('7.23c · (g) stale (409 `elsewhere`): another site\'s v2 between, so the undo is v1 (Live v3); its put-back answered as another site\'s row — stale, so the card reads History again, once; v1 is still the undo, so one sentence under the row, focus back on the Roll back, nothing in the card\'s region', async ({ page }) => {
+    let reads = 0
+    page.on('response', async (r) => {
+      if (r.request().method() !== 'POST' || !r.request().headers()['next-action']) return
+      if ((await r.text().catch(() => '')).includes('"liveVersion"')) reads++
+    })
+    await openPhone(page, 'elsewhere')
+    await expect(card(page).locator('[data-history-card-line]')).toContainText(`${HW.live} v3 · `)
+    await expect(cardAct(page), 'another site\'s v2 skipped: the undo is v1').toHaveAccessibleName(HW.rollBackName(1))
+    await expect.poll(() => reads, 'the card read History, opening').toBeGreaterThan(0)
+    const before = reads
+    await phoneRollBack(page)
+    await expect(historyConfirm(page)).not.toHaveAttribute('open', '', { timeout: 15_000 })
+    await expect(cardNote(page)).toHaveText(HW.refused.elsewhere(1), { timeout: 15_000 })
+    await expect.poll(() => reads, 'a stale answer reads History again, once').toBe(before + 1)
+    await expect(cardAct(page)).toBeFocused()
+    expect(await cardSaid(page)).toBe('')
+  })
 })

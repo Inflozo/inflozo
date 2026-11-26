@@ -52,7 +52,7 @@ import { addressOf, canvasAssets, canvasSrc, packed, paywallPage, renderSection,
 import { chromeLayers, dropChromeLayers, pinned, place, prepareChrome, type ChromeLayers } from '@/lib/canvas-layer'
 import { DESKTOP, DEVICES, deviceShown, fitFor, type Device } from '@/lib/device'
 import { COMPACT, PHONE } from '@/lib/floor'
-import { canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath as pathOfCanvas, EMPTY_TEMPLATE_ASK, emptiesCustomTemplate, fileOf, fileOfKey, isCards, isPaywall, isRouteCanvas, isRouteKey, isSiteFooter, isSurface, labelOf, landWithin, historyPath, namesOf, ROUTED_EMPTY_ASK, routesPath, settingsPath, SITE, siteSlot, syncPath, TEMPLATE_GONE, templateKeyOf, type Canvas, type RouteTemplate } from '@/lib/editor'
+import { canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath as pathOfCanvas, EMPTY_TEMPLATE_ASK, emptiesCustomTemplate, fileOf, fileOfKey, isCards, isPaywall, isRouteCanvas, isRouteKey, isSiteFooter, isSurface, labelOf, landWithin, namesOf, ROUTED_EMPTY_ASK, routesPath, settingsPath, SITE, siteSlot, syncPath, TEMPLATE_GONE, templateKeyOf, type Canvas, type RouteTemplate } from '@/lib/editor'
 import { CARD_WORDS, cardOrFirst, customisedCount, FIRST_CARD, lastCardKey, parseStoredCards } from '@/lib/cards'
 import { ANNOUNCEMENT_CSS, announcementFor, buttonMarkup, GHOST_ROWS, GHOST_WORDS, ghostName, ghostRowsOf, portalFor, readHidden, rowsOn, SHEET, shimsOn, stripMarkup, SURFACE, writeHidden, type Shim, type SurfaceId } from '@/lib/ghost-surfaces'
 import { adminAt, askLine, membersOff, PAYWALL_WORDS, tierText } from '@/lib/paywall'
@@ -102,9 +102,8 @@ import { StylePackCard, StylePackHead, StylePackRoster } from './style-pack'
 import { CardMenu, CardPanel, CardPanelHead, CardsCanvas, CardsLayers } from './cards-surface'
 import { DeployWizard, ShipButton, type ShipRequest } from '@/components/editor/deploy-wizard'
 import { DeployHistory } from '@/components/editor/deploy-history'
-import { snapshotDownloadPath } from '@/lib/backup-gate'
-import { historyLiveDownloadPath } from '@/lib/drift'
-import { actOutcomeOf, checkOutcomeOf, HISTORY_WORDS, pinOutcomeOf, type ActOutcome, type CheckOutcome, type HistoryAnswer, type PinOutcome } from '@/lib/retention'
+import { historyRequests } from '@/components/editor/history-requests'
+import { HISTORY_WORDS, type ActOutcome, type CheckOutcome, type HistoryAnswer, type PinOutcome } from '@/lib/retention'
 import { DEPLOY_WORDS, POSTS_CHECKED, type Mode as ShipMode } from '@/lib/deploy'
 import { queriesFor } from '@/lib/preflight'
 import type { Confirmed, SwitchAnswer } from '@/lib/site-switch'
@@ -264,7 +263,8 @@ import type { Confirmed, SwitchAnswer } from '@/lib/site-switch'
    THE FLOOR (Story 5.22 — D4f, D8, R-201, R-202). ONE GATE AND ONE REARRANGEMENT, and both rules are `lib/floor.ts`'s. A
    PHONE — a touch screen whose shorter side is under 500px — never mounts this shell: `Editor` below asks `PHONE` once,
    in the browser, as the project opens, and draws D4f's Small Screen Notice instead, so no lock, heartbeat, sync,
-   IndexedDB or live read ever starts there; the server always draws the skeleton, in the device's shape by CSS (R-98).
+   IndexedDB or live read ever starts there — its one read is History's (Story 7.23c's Deploy history card: no lock, no plan,
+   and no Ghost read before a Roll back is tapped); the server always draws the skeleton, in the device's shape by CSS (R-98).
    Every OTHER touch screen, and a fine-pointer window below 1280 (a 1440 display at 200% zoom included, WCAG 1.4.4),
    gets D8's ONE rearrangement, live (`COMPACT`): Layers is the icon rail and opens over the canvas, Controls is an
    overlay on the right that a pick opens, behind a scrim that stops at the rail, and the bar's right-hand cluster moves
@@ -799,12 +799,20 @@ const CanvasChrome = memo(function CanvasChrome({ layers, fit, hovered, outline,
  * browser paints again. NO SUBSCRIPTION (R-201): the viewport changes under an editor in use — the device turns, a split
  * view, some keyboards — and a live re-check would unmount the editor mid-edit. The cost is one case: a small tablet
  * opened in a narrow split view keeps the notice until a reload. Both callers (the `(editor)` layout and the keyboard
- * harness) import THIS name, so both get the gate. */
+ * harness) import THIS name, so both get the gate.
+ *
+ * STORY 7.23c — THE NOTICE READS ONE THING: D4f's Deploy history card asks the History route once as it mounts (GET — no lock, no
+ * plan, no Ghost), through the editor's own requests (`history-requests.ts`), so the harness's `historyRead`/`historyAct`/
+ * `historyCheck` seams reach it from here. No Ghost read starts before a tap: the only one is the drift check a Roll back sends,
+ * after the customer's own press (R-291). */
 export function Editor(props: EditorProps) {
   const [phone, setPhone] = useState<boolean | null>(null)
+  const pathname = usePathname()
   useLayoutEffect(() => setPhone(window.matchMedia(PHONE).matches), [])
   if (phone === null) return <EditorSkeleton name={props.project.name} />
-  return phone ? <SmallScreenNotice name={props.project.name} /> : <EditorShell {...props} />
+  if (!phone) return <EditorShell {...props} />
+  // Story 7.23c: D4f's Deploy history card reads History through the editor's own requests — the harness's seams with them
+  return <SmallScreenNotice name={props.project.name} history={historyRequests({ projectId: props.project.id, prefix: isApp(pathname) ? '/app' : '', seams: props })} />
 }
 
 /** The stored announcement, parsed in an INERT document — `DOMParser`'s runs nothing and loads nothing. `EditorShell` renders
@@ -2601,54 +2609,12 @@ function EditorShell({
   /** STORY 7.22 — the History drawer, mounted while open (a fresh read each time it opens), from the bar's clock or Ship it ▾ */
   const [history, setHistory] = useState<{ n: number; open: boolean }>({ n: 0, open: false })
   const openHistory = () => setHistory((was) => ({ n: was.n + 1, open: true }))
-  const historyUrl = () => `${isApp(pathname) ? '/app' : ''}${historyPath(project.id)}`
-  /** the read, the route's unless the harness names its own; a failure is logged by status and drawn as the drawer's sentence */
-  const readHistory = async (): Promise<HistoryAnswer | null> => {
-    if (historyRead) return historyRead(project.id)
-    const answer = await fetch(historyUrl(), { cache: 'no-store' }).catch(() => null)
-    if (answer?.ok) return (await answer.json()) as HistoryAnswer
-    console.error('history: the read failed', { status: answer?.status ?? 0 })
-    return null
-  }
-  /** a pin or an unpin, answered as its outcome (`pinOutcomeOf`); a failure is logged by status */
-  const pinHistory = async (deploy: string, pinned: boolean): Promise<PinOutcome> => {
-    if (historyPin) return historyPin(project.id, deploy, pinned)
-    const answer = await fetch(historyUrl(), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ deploy, pinned }) }).catch(() => null)
-    const outcome = pinOutcomeOf(answer?.status ?? 0, pinned)
-    if (outcome === 'failed') console.error('history: the pin failed', { status: answer?.status ?? 0 })
-    return outcome
-  }
-  /** STORY 7.23a — a put-back, answered as its outcome (`actOutcomeOf`); a request that failed is logged by status */
-  const actHistory = async (deploy: string): Promise<ActOutcome> => {
-    if (historyAct) return historyAct(project.id, deploy)
-    const answer = await fetch(historyUrl(), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ deploy, act: 'live' }) }).catch(() => null)
-    const body: unknown = await answer?.json().catch(() => null)
-    const outcome = actOutcomeOf(answer?.status ?? 0, body)
-    if (outcome.kind === 'failed') console.error('history: the put-back failed', { status: answer?.status ?? 0 })
-    return outcome
-  }
-  /** R-291 — the check before a Roll back, answered as its outcome (`checkOutcomeOf`); a request that failed is logged by status */
-  const checkHistory = async (deploy: string): Promise<CheckOutcome> => {
-    if (historyCheck) return historyCheck(project.id, deploy)
-    const answer = await fetch(historyUrl(), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ deploy, act: 'check' }) }).catch(() => null)
-    const body: unknown = await answer?.json().catch(() => null)
-    const outcome = checkOutcomeOf(answer?.status ?? 0, body)
-    if (outcome.kind === 'failed') console.error('history: the check failed', { status: answer?.status ?? 0 })
-    return outcome
-  }
+  /** STORY 7.23c — History's requests, one set (`history-requests.ts`), which the phone's card uses too; the harness names its own */
+  const historyCalls = historyRequests({ projectId: project.id, prefix: isApp(pathname) ? '/app' : '', seams: { historyRead, historyPin, historyAct, historyCheck, historyRestore } })
   /** STORY 7.23b's review — a put-back or a restore landed (live, or on the site) while History was open: its close re-reads the page */
   const historyLanded = useRef(false)
   const landed = (outcome: ActOutcome): ActOutcome => {
     if (outcome.kind === 'live' || outcome.kind === 'uploaded') historyLanded.current = true
-    return outcome
-  }
-  /** STORY 7.23b — Restore original, answered as a put-back's outcome is (`actOutcomeOf`); a request that failed is logged by status */
-  const restoreHistory = async (snapshot: string, captured: string): Promise<ActOutcome> => {
-    if (historyRestore) return historyRestore(project.id, snapshot, captured)
-    const answer = await fetch(historyUrl(), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ snapshot, captured, act: 'restore' }) }).catch(() => null)
-    const body: unknown = await answer?.json().catch(() => null)
-    const outcome = actOutcomeOf(answer?.status ?? 0, body)
-    if (outcome.kind === 'failed') console.error('history: the restore failed', { status: answer?.status ?? 0 })
     return outcome
   }
   const takeOverToShip = () =>
@@ -7054,13 +7020,13 @@ function EditorShell({
         <DeployHistory
           key={history.n}
           projectName={project.name}
-          read={readHistory}
-          pin={pinHistory}
-          act={async (deploy) => landed(await actHistory(deploy))}
-          check={checkHistory}
-          liveHref={(theme) => `${isApp(pathname) ? '/app' : ''}${historyLiveDownloadPath(project.id, theme)}`}
-          restore={async (snapshot, captured) => landed(await restoreHistory(snapshot, captured))}
-          originalHref={(snapshot) => `${isApp(pathname) ? '/app' : ''}${snapshotDownloadPath(snapshot)}`}
+          read={historyCalls.read}
+          pin={historyCalls.pin}
+          act={async (deploy) => landed(await historyCalls.act(deploy))}
+          check={historyCalls.check}
+          liveHref={historyCalls.liveHref}
+          restore={async (snapshot, captured) => landed(await historyCalls.restore(snapshot, captured))}
+          originalHref={historyCalls.originalHref}
           onClose={() => {
             setHistory((was) => ({ ...was, open: false }))
             // Story 7.23b's review: a put-back or a restore that landed re-reads the page on close, as the wizard's close does — so

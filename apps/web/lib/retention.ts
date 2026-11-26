@@ -291,6 +291,22 @@ export function historyRows(answer: HistoryAnswer): HistoryRow[] {
   return rows.map((r, i) => ({ ...r, expanded: i < EXPANDED || r.action === 'reactivate', emphasis: r === next && r.action === 'rollback' }))
 }
 
+/** STORY 7.23c — WHAT THE PHONE'S DEPLOY HISTORY CARD DRAWS (D4f `:401-414`): nothing shipped, not linked, nothing live, or the linked
+ *  site's Live row with the undo — History's own `emphasis` row, so there is no second rule for "the one before it" */
+export type PhoneCard = { kind: 'empty' } | { kind: 'unlinked' } | { kind: 'notLive' } | { kind: 'live'; live: HistoryRow; undo: HistoryRow | null }
+
+/** the card's one rule, over `historyRows`, checked in this order: no stored version; no linked site; no stored `live` row of the
+ *  linked site (after Restore original, a Deploy only, or a live version no longer kept); else that row and the undo, when there is
+ *  one (a first ship has none, nor does a Live row whose next is pruned or another site's) */
+export function phoneCard(answer: HistoryAnswer): PhoneCard {
+  const rows = historyRows(answer)
+  if (rows.length === 0) return { kind: 'empty' }
+  if (answer.linkedSiteId === null) return { kind: 'unlinked' }
+  const live = rows.find((r) => r.live && r.elsewhere === null)
+  if (live === undefined) return { kind: 'notLive' }
+  return { kind: 'live', live, undo: rows.find((r) => r.emphasis) ?? null }
+}
+
 /** a pin's outcome, as the route answers it: 200 pinned or unpinned, 409 `cap`, 404 `gone`, anything else `failed` */
 export type PinOutcome = 'pinned' | 'unpinned' | 'cap' | 'gone' | 'failed'
 export const pinOutcomeOf = (status: number, pinned: boolean): PinOutcome =>
@@ -305,12 +321,21 @@ export const chipTone = (g: { errors: number; warnings: number }): 'clean' | 'wa
 export function timeLabel(at: string, now: Date, timeZone?: string): string {
   const when = new Date(at)
   if (Number.isNaN(when.getTime())) return ''
-  const zone = timeZone === undefined ? {} : { timeZone }
-  // ICU writes a narrow no-break space before AM/PM; the frame's is a plain space
-  const clock = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', ...zone }).format(when).replace(/\s/g, ' ')
-  const date = dateHalf(when, now, timeZone)
-  return `${date ?? HISTORY_WORDS.today} · ${clock}`
+  return `${dateHalf(when, now, timeZone) ?? HISTORY_WORDS.today} · ${clockHalf(when, timeZone)}`
 }
+
+/** STORY 7.23c — THE PHONE CARD'S LIVE LINE TIME, D4f's own form (`D4 Dashboard Sheets and Blocks.dc.html:406`, "today 2:14 PM"):
+ *  `timeLabel`'s two halves with no dot between, "today" lower-case, "Aug 14 9:02 AM" another day, the year once it is not this one */
+export function cardTime(at: string, now: Date, timeZone?: string): string {
+  const when = new Date(at)
+  if (Number.isNaN(when.getTime())) return ''
+  return `${dateHalf(when, now, timeZone) ?? HISTORY_WORDS.today.toLowerCase()} ${clockHalf(when, timeZone)}`
+}
+
+/** the clock half of the row's time, "2:14 PM", in the viewer's time zone — ICU writes a narrow no-break space before AM/PM; the
+ *  frame's is a plain space */
+const clockHalf = (when: Date, timeZone?: string): string =>
+  new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', ...(timeZone === undefined ? {} : { timeZone }) }).format(when).replace(/\s/g, ' ')
 
 /** the date half of the row's time: null today, else "Aug 28", with the year once it is not this one — in the viewer's time zone */
 function dateHalf(when: Date, now: Date, timeZone?: string): string | null {
@@ -331,7 +356,7 @@ export function archivedLabel(at: string, now: Date, timeZone?: string): string 
 }
 
 /**
- * EVERY WORD THE DRAWER SAYS (R-170, one list). Its numbers come from `PLANS`, never typed. The frame's words where it draws them
+ * EVERY WORD THE DRAWER SAYS — AND, SINCE STORY 7.23c, THE PHONE'S CARD (R-170, one list). Its numbers come from `PLANS`, never typed. The frame's words where it draws them
  * (D2a's header `:53` and footer `:152`, D2b's sentence and Got it `:180-181`, the pin's two titles); the rest extrapolated in
  * the same voice: the busy and said forms (R-98, UX-DR12), the empty state (UX-DR6), a failed read and "on {host}".
  */
@@ -451,6 +476,16 @@ export const HISTORY_WORDS = {
   originalFallback: 'Download it to keep a copy, or to have it updated for this version of Ghost — then upload it in Ghost under ',
   /** B12b's own link words (R-170) */
   originalPlace: SNAPSHOT_WORDS.placeLink,
+  // ── Story 7.23c — the phone's Deploy history card (D4f, `D4 Dashboard Sheets and Blocks.dc.html:401-414`); its "Live" is `live`,
+  // its Roll back `rollBackName`, its loading and empty words the drawer's ──
+  /** D4f `:405`, the card's title */
+  cardTitle: 'Deploy history',
+  /** the states D4f does not draw, extrapolated in the card's own shape: a project with no linked site, a linked site where no kept
+   *  version is live (after Restore original, a Deploy only, or a live version no longer kept), and a read that failed — a phone has
+   *  no drawer to close, so the way to try again is the page */
+  unlinked: "This project isn't linked to a site.",
+  noneLive: 'None of your kept versions is live on your site.',
+  cardFailed: "Couldn't load your deploy history. Reload this page to try again.",
 } as const
 
 /** what the polite region says for a pin's outcome (the refusal is D2b's own sentence) */

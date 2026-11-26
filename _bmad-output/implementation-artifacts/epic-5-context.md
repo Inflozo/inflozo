@@ -889,6 +889,10 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     - **The bar becomes a `1fr auto 1fr` grid.** The name's `calc(50% - 360px)` goes, which is R-143's "re-tunes the
       truncation". The chip and the page-2 pill share one grid row.
     - **D4f's Deploy history and Billing are absent until 7.23 and 12.5 (R-118).** Those stories' criteria gain the rows.
+      - **Story 7.23c's Dev (2026-11-26):** the Deploy history card is built — first under "What works here", above Your sites,
+        reading History once (no lock, no sync, no IndexedDB, no Ghost read before a tap); its Roll back is S8e's confirm with
+        R-291's check, shared with the laptop's drawer. Billing stays absent until Story 12.5. The coarse 44px rule covers
+        `[data-small-screen]` too.
     - DW-281: the rail's thumbnails are the Layers rows' one generic `LayerThumb`, where D8a draws one per category.
   - **R-201 · R-202 (owner, 2026-09-27, Story 5.22's Q1 and Q2, option 1 each).**
     - **R-201: a phone is a touch screen whose shorter side is under 500px, decided once as a project opens.** It

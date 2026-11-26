@@ -2,7 +2,8 @@
 title: 'Story 7.23c — The phone''s Deploy history card (split from Story 7.23 by R-290)'
 type: 'feature'
 created: '2026-11-26'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: 7d97297f5b1a12efd1daa742e66b762495069755
 owner_test: pending
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-23a-roll-back-and-re-activate-from-history.md', '{project-root}/_bmad-output/implementation-artifacts/spec-5-22-the-editor-s-responsive-floor.md']
@@ -232,7 +233,7 @@ existed. Story 7.23a built Roll back, so a bad ship still cannot be undone from 
 **Execution:**
 
 *The rule:*
-- [ ] `apps/web/lib/retention.ts`:
+- [x] `apps/web/lib/retention.ts`:
   - `phoneCard(answer)` → `{ kind: 'empty' } | { kind: 'unlinked' } | { kind: 'notLive' } | { kind: 'live'; live: HistoryRow; undo:
     HistoryRow | null }`, over `historyRows`, in Always' order;
   - `cardTime(at, now, tz?)`, sharing `timeLabel`'s clock half;
@@ -245,42 +246,42 @@ existed. Story 7.23a built Roll back, so a bad ship still cannot be undone from 
     each reused where one already says it (R-170).
 
 *The requests and the confirm:*
-- [ ] `apps/web/components/editor/history-requests.ts` (new) -- `historyRequests({ projectId, prefix, seams })` →
+- [x] `apps/web/components/editor/history-requests.ts` (new) -- `historyRequests({ projectId, prefix, seams })` →
   `read`/`pin`/`act`/`check`/`restore` and `liveHref`/`originalHref`. It holds `editor.tsx`'s bodies, moved, with their logs.
   `editor.tsx` uses it; `landed` stays the editor's.
-- [ ] `apps/web/components/editor/deploy-history.tsx` -- export the confirm as Always' "One confirm" states. `DeployHistory`
+- [x] `apps/web/components/editor/deploy-history.tsx` -- export the confirm as Always' "One confirm" states. `DeployHistory`
   mounts it nested as today, and its header comment names the move. No drawer behaviour changes.
 
 *The card:*
-- [ ] `apps/web/components/editor/small-screen-notice.tsx`:
+- [x] `apps/web/components/editor/small-screen-notice.tsx`:
   - `SmallScreenNotice({ name, history })` draws the Deploy history card above the links card: states, shape, Roll back and
     endings as Always states, with one polite region;
   - the header comment: two rows of D4f's three now, Billing Story 12.5's.
-- [ ] `editor.tsx` -- the gate hands the notice `historyRequests(...)` built from `project.id`, the pathname's prefix and the
+- [x] `editor.tsx` -- the gate hands the notice `historyRequests(...)` built from `project.id`, the pathname's prefix and the
   props' seams. Update the floor paragraph and the gate's comment: no Ghost read before a tap.
-- [ ] `apps/web/app/globals.css` -- the 44px rule's scope becomes `:where([data-editor], [data-small-screen])`, with its
+- [x] `apps/web/app/globals.css` -- the 44px rule's scope becomes `:where([data-editor], [data-small-screen])`, with its
   comment.
 
 *Harness:*
-- [ ] `app/(app)/app/harness/editor/actions.ts` and `layout.tsx` -- `x-inflozo-harness-history` gains:
+- [x] `app/(app)/app/harness/editor/actions.ts` and `layout.tsx` -- `x-inflozo-harness-history` gains:
   - `first`: v1 live alone;
   - `unlinked`: two versions, `linkedSiteId` null.
 
   Document both in the header's doc.
 
 *Tests* (each assertion seen red under a planted reversion):
-- [ ] `apps/web/lib/retention.test.ts`:
+- [x] `apps/web/lib/retention.test.ts`:
   - `phoneCard` for every state row of the matrix: another site between, D2d above live, a pruned live, a first ship, not
     linked, empty;
   - `cardTime` (today, another day, another year, a time zone).
-- [ ] `tools/keyboard/journey.spec.mjs` -- 7.23c, on the iPhone 13 descriptor, keyboard only (below the sentinel, pointer-free):
+- [x] `tools/keyboard/journey.spec.mjs` -- 7.23c, on the iPhone 13 descriptor, keyboard only (below the sentinel, pointer-free):
   - (a) the card's anatomy and words. The Tab order runs back link → **Roll back to v5** → Your sites. Enter opens the confirm on
     Cancel, the check says "Comparing…" then D3c. Esc puts focus back on the card's Roll back;
   - (b) Roll back confirmed: "Rolling back…" with `aria-busy`, Esc doing nothing while it is out, said once, the card read again
     (switch the header the way 7.23a's `rollback-gone` is used), focus on the heading;
   - (c) refused: Ghost's 422 with its detail, `busy`, `disconnected` — under the row, focus back on Roll back;
   - (d) gone; (e) the request fails; (f) D3a found, with the Download reachable by Tab.
-- [ ] `tools/keyboard/floor.spec.mjs`:
+- [x] `tools/keyboard/floor.spec.mjs`:
   - re-expect 5.22's phone test: the card present (no header: "Nothing shipped yet"), Billing absent, still one link row in the
     section;
   - add 7.23c at 390 (iPhone 13) and at 320 × 568 (a touch phone):
@@ -290,12 +291,12 @@ existed. Story 7.23a built Roll back, so a bad ship still cannot be undone from 
     - every target in the notice and its open confirm at least 44px;
     - no sideways scroll;
     - no lock or sync request.
-- [ ] `tools/probe/run-verify-editor.cjs`:
+- [x] `tools/probe/run-verify-editor.cjs`:
   - re-expect step 97: the card present in A's project's state, Billing absent, Your sites one 56px row;
   - add step 123 and `STEP123_PLANT`: the Verification's run, under `T1_WRITES=1`, written at Dev and never run there.
 
 *Propagation* (standing rules 3 and 7; end with a grep for "Deploy history and Billing", "ONE ROW" and "7.23c"):
-- [ ] Planning documents:
+- [x] Planning documents:
   - FR-J9: a dated note, the phone card as built;
   - `EXPERIENCE.md`: the Small Screen Notice paragraph `:70-73` and its IA row `:138`, a dated note;
   - Story 5.22's card in `epics.md` stays as dated.
@@ -321,6 +322,41 @@ existed. Story 7.23a built Roll back, so a bad ship still cannot be undone from 
   or sync request, no `edit_locks` row and no `inflozo-*` database.
 
 ## Spec Change Log
+
+**Dev (2026-11-26).** Each entry is outside the frozen block and was made where the build met a fact the plan did not hold.
+
+1. **Journey (a)'s Tab order reads "Roll back to v4", not "Roll back to v5".** Under the harness's `rollback` the card is Live v5 with
+   the undo v4 — the matrix's own first row and the first acceptance criterion. "Roll back to v5" is the button AFTER the Roll back
+   (journey (b)'s re-read, the matrix's second row), so (a) asserts v4 and (b) asserts v5.
+2. **The harness gains a third value, `rolled-back`** (Tasks named `first` and `unlinked`): `rollback` after its Roll back to v4
+   landed — v4 live and accepted newest, v5 the next row and the undo. Journey (b) switches to it while the put-back is held, as
+   7.23a's `rollback-gone` is used, so the re-read proves the matrix's "Live v4, **Roll back to v5**" rather than only that a read
+   happened; journey (e) uses it for "a lost answer that landed is said as live". `harnessAct` answers it `live`. Documented in
+   `actions.ts` and `layout.tsx`.
+3. **The confirm keeps a `backTo` for its focus.** Chromium restores focus to the opener when a modal `<dialog>` closes, so a
+   planted reversion of `backTo` stays green in every journey; it is kept for a tap that does not focus the button it lands on
+   (iOS Safari), where the platform has nothing to restore. The owner's manual test on a real phone is its check.
+4. **The undo row's time is `grow`, not `flex-1`.** Tailwind's `flex-1` is a zero basis, so the row never wrapped at 320 and the time
+   broke instead; `grow` keeps the max-content basis, so the button drops under the chip and the time (the floor's 320 stop held it
+   red first).
+5. **The card's button is the Kit's `coral-outline` variant and `ring` at D4f's own 44**, not `<Button size={44}>` with overrides:
+   `button.tsx` says a class passed to `Button` cannot reliably outrank its size (both are utilities; the stylesheet's order
+   decides), so the size is written once, on the card, from `variants['coral-outline']`.
+6. **The main session's matrix audit (Dev, 2026-11-26) added four checks and fixed one walk read**, each new check seen red under a
+   planted reversion and green restored:
+   - **journey (g)**, the matrix's *Stale* row for a 409: under `elsewhere` (Live v3, another site's v2 skipped, the undo v1) the
+     put-back answers `elsewhere`, the card reads History again once, and v1 still the undo puts the sentence under the row with focus
+     back on the Roll back. No journey held the 409 half of the stale branch: (e) holds only the lost answer;
+   - **the floor's backdrop**, the *Cancel* row's third way: tapped while the check reads, the confirm closes and the check is the only
+     request for v4 — nothing sent, nothing said, the card unchanged;
+   - **the harness's `long`** (v11 live, the undo v10) **and a narrow stop** with the page's clock in February 2027: the *Narrow* row's
+     v10 and another year's date wrap the button under the chip and the time at 390 and at 320, its label whole, nothing sideways;
+   - **the floor's D4f stop holds the page's clock in November 2026.** The harness's versions are dated that month, and D4f's row is one
+     line at 390 with a date of this year. From 1 January 2027 every harness date carries its year and the 390 row wraps by design, so
+     the stop would have gone red on New Year's Day: seen red with the clock moved to 2027;
+   - **walk steps 97 and 123 read the card's Roll back name from its text.** The button carries no `aria-label` (its visible label is its
+     name, `rollBackName`), so the first draft's `getAttribute('aria-label')` was always null and every check comparing it would have
+     failed at the Review on T1.
 
 ## Design Notes
 
@@ -425,3 +461,59 @@ from T1.
   test above.
 - **Vercel:** the deployment is READY from the Dev head.
 - **The owner's test above (R-80).**
+
+**Executed — Dev, the main session (2026-11-26, Node 24; every key read inside the script from `tools/probe/.env` by its variable
+name, never on argv, no value printed):**
+- **T1 `ghost6.inflozo.com`** (`GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN`), read-only, `GET themes/` with the staff token: **200**,
+  `casper` active, with `racer`, `source` and `inflozo-ghost6` installed and inactive — T1 is on its own theme, so step 123 can start
+  from it. Nothing was written to T1.
+- **Not hit in Dev:** production (Supabase, the app), Resend and Dodo. This story changes no table, sends no email and reads no plan; the
+  card's one read and its Roll back are the History route, unchanged, whose real answers are walk steps 97 and 123's. Both are written
+  and have never run: they are the Review's, from a clean worktree at the deployed sha, step 123 and `STEP123_PLANT` on the owner's
+  in-session go (`T1_WRITES=1`). Vercel's READY from the Dev head is read after the push (the Review reads CI on the Dev head first).
+- **The matrix audit** (each row to a check that ran in that row's state):
+  - *The undo*, *Live, no undo*, *Nothing live*, *Not linked*, *Nothing shipped*, *Read failed*, *Loading*: the floor's D4f stop at
+    390 and 320 (`rollback`, `first`, `original-restored`, `unlinked`, `empty`, `fail`, the read held), with `phoneCard`'s unit tests;
+    *Another site between* and *D2d above live*: `retention.test.ts`, and journey (g) draws the first on the phone;
+  - *Roll back*: journey (b); *Cancel*: journey (a) (Esc and Cancel, the check done), the floor's tap of Cancel and its backdrop while
+    the check reads (added), and 7.23a (q) for Cancel and Esc while the shared confirm's check reads;
+  - *Drift found*: journey (f) and the floor's `found` scrolling inside at 320; its Download's 404/401/502 is the shared
+    `SignedDownload`, held by 7.23b (e1)–(e4); *Check couldn't run*: the shared confirm's D3b, held by 7.23a (o) — the card has no code
+    of its own there;
+  - *Refused*: journey (c) (Ghost's 422 with its detail, `busy`, `disconnected`); a 502 with a code takes the same branch as `busy`
+    (`actOutcomeOf`); *Gone*: journey (d); *Stale*: journey (e) for the lost answer, landed or not, and (g) for the 409 (added);
+  - *Reading along, any plan*: the card reads no lock and no plan (the floor: no lock or sync request), and the put-back reads neither
+    (7.23a's `put-back.test.ts`); the real lock held on a laptop is walk step 123 (e);
+  - *Narrow*: the floor's 320 stop wraps the v4 row, and the narrow stop (added) wraps v10 with another year's date at 390 and 320;
+    *Not a phone*: 7.22's, 7.23a's and 7.23b's journeys and floors at 1440, 1280 and 820, unedited.
+  - **Matches the frame:** the floor measures D4f `:401-414` at 390 — the card's 14 padding, 12 radius and 11 gap, the 34 `paper` tile
+    with the clock at 16, the 13.5/600 `h3`, the 12px line with the version in mono 11, the row's 9 × 11 padding, 10 radius and 9 gap,
+    the 44px coral-outline button 14 across in 13px 600 with the glyph at 13, its place above Your sites, and D4f's one line.
+- **Each check the audit added seen red under a planted reversion**, then restored byte for byte (sha256): the stale branch without
+  `live`/`elsewhere` (journey (g): the re-read count 2, wanted 3); the confirm's backdrop test removed (the floor at 390 and 320: still
+  open); the confirm's close sending a put-back (the floor: 2 and 3 requests for v4, wanted 1); the undo row without `flex-wrap` (the
+  narrow stop at both widths); the D4f stop's clock in 2027 (390: "D4f's one line" false).
+- **The gates, on the final tree:** `pnpm check` exit 0 — every package 0 failing, each printing its own count, the web package's
+  run among them `retention.test.ts`' six 7.23c tests, `deploy.test.ts` and `busy.test.ts`; `bash tools/keyboard/run-keyboard-gate.sh`
+  (`pnpm keyboard`, the whole gate) exit 0 with no failure — 7.23c (a)–(g) and its floor at 390 and 320, 5.22's phone floor
+  re-expected, and 7.22's, 7.23a's and 7.23b's journeys and floors unedited among them; `node --check tools/probe/run-verify-editor.cjs`
+  clean.
+
+**Executed — Dev, the implementation pass (2026-11-26, Node 24; local only — it made no production, Vercel, Resend, Dodo or T1
+call, so walk steps 97 and 123 are written, never run here; they are the main session's on the owner's in-session go):**
+- `pnpm check` — exit 0 (lint, typecheck and every package test; `retention.test.ts`' new `phoneCard`/`cardTime` tests, and
+  `deploy.test.ts`' restore assertion re-pointed at `history-requests.ts`, where the request now lives). Each new unit assertion
+  was seen red under a planted reversion of `phoneCard` or `cardTime` (unlinked before empty; another site's Live row counted; the
+  next row as the undo; no undo; the newest row assumed live; `cardTime` written as `timeLabel`).
+- `python3 tools/doc-audit.py --check` — the first run regenerated the story board (STALE, as after any spec edit), the second PASS.
+- `pnpm keyboard`'s three specs, against an `INFLOZO_HARNESS=1 next dev` started by hand (the gate script's own command) — the
+  whole run green with no failure: journeys 7.23c (a)–(f) on the iPhone 13 descriptor; 7.22's, 7.23a's and 7.23b's journeys and
+  floors with no edit to their expectations; 5.22's phone floor re-expected; 7.23c's floor at 390 (iPhone 13) and 320 (iPhone SE).
+  Seen red under planted reversions, each restored and read back: an ending that neither re-reads nor focuses the heading
+  ((b), (d), (f)); a stale answer not read again ((e)); a refusal said in the region ((c)); the confirm sending no check (every
+  7.23c journey and 7.23a (m) — the drawer shares it); the coarse rule without `[data-small-screen]` (the floor's 44px sweep of
+  the open confirm at both widths); `flex-1` on the row's time (the 320 wrap). Change log 3 records the one plant that stayed
+  green (`backTo`, which Chromium's own dialog focus-restore covers).
+- `grep -rn "Deploy history and Billing\|ONE ROW, NOT THREE" apps/web tools` — nothing (the `ONE ROW` hits left are other
+  components' own words). `7.23c`'s and the notice's stale sentences: Epic 5's context gained a dated sub-bullet; Story 5.22's
+  card in `epics.md` and its spec (a record) stay as dated.

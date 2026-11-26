@@ -18,6 +18,7 @@ import { devices, expect, test } from '@playwright/test'
 const HARNESS = '/app/harness/editor'
 const FLOOR = await import(new URL('../../apps/web/lib/floor.ts', import.meta.url).href)
 const { CARD_WORDS } = await import(new URL('../../apps/web/lib/cards.ts', import.meta.url).href)
+const { HISTORY_WORDS: HW } = await import(new URL('../../apps/web/lib/retention.ts', import.meta.url).href)
 
 /** a descriptor, without the browser it would pick for itself */
 const device = (name) => {
@@ -48,12 +49,13 @@ const journalled = (page) =>
     }
   }))
 
-/** THE 44px SWEEP (D8a: "every target is at least 44px"). Every visible pressable in the editor — the rule's own list,
+/** THE 44px SWEEP (D8a: "every target is at least 44px"). Every visible pressable in the editor (or, since Story 7.23c, under
+ *  any root the rule covers — the phone's notice, `[data-small-screen]`) — the rule's own list,
  *  with switches — is at least 44 × 44, and each switch is D8a's 52 × 30 in a row at least 44 tall. The only things
  *  exempt are the ones the rule exempts: an inline text link, the skip link (`sr-only` until focused), and the switch. */
-const sweep = (page) =>
-  page.evaluate(() => {
-    const root = document.querySelector('[data-editor]')
+const sweep = (page, at = '[data-editor]') =>
+  page.evaluate((sel) => {
+    const root = document.querySelector(sel)
     const PRESS = 'button, a[href], summary, select, textarea, input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]), [role="button"], [role="menuitem"], [role="radio"], [role="tab"], [role="option"], [role="switch"]'
     const said = (el) => `${el.tagName}${el.id ? `#${el.id}` : ''}[${el.getAttribute('aria-label') ?? el.textContent.trim().slice(0, 40)}]`
     const small = []
@@ -71,7 +73,7 @@ const sweep = (page) =>
       if (r.width < 44 - 0.5 || r.height < 44 - 0.5) small.push(`${said(el)} ${r.width.toFixed(1)}×${r.height.toFixed(1)}`)
     }
     return { checked, small }
-  })
+  }, at)
 
 test.describe('R-201 · a phone gets D4f, never the editor', () => {
   test.use(device('iPhone 13'))
@@ -85,14 +87,22 @@ test.describe('R-201 · a phone gets D4f, never the editor', () => {
       "Dragging sections and a 280-pixel control panel don't fit on a phone yet. Open this project on a laptop or tablet.",
     )
     await expect(page.locator('[data-small-screen] h2')).toHaveText(/what works here/i)
-    // ONE row today (R-118): the sites list. Deploy history and Billing arrive with 7.23c and 12.5 — absent, never greyed
+    // RE-EXPECTED BY STORY 7.23c — TWO of D4f's three (R-118): the Deploy history card first — with no history header the harness
+    // has nothing shipped, so "Nothing shipped yet" and no row — then the sites list, still ONE link row in the section. Billing
+    // arrives with 12.5 — absent, never greyed
+    const card = page.locator('[data-small-screen] section [data-history-card]')
+    await expect(card).toHaveAttribute('data-history-card', 'empty')
+    await expect(card.locator('h3')).toHaveText(HW.cardTitle)
+    await expect(card.locator('[data-history-card-line]')).toHaveText(HW.empty)
+    await expect(card.locator('[data-history-act]'), 'nothing shipped: no Roll back').toHaveCount(0)
     const rows = page.locator('[data-small-screen] section a')
     await expect(rows).toHaveCount(1)
     await expect(rows.first()).toHaveText('Your sites')
     await expect(rows.first()).toHaveAttribute('href', '/sites')
     expect((await rows.first().boundingBox()).height, 'the row is 56px').toBe(56)
+    expect((await card.boundingBox()).y < (await rows.first().boundingBox()).y, 'the card above Your sites').toBe(true)
     await expect(page.locator('[data-small-screen] a[aria-label="Back to dashboard"]')).toHaveAttribute('href', '/')
-    await expect(page.locator('[data-small-screen]')).not.toContainText(/deploy history|billing/i)
+    await expect(page.locator('[data-small-screen]')).not.toContainText(/billing/i)
     // DW-285: the decorative avatar, the user's own initial at D4f's 32px — the harness hands its fixture user through the
     // shell's own provider, as the app's shell does, so the gate reads what only the deployed walk read before
     const avatar = page.locator('[data-small-screen] span.rounded-full[aria-hidden]')
@@ -1238,6 +1248,231 @@ test.describe('7.23b · the original-theme row and its refusal at 1440, 1280 and
       expect(refused.sideways).toBeLessThanOrEqual(0)
       expect(refused.scroll, 'nothing scrolls sideways').toBeLessThanOrEqual(refused.inner)
       await expect(drawer.locator('#history-original-download')).toBeInViewport()
+    })
+  }
+})
+
+// ── Story 7.23c — D4f's Deploy history card (`D4 Dashboard Sheets and Blocks.dc.html:401-414`) in the phone's notice, at 390 on the
+// iPhone 13 and at 320 × 568 on the first iPhone SE: its place above Your sites, its geometry against the frame, each state in the
+// card's own shape (`x-inflozo-harness-history`: `rollback` v5 live with the v4 undo, `first`, `original-restored`, `unlinked`,
+// `empty`, `fail`, and the loading card held), a tap on its Roll back opening S8e's confirm inside the window with D3a's `found`
+// scrolling INSIDE it where the window is short, every target in the notice and the open confirm at least 44px (the coarse rule's
+// `[data-small-screen]`), nothing scrolling sideways, and not one lock or sync request — the History read is the notice's only one.
+test.describe('7.23c · D4f\'s Deploy history card at 390 and 320', () => {
+  for (const [name, at] of [['iPhone 13', 390], ['iPhone SE', 320]]) {
+    test.describe(`${name} (${at})`, () => {
+      test.use(device(name))
+
+      /** the notice opened with a history (and a check) header, landed on its card */
+      const opened = async (page, history, check) => {
+        await page.setExtraHTTPHeaders({ 'x-inflozo-harness-history': history, ...(check ? { 'x-inflozo-harness-check': check } : {}) })
+        await page.goto(HARNESS)
+        await expect(page.locator('[data-history-card]')).not.toHaveAttribute('data-history-card', 'loading', { timeout: 15_000 })
+        return page.locator('[data-history-card]')
+      }
+      /** nothing past the window's right edge, and the page never scrolls sideways (measured against clientWidth: an `isMobile`
+       *  innerWidth grows to fit overflow) */
+      const sideways = (page) => page.evaluate(() => ({
+        scroll: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        outside: [...document.querySelectorAll('[data-small-screen] *')].filter((e) => e.getBoundingClientRect().right > document.documentElement.clientWidth + 0.5).map((e) => e.outerHTML.slice(0, 80)),
+      }))
+
+      test('the card against D4f, its place, each state in its own shape, and no lock or sync request', async ({ page }) => {
+        // the harness's versions are dated November 2026, and D4f's row is one line at 390 with a date of this year ("Aug 14 ·
+        // 9:02 AM"): the page's clock is held in their year, so the stop still measures the frame once the calendar turns — a
+        // date of another year is the narrow stop's below, where the row wraps by design
+        await page.clock.setFixedTime(new Date('2026-11-26T12:00:00Z'))
+        const hits = watchMount(page)
+        const card = await opened(page, 'rollback')
+        expect(await page.evaluate((q) => matchMedia(q).matches, FLOOR.PHONE), 'a phone by R-201').toBe(true)
+        await expect(card).toHaveAttribute('data-history-card', 'live')
+        const m = await card.evaluate((c) => {
+          const css = (e) => getComputedStyle(e)
+          const box = (e) => e.getBoundingClientRect()
+          const tile = c.querySelector(':scope > div > span[aria-hidden]')
+          const row = c.querySelector('[data-history-undo]')
+          const button = row.querySelector('[data-history-act]')
+          const chip = row.firstElementChild
+          const time = row.querySelector('[data-history-time]')
+          const sites = c.parentElement.querySelector(':scope > div:not([data-history-card])')
+          return {
+            card: { padding: css(c).padding, radius: css(c).borderTopLeftRadius, gap: css(c).rowGap, border: css(c).borderTopWidth, shadow: css(c).boxShadow, bg: css(c).backgroundColor },
+            sitesCard: { radius: css(sites).borderTopLeftRadius, border: css(sites).borderTopColor, shadow: css(sites).boxShadow, bg: css(sites).backgroundColor },
+            cardBorder: css(c).borderTopColor,
+            above: box(c).bottom <= box(sites).top,
+            tile: { w: box(tile).width, h: box(tile).height, radius: css(tile).borderTopLeftRadius, bg: css(tile).backgroundColor, icon: box(tile.querySelector('svg')).width },
+            title: { size: css(c.querySelector('h3')).fontSize, weight: css(c.querySelector('h3')).fontWeight, tag: c.querySelector('h3').tagName },
+            line: { size: css(c.querySelector('[data-history-card-line]')).fontSize, mono: css(c.querySelector('[data-history-card-line] .font-mono')).fontFamily, monoSize: css(c.querySelector('[data-history-card-line] .font-mono')).fontSize },
+            row: { padding: css(row).padding, radius: css(row).borderTopLeftRadius, gap: css(row).columnGap, border: css(row).borderTopWidth },
+            chip: { mono: css(chip).fontFamily, size: css(chip).fontSize },
+            time: { size: css(time).fontSize },
+            button: {
+              h: box(button).height, padL: css(button).paddingLeft, padR: css(button).paddingRight, size: css(button).fontSize, weight: css(button).fontWeight, radius: css(button).borderTopLeftRadius,
+              border: css(button).borderTopColor, color: css(button).color, icon: box(button.querySelector('svg')).width, wraps: button.scrollWidth > button.clientWidth || box(button).height > 44.5,
+              right: box(button).right, rowRight: box(row).right,
+            },
+            oneLine: Math.abs((box(button).top + box(button).bottom) / 2 - (box(chip).top + box(chip).bottom) / 2) < 1,
+          }
+        })
+        // the card (D4f `:401`): the links card's own surface, hairline, 12 radius and shadow; 14 padding, 11 between its parts
+        expect(m.card).toEqual({ ...m.card, padding: '14px', radius: '12px', gap: '11px', border: '1px' })
+        expect([m.card.shadow, m.card.bg, m.card.radius, m.cardBorder], 'the links card\'s classes').toEqual([m.sitesCard.shadow, m.sitesCard.bg, m.sitesCard.radius, m.sitesCard.border])
+        expect(m.above, 'first under What works here, above Your sites').toBe(true)
+        // the header (`:402-407`): the 34px paper tile with the clock at 16, the 13.5/600 title, the 12px line with the version in mono 11
+        expect(m.tile).toEqual({ ...m.tile, w: 34, h: 34, radius: '10px', icon: 16 })
+        expect(m.title).toEqual({ size: '13.5px', weight: '600', tag: 'H3' })
+        expect(m.line.size).toBe('12px')
+        expect(m.line.mono).toMatch(/mono/i)
+        expect(m.line.monoSize).toBe('11px')
+        // the row (`:408-411`): a hairline, radius 10, 9 × 11, 9 between; the chip as History draws it; the time 11.5
+        expect(m.row).toEqual({ padding: '9px 11px', radius: '10px', gap: '9px', border: '1px' })
+        expect(m.chip.mono).toMatch(/mono/i)
+        expect(m.chip.size).toBe('11px')
+        expect(m.time.size).toBe('11.5px')
+        // the Roll back: the Kit's coral-outline at D4f's 44, 14 across, 13px 600, the thumb radius, the glyph at 13 — its label whole
+        expect(m.button).toEqual({ ...m.button, h: 44, padL: '14px', padR: '14px', size: '13px', weight: '600', radius: '10px', icon: 13, wraps: false })
+        expect(m.button.border, 'coral-outline: the coral hairline').toBe('rgb(255, 89, 65)')
+        expect(m.button.right).toBeLessThanOrEqual(m.button.rowRight)
+        // at 390 the row is D4f's one line; at 320 the button drops under the chip and the time
+        expect(m.oneLine, at === 390 ? 'D4f\'s one line at 390' : 'wrapped at 320').toBe(at === 390)
+        await expect(card.locator('[data-history-card-line]')).toContainText(`${HW.live} v5 · `)
+        await expect(card.locator('[data-history-act]')).toHaveAccessibleName(HW.rollBackName(4))
+        expect(await sideways(page)).toEqual({ scroll: 0, outside: [] })
+        await page.screenshot({ path: `tools/keyboard/test-results/7-23c-card-${at}.png` }).catch(() => {})
+
+        // each state the frame does not draw, in the card's own shape: the header, one sentence where the line goes, no row
+        for (const [value, kind, words] of [['first', 'live', null], ['original-restored', 'notLive', HW.noneLive], ['unlinked', 'unlinked', HW.unlinked], ['empty', 'empty', HW.empty], ['fail', 'failed', HW.cardFailed]]) {
+          const c = await opened(page, value)
+          await expect(c, value).toHaveAttribute('data-history-card', kind)
+          await expect(c.locator('h3')).toHaveText(HW.cardTitle)
+          if (words === null) await expect(c.locator('[data-history-card-line]')).toContainText(`${HW.live} v1 · `)
+          else await expect(c.locator('[data-history-card-line]')).toHaveText(words)
+          await expect(c.locator('[data-history-undo]'), `${value}: no row`).toHaveCount(0)
+          const shape = await c.evaluate((e) => ({ padding: getComputedStyle(e).padding, radius: getComputedStyle(e).borderTopLeftRadius, tile: e.querySelector(':scope > div > span[aria-hidden]').getBoundingClientRect().width }))
+          expect(shape, `${value}: the card's own shape`).toEqual({ padding: '14px', radius: '12px', tile: 34 })
+          expect(await sideways(page)).toEqual({ scroll: 0, outside: [] })
+        }
+
+        // loading, held (R-98): the card in its own shape — the tile, two bars and the row's 44px bar — aria-busy, and History's words
+        // for a screen reader; never a spinner
+        let release
+        const held = new Promise((r) => { release = r })
+        await page.route((url) => url.pathname.startsWith(HARNESS), async (route) => {
+          if (route.request().method() === 'POST' && route.request().headers()['next-action']) await held
+          return route.fallback()
+        })
+        await page.setExtraHTTPHeaders({ 'x-inflozo-harness-history': 'rollback' })
+        await page.goto(HARNESS)
+        const loading = page.locator('[data-history-card="loading"]')
+        await expect(loading).toHaveAttribute('aria-busy', 'true', { timeout: 15_000 })
+        await expect(loading.locator(':scope > span.sr-only')).toHaveText(HW.loading)
+        const l = await loading.evaluate((c) => ({
+          padding: getComputedStyle(c).padding,
+          tile: c.querySelector(':scope > div > span').getBoundingClientRect().width,
+          bars: c.querySelectorAll(':scope > div:first-of-type .bg-paper-sunk').length,
+          bar: c.querySelector('[data-history-card-bar] > span').getBoundingClientRect().height,
+          spin: c.querySelector('.animate-spin') !== null,
+        }))
+        expect(l).toEqual({ padding: '14px', tile: 34, bars: 2, bar: 44, spin: false })
+        release()
+        await expect(page.locator('[data-history-card]')).toHaveAttribute('data-history-card', 'live', { timeout: 15_000 })
+        await page.unrouteAll({ behavior: 'ignoreErrors' })
+
+        // the notice read History and nothing else: no lock, no sync, no local store
+        await page.waitForTimeout(1500)
+        expect(hits, 'a phone never starts the lock, the heartbeat or the sync').toEqual([])
+        expect(await page.evaluate(async () => (await indexedDB.databases()).map((d) => d.name).filter((n) => /^inflozo-/.test(n))), 'a phone opens no database').toEqual([])
+      })
+
+      test('a tap on Roll back opens S8e\'s confirm inside the window — D3a\'s list scrolling INSIDE it where the window is short — and every target in the notice and the confirm is 44px', async ({ page }) => {
+        const hits = watchMount(page)
+        const card = await opened(page, 'rollback', 'found')
+        const rest = await sweep(page, '[data-small-screen]')
+        expect(rest.checked, 'the back link, the Roll back and Your sites').toBeGreaterThanOrEqual(3)
+        expect(rest.small, 'every target in the notice is 44px').toEqual([])
+        await card.locator('[data-history-act]').tap()
+        const confirm = page.locator('dialog[data-history-confirm]')
+        await expect(confirm).toHaveAttribute('open', '')
+        await expect(confirm.locator('#history-confirm-title')).toHaveText(HW.confirmTitle(4))
+        await expect(confirm.locator('[data-history-check="found"] [data-drift-row="found"]')).toBeVisible({ timeout: 15_000 })
+        await expect(confirm.locator('#history-drift-download')).toBeVisible()
+        const box = await confirm.evaluate((c) => {
+          const list = c.querySelector('[data-drift-list]')
+          return {
+            ...c.getBoundingClientRect().toJSON(),
+            inner: document.documentElement.clientWidth,
+            innerH: window.innerHeight,
+            outside: [...c.querySelectorAll('*')].filter((e) => e.getBoundingClientRect().right > c.getBoundingClientRect().right + 0.5).map((e) => e.outerHTML.slice(0, 80)),
+            sideways: c.scrollWidth - c.clientWidth,
+            scrolls: c.scrollHeight - c.clientHeight,
+            squeezed: list.scrollHeight - list.clientHeight,
+          }
+        })
+        // S8e's confirm at the width a phone leaves it: the window less 20
+        expect(box.width).toBe(Math.min(410, box.inner - 20))
+        expect(box.left).toBeGreaterThanOrEqual(0)
+        expect(box.right).toBeLessThanOrEqual(box.inner)
+        expect(box.top, 'inside the window').toBeGreaterThanOrEqual(0)
+        expect(box.bottom).toBeLessThanOrEqual(box.innerH)
+        expect(box.outside, 'nothing inside the confirm past its edge').toEqual([])
+        expect(box.sideways, 'the confirm never scrolls sideways').toBeLessThanOrEqual(0)
+        expect(box.squeezed, 'D3a\'s list drawn whole, never squeezed').toBeLessThanOrEqual(0)
+        if (at === 320) expect(box.scrolls, 'the found list outgrows a 568 window: the confirm scrolls inside itself').toBeGreaterThan(0)
+        const open = await sweep(page, '[data-small-screen]')
+        expect(open.small, 'Cancel, Roll back and the Download in the open confirm: 44px each').toEqual([])
+        expect(open.checked - rest.checked, 'the confirm\'s Cancel, Roll back and Download were measured').toBeGreaterThanOrEqual(3)
+        await confirm.locator('#history-confirm-go').scrollIntoViewIfNeeded()
+        await expect(confirm.locator('#history-confirm-go')).toBeInViewport()
+        expect(await sideways(page)).toEqual({ scroll: 0, outside: [] })
+        // Cancel: closed, and nothing else started — the check is History's route, never the lock or the sync
+        await confirm.locator('[data-cancel]').tap()
+        await expect(confirm).not.toHaveAttribute('open', '')
+        // the backdrop, while the check reads: closed, and nothing sent — the check this opening sent is the only request for v4,
+        // nothing is said and the card is unchanged
+        const v4 = '00000000-0000-4000-8000-000000072204'
+        let release
+        const held = new Promise((r) => { release = r })
+        let sent = 0
+        await page.route((url) => url.pathname.startsWith(HARNESS), async (route) => {
+          const r = route.request()
+          if (r.method() === 'POST' && r.headers()['next-action'] && (r.postData() ?? '').includes(v4)) {
+            sent++
+            await held
+          }
+          return route.fallback()
+        })
+        await card.locator('[data-history-act]').tap()
+        await expect(confirm.locator('[data-history-check="reading"]')).toBeVisible({ timeout: 15_000 })
+        await page.touchscreen.tap(4, 4)
+        await expect(confirm, 'the backdrop closes it while the check reads').not.toHaveAttribute('open', '')
+        release()
+        await page.waitForTimeout(1000)
+        expect(sent, 'the check alone — no put-back').toBe(1)
+        expect(await card.locator('[data-history-said]').innerText()).toBe('')
+        await expect(card.locator('[data-history-note]')).toBeEmpty()
+        await expect(card.locator('[data-history-card-line]')).toContainText(`${HW.live} v5 · `)
+        await page.unrouteAll({ behavior: 'ignoreErrors' })
+        expect(hits, 'no lock or sync request').toEqual([])
+      })
+
+      test('the narrow row — v10 and another year\'s date: the button drops under the chip and the time, its label whole, nothing sideways', async ({ page }) => {
+        // the harness's versions are November 2026's: in February 2027 every date carries its year
+        await page.clock.setFixedTime(new Date('2027-02-01T12:00:00Z'))
+        const card = await opened(page, 'long')
+        await expect(card).toHaveAttribute('data-history-card', 'live')
+        await expect(card.locator('[data-history-card-line]')).toContainText(`${HW.live} v11 · `)
+        await expect(card.locator('[data-history-card-line]')).toContainText('2026')
+        const row = card.locator('[data-history-undo="v10"]')
+        await expect(row.locator('[data-history-time]')).toContainText(', 2026 · ')
+        await expect(row.locator('[data-history-act]')).toHaveAccessibleName(HW.rollBackName(10))
+        const m = await row.evaluate((r) => {
+          const box = (e) => e.getBoundingClientRect()
+          const b = r.querySelector('[data-history-act]')
+          return { h: box(b).height, whole: b.scrollWidth <= b.clientWidth, under: box(b).top >= box(r.firstElementChild).bottom, inside: box(b).right <= box(r).right }
+        })
+        expect(m).toEqual({ h: 44, whole: true, under: true, inside: true })
+        expect(await sideways(page)).toEqual({ scroll: 0, outside: [] })
+      })
     })
   }
 })

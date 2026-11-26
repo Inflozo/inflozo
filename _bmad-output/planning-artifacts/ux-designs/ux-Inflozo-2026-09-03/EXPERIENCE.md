@@ -71,6 +71,11 @@ tablets held upright to the notice; every other touch screen keeps the editor), 
 surface, not a broken layout — which says the editor needs a wider screen and offers what does work from a phone:
 the project's deploy history, a one-tap rollback, the sites list and billing. The Dashboard itself
 stays fully usable at 390, exactly as `S3 Dashboard.dc.html` draws it.
+*(Story 7.23c's Dev, 2026-11-26 — the deploy history as built.* D4f's **Deploy history** card is the first row under "What
+works here", above the sites list: the linked site's Live version and its time, and the version before it with **Roll back to
+v{n}** on the card. The tap opens the same S8e confirm as History on a laptop — on Cancel, with R-291's check — so "one-tap"
+is the button on the card and the roll-back confirm stays exactly as drawn. With nothing shipped, no linked site or no kept
+version live, the card says so in one sentence. Billing's row is Story 12.5's.)*
 
 This matches what was drawn rather than deciding against it: `S1`, `S3` and `M1`–`M9` each carry a
 390 frame, and `S4`–`S14` carry none — and **Small Screen Notice** is drawn at 390
@@ -135,7 +140,7 @@ The other marketing pages exist and are drawn (`M1`–`M9`); this pass does not 
 | **Invoices** | S12d | Billing | Receipts, Dodo portal link |
 | **Suggestions** | `S13 Suggestions.dc.html` S13a–c | Account Menu | Board, submit sheet, empty state |
 | **Over-Limit Sheet** | D4c · D4d Which project stays editable · D4e Read-only project | grace expiry · any blocked exit while over | Itemised: what is over and by how much (FR-L3) |
-| **Small Screen Notice** | D4f, at 390 | opening a project on a phone — a touch screen whose shorter side is under 500px (R-201) | What works from a phone (R-76) |
+| **Small Screen Notice** | D4f, at 390 | opening a project on a phone — a touch screen whose shorter side is under 500px (R-201) | What works from a phone (R-76): the Deploy history card with its Roll back *(Story 7.23c, 2026-11-26)* and the sites list; billing with Story 12.5 |
 
 ### Editor
 

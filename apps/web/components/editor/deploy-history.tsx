@@ -82,11 +82,34 @@ import {
  * `aria-pressed`; while its request is out it says "Pinning v3…" with `aria-busy` and `aria-disabled` (R-98) and every pin waits.
  * Each outcome is said once in the one polite region (UX-DR12). The server is the control (`pin_version`, FR-J7): `cap` opens D2b
  * with focus on Got it, and Got it or Esc returns focus to the pin; `gone` re-reads, so the row leaves the list.
+ *
+ * STORY 7.23c — S8e'S CONFIRM AND R-291'S CHECK ARE ONE EXPORTED COMPONENT, `RollBackConfirm` below, MOVED OUT OF THIS DRAWER WHOLE —
+ * never copied — so the drawer and the phone's Deploy history card (`small-screen-notice.tsx`) mount the same thing: its markup and
+ * every `data-history-*` hook, the check's ticket, the put-back and "Rolling back…", `data-unstoppable`, opening on Cancel and focus
+ * back on what opened it. It hands each ending (the put-back's outcome, or the check's refusal) to its caller and says when a
+ * put-back is out; the drawer keeps its own `settle` (✕ and the list read again) and its pins and Restore original wait on that
+ * `acting` exactly as before. No drawer behaviour changed.
  */
 
 type Shown = { kind: 'loading' } | { kind: 'failed' } | { kind: 'rows'; rows: HistoryRow[]; live: number | null; original: OriginalTheme | null }
 /** R-291 — the check before a Roll back, as the confirm draws it: reading, its record (null: nothing to compare), or its request failed */
 type Checked = { kind: 'reading' } | Extract<CheckOutcome, { kind: 'drift' | 'failed' }>
+
+/** the version chip — on a tinted row it sits on the surface, as drawn; the confirm's summary row and the phone card's row draw it too */
+export const versionChip = (r: HistoryRow, tinted: boolean) => (
+  <span className={`inline-flex items-center rounded-pill border border-line px-2 py-px font-mono text-[11px] font-medium text-ink [font-variant-ligatures:none] ${tinted ? 'bg-surface' : ''}`}>
+    {versionLabel(r.n)}
+  </span>
+)
+const gscanChip = (r: HistoryRow) =>
+  r.gscan === null ? null : (
+    <span data-history-gscan>
+      <ResultChip tone={chipTone(r.gscan)}>
+        <span aria-hidden>{HW.gscan(r.gscan.errors, r.gscan.warnings)}</span>
+        <span className="sr-only">{HW.gscanSaid(r.gscan.errors, r.gscan.warnings)}</span>
+      </ResultChip>
+    </span>
+  )
 
 /** D2's thumbnail (`D2 Deploy History Completed.dc.html:76`): the frame's schematic of a page, drawn alike on every expanded row */
 const Thumb = () => (
@@ -138,12 +161,6 @@ export function DeployHistory({ projectName, read, pin, act, check, liveHref, re
   const [opens, setOpens] = useState(0)
   /** a refusal said under a row — or under the original's, where Ghost's check refusing it also draws its fallback (`offer`) */
   const [note, setNote] = useState<{ id: string; words: string; detail?: string; offer?: true } | null>(null)
-  const confirm = useRef<HTMLDialogElement>(null)
-  /** R-291 — the check before a Roll back, and the opening it answers for: a press of a Roll back and the confirm closing each move
-   *  it on, so an answer that lands for an opening since closed or replaced is dropped */
-  const [checked, setChecked] = useState<Checked | null>(null)
-  const checking = useRef(0)
-  const reading = checked?.kind === 'reading'
 
   /** the list, read and DRAWN before it returns (`flushSync`), so focus lands on what it drew — its rows, or null when it failed */
   const load = async (): Promise<HistoryRow[] | null> => (await loaded())?.rows ?? null
@@ -181,49 +198,24 @@ export function DeployHistory({ projectName, read, pin, act, check, liveHref, re
     if (id !== null) pinOf(id)?.focus()
   }
 
-  // S8e's confirm opens on Cancel (UX-DR14)
-  useEffect(() => {
-    if (asking !== null && confirm.current?.open !== true) openOnCancel(confirm.current)
-  }, [asking, opens])
-
   const actOf = (id: string) => dialog.current?.querySelector<HTMLElement>(`[data-history-act="${id}"]`) ?? null
-  /** Cancel or Esc: the confirm closes and focus goes back to the Roll back that opened it — never while its request is out */
-  const cancelConfirm = () => {
-    if (acting !== null) return
-    confirm.current?.close()
-  }
 
-  /** THE PUT-BACK: an ending is said in the drawer's region, the list read again and focus put on ✕; a refusal is said under its row
-   *  and focus goes back to the row's action */
+  /** RE-ACTIVATE (no confirm): an ending is said in the drawer's region, the list read again and focus put on ✕; a refusal is said
+   *  under its row and focus goes back to the row's action. A Roll back's put-back is the confirm's own (`RollBackConfirm`) */
   const putBack = async (row: HistoryRow): Promise<void> => {
     if (acting !== null || busy !== null) return
     setNote(null)
     setActing(row.id)
     const outcome: ActOutcome = await act(row.id).catch((): ActOutcome => ({ kind: 'failed' }))
     setActing(null)
-    await settle(row, outcome, asking !== null)
-  }
-
-  /** R-291 — THE CHECK BEFORE A ROLL BACK, sent as its confirm opens: its record is drawn in the confirm, a failed request as D3b's
-   *  unreachable row; a refusal closes the confirm and is the put-back's own (`settle`). An answer for another opening is dropped */
-  const checkFirst = async (row: HistoryRow): Promise<void> => {
-    const ticket = ++checking.current
-    setChecked({ kind: 'reading' })
-    const outcome: CheckOutcome = await check(row.id).catch((): CheckOutcome => ({ kind: 'failed' }))
-    if (ticket !== checking.current) return
-    if (outcome.kind === 'drift' || outcome.kind === 'failed') return setChecked(outcome)
-    setChecked(null)
-    await settle(row, outcome, true)
+    await settle(row, outcome, false)
   }
 
   /** AN OUTCOME, SAID ONCE — a put-back's, or the check's refusal (R-291: handled exactly as the put-back's same refusal). `inConfirm`:
-   *  it came from the confirm, which closes (its close puts focus back on the row's action) */
+   *  it came from the confirm, which has closed itself (its close puts focus back on the row's action) */
   const settle = async (row: HistoryRow, outcome: ActOutcome, inConfirm: boolean): Promise<void> => {
     const words = actSaid(outcome, row.n, row.host)
-    const back = inConfirm ? row.id : null
     if (outcome.kind === 'live' || outcome.kind === 'uploaded' || outcome.kind === 'gone') {
-      setAsking(null)
-      confirm.current?.close()
       say(words)
       await load()
       document.getElementById('deploy-history-close')?.focus()
@@ -234,7 +226,6 @@ export function DeployHistory({ projectName, read, pin, act, check, liveHref, re
     // then say the sentence once — under the row while it is still drawn with an action, else in the region with focus on ✕.
     // Ghost's refusals, `busy`, `disconnected` and ours changed nothing, so they read nothing again
     if (outcome.kind === 'failed' || (outcome.kind === 'refused' && (outcome.code === 'live' || outcome.code === 'elsewhere'))) {
-      if (back !== null) confirm.current?.close()
       const rows = await load()
       const now = rows?.find((r) => r.id === row.id)
       if (now?.action == null) {
@@ -248,8 +239,7 @@ export function DeployHistory({ projectName, read, pin, act, check, liveHref, re
       return
     }
     setNote(noted)
-    if (back !== null) confirm.current?.close()
-    else actOf(row.id)?.focus()
+    if (!inConfirm) actOf(row.id)?.focus()
   }
 
   /** STORY 7.23b — RESTORE ORIGINAL: one press, no confirm. An ending is said once, the list read again and focus put on ✕; a
@@ -307,21 +297,6 @@ export function DeployHistory({ projectName, read, pin, act, check, liveHref, re
     if (acting === null) dialog.current?.close()
   }
 
-  /** the version chip — on a tinted row it sits on the surface, as drawn */
-  const chip = (r: HistoryRow, tinted: boolean) => (
-    <span className={`inline-flex items-center rounded-pill border border-line px-2 py-px font-mono text-[11px] font-medium text-ink [font-variant-ligatures:none] ${tinted ? 'bg-surface' : ''}`}>
-      {versionLabel(r.n)}
-    </span>
-  )
-  const gscanChip = (r: HistoryRow) =>
-    r.gscan === null ? null : (
-      <span data-history-gscan>
-        <ResultChip tone={chipTone(r.gscan)}>
-          <span aria-hidden>{HW.gscan(r.gscan.errors, r.gscan.warnings)}</span>
-          <span className="sr-only">{HW.gscanSaid(r.gscan.errors, r.gscan.warnings)}</span>
-        </ResultChip>
-      </span>
-    )
   const pinnedTag = (r: HistoryRow) =>
     r.pinned ? (
       <span data-history-pinned className="inline-flex items-center rounded-pill bg-marigold-tint px-2 py-[2px] text-[10px] font-semibold uppercase text-marigold-text">
@@ -374,7 +349,6 @@ export function DeployHistory({ projectName, read, pin, act, check, liveHref, re
           setNote(null)
           setAsking(r)
           setOpens((n) => n + 1)
-          void checkFirst(r)
         }}
         className="shrink-0"
       >
@@ -515,7 +489,7 @@ export function DeployHistory({ projectName, read, pin, act, check, liveHref, re
           <Thumb />
           <div className="flex min-w-0 flex-1 flex-col gap-[5px]">
             <div className="flex items-center gap-[7px]">
-              {chip(r, r.live || r.pinned || reactivate)}
+              {versionChip(r, r.live || r.pinned || reactivate)}
               {r.live ? <LiveBadge label={HW.live} /> : null}
               {pinnedTag(r)}
               {reactivate ? (
@@ -551,7 +525,7 @@ export function DeployHistory({ projectName, read, pin, act, check, liveHref, re
         data-pinned={r.pinned || undefined}
         className={`relative flex flex-wrap items-center gap-x-2 gap-y-[6px] rounded border px-3 py-[9px] ${r.pinned ? 'border-marigold-line bg-marigold-tint-soft' : 'border-line'} ${raised(r)}`}
       >
-        {chip(r, r.pinned)}
+        {versionChip(r, r.pinned)}
         {r.live ? <LiveBadge label={HW.live} /> : null}
         {pinnedTag(r)}
         {gscanChip(r)}
@@ -646,119 +620,224 @@ export function DeployHistory({ projectName, read, pin, act, check, liveHref, re
       <p data-history-said aria-live="polite" className="sr-only">
         <span key={said.n}>{said.words}</span>
       </p>
-      {/* STORY 7.23a — S8e's Roll back confirm (`S8 Deploy.dc.html:337-345`), nested in the drawer in the wizard's switch-site
-          confirm's shape: 410 wide, opened on Cancel (UX-DR14); the summary row is the version's chip, time and gscan chip with no
-          by-line (R-189); Pre-flight's own marigold block where Ghost will forget a setting (VERIFY 76) */}
-      <dialog
-        ref={confirm}
-        data-history-confirm
-        data-unstoppable={acting !== null || undefined}
-        aria-labelledby="history-confirm-title"
-        aria-describedby="history-confirm-body"
-        onClick={(event) => {
-          // the drawer's own backdrop test must never see a click on this one
-          event.stopPropagation()
-          if (acting === null) closeOnBackdrop(event)
-        }}
-        // once it starts, it finishes (S8c's rule): the cancel is refused, and so is the keydown that would ask for it — a second Esc
-        // after a refused cancel would close it anyway (the wizard's own note). Esc here is this dialog's alone
-        onKeyDown={(event) => {
-          if (event.key !== 'Escape') return
-          event.stopPropagation()
-          if (acting !== null) event.preventDefault()
-        }}
-        onCancel={(event) => {
-          event.stopPropagation()
-          if (acting !== null) event.preventDefault()
-        }}
-        onClose={(event) => {
-          event.stopPropagation()
-          // a close event that arrives after the confirm was opened again belongs to the last opening: nothing to do
-          if (confirm.current?.open === true) return
-          const id = asking?.id
-          setAsking(null)
-          // the check this opening sent is dropped should it land now (R-291)
-          checking.current++
-          setChecked(null)
-          // back to the Roll back that opened it (an ending moves it on to ✕ once the list is read again)
-          if (id !== undefined) actOf(id)?.focus()
-        }}
-        // R-291: a drift list longer than the window scrolls INSIDE the confirm — the modal dialog's own `max-height` and
-        // `overflow: auto` (the browser's, which `floor.spec.mjs` measures in a short window) — so nothing is drawn past it
-        className="m-auto w-[410px] max-w-[calc(100vw-20px)] flex-col gap-4 rounded-lg bg-surface p-6 text-ink shadow-modal backdrop:bg-scrim open:flex"
-      >
-        {asking === null ? null : (
-          <>
-            <div className="flex flex-col gap-[5px]">
-              <h3 id="history-confirm-title" className="m-0 font-display text-[19px] font-bold tracking-[-0.01em] text-ink">{HW.confirmTitle(asking.n)}</h3>
-              <p id="history-confirm-body" className="m-0 text-ui-dense leading-[1.5] text-ink-soft">
-                {HW.confirmBody(asking.n, shown.kind === 'rows' ? shown.live : null, asking.drops)}
-              </p>
-            </div>
-            <div data-history-confirm-row className="flex items-center gap-2 rounded-thumb border border-line px-3 py-[9px]">
-              {chip(asking, false)}
-              <span className="text-[12px] text-ink-soft">{timeLabel(asking.acceptedAt, now)}</span>
-              <span className="ml-auto">{gscanChip(asking)}</span>
-            </div>
-            {/* R-291 — the check's one region, heard once (UX-DR12) */}
-            <div role="status" data-history-check={checked === null ? undefined : checked.kind === 'drift' ? (checked.drift?.kind ?? 'none') : checked.kind} className="flex flex-col gap-3 empty:hidden">
-              {checked === null ? null : checked.kind === 'reading' ? (
-                <StageRow tone="running" label={DW.reading} />
-              ) : checked.kind === 'failed' ? (
-                <DriftUnverified cause="unreachable" body={causeSentence('unreachable', { host: asking.host, theme: '' })} />
-              ) : checked.drift === null ? null : checked.drift.kind === 'clean' ? (
-                <div className="overflow-hidden rounded-thumb border border-line">
-                  <PassRow words={DW.clean(checked.drift.since)} clean />
-                </div>
-              ) : checked.drift.kind === 'unverified' ? (
-                <DriftUnverified cause={checked.drift.cause} body={causeSentence(checked.drift.cause, { host: asking.host, theme: checked.drift.theme, ...(checked.drift.status === undefined ? {} : { status: checked.drift.status }) })} />
-              ) : (
-                <>
-                  <DriftFound record={checked.drift} idPrefix="history-drift" />
-                  <p data-drift-foot className="m-0 text-[12px] leading-[1.55] text-ink-soft [text-wrap:pretty]">{HW.checkFoot(driftCount(checked.drift), asking.n)}</p>
-                  {/* Story 7.22 (DW-396): a live zip past the store's size was not kept — no copy, so no Download; the Roll back stays */}
-                  {/* Story 7.23b (DW-391): followed so a 404, 502 or the sign-in is said under it, never in place of the editor */}
-                  {checked.drift.kept === false ? null : <SignedDownload id="history-drift-download" href={liveHref(checked.drift.theme)} label={DW.download} />}
-                </>
-              )}
-            </div>
-            {asking.drops === null || asking.drops.length === 0 ? null : (
-              <div data-history-drops className="flex gap-[9px] rounded border border-marigold-line bg-marigold-tint-soft px-[13px] py-[11px]">
-                <AlertTriangle size={14} strokeWidth={1.8} className="mt-px shrink-0 text-marigold-text" />
-                <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
-                  <span className="text-[12.5px] font-semibold text-ink">{PREFLIGHT_WORDS.dropped(asking.drops.length, asking.host)}</span>
-                  <span className="text-control-label leading-[1.5] text-ink-soft">{PREFLIGHT_WORDS.droppedBody}</span>
-                  <ul className="m-0 flex list-none flex-col gap-1 p-0">
-                    {asking.drops.map((name) => (
-                      <li key={name} className="text-control-label leading-[1.5] text-ink">{name}</li>
-                    ))}
-                  </ul>
-                </div>
+      {/* STORY 7.23a — S8e's Roll back confirm, nested in the drawer (since Story 7.23c the one exported `RollBackConfirm`): its
+          ending is the drawer's `settle`, its put-back out is the drawer's `acting`, and its close puts focus back on the Roll back */}
+      <RollBackConfirm
+        asking={asking}
+        opens={opens}
+        live={shown.kind === 'rows' ? shown.live : null}
+        act={act}
+        check={check}
+        liveHref={liveHref}
+        backTo={(r) => actOf(r.id)}
+        onActing={setActing}
+        onEnd={(r, outcome) => settle(r, outcome, true)}
+        onClosed={() => setAsking(null)}
+      />
+    </dialog>
+  )
+}
+
+/**
+ * STORY 7.23a — S8E'S ROLL BACK CONFIRM (`S8 Deploy.dc.html:337-345`) AND R-291'S CHECK, exported whole by Story 7.23c so the drawer and
+ * the phone's Deploy history card mount the same thing (never a copy). The wizard's switch-site confirm's shape: 410 wide — the
+ * window less 20 on a phone — opened on Cancel (UX-DR14); the summary row is the version's chip, time and gscan chip with no by-line
+ * (R-189); the check's one region; Pre-flight's own marigold block where Ghost will forget a setting (VERIFY 76).
+ *
+ * THE CALLER OPENS IT by setting `asking` and counting the press in `opens` (a confirm reopened before the last one's `close` event
+ * has run still opens: that event is queued, so `asking` can still hold the same row); each opening sends the check at once with its
+ * own ticket. It CLOSES ITSELF — Cancel, Esc, the backdrop, or an ending — and then tells the caller (`onClosed`), which drops
+ * `asking`; focus goes back on what opened it (`backTo`) unless the ending moved it on (live, on the site, gone: the caller focuses
+ * what it reads again). Each ending — the put-back's outcome, or the check's refusal — is the caller's to say (`onEnd`); while the
+ * put-back is out the caller is told (`onActing`), and Cancel, Esc and the backdrop wait (S8c's "once it starts, it finishes").
+ */
+export function RollBackConfirm({ asking, opens, live, act, check, liveHref, backTo, onActing, onEnd, onClosed }: {
+  /** the row the confirm is open for, or null when it is closed */
+  asking: HistoryRow | null
+  /** each press of a Roll back */
+  opens: number
+  /** the version live on the linked site — the body's "v{n} stays in history" — or null when none is (or it is no longer kept) */
+  live: number | null
+  act: (deploy: string) => Promise<ActOutcome>
+  check: (deploy: string) => Promise<CheckOutcome>
+  liveHref: (theme: string) => string
+  /** what opened it — the row's Roll back — where its close puts focus back */
+  backTo: (row: HistoryRow) => HTMLElement | null
+  /** a put-back is out (its row's id), or no longer (null) — the drawer's pins and Restore original wait on it */
+  onActing?: (id: string | null) => void
+  /** an ending, once the confirm has closed: the put-back's outcome, or the check's refusal (handled as the put-back's same one) */
+  onEnd: (row: HistoryRow, outcome: ActOutcome) => void | Promise<void>
+  /** it closed: the caller drops `asking` */
+  onClosed: () => void
+}) {
+  const confirm = useRef<HTMLDialogElement>(null)
+  const now = useMemo(() => new Date(), [])
+  /** the row whose put-back is out */
+  const [acting, setActing] = useState<string | null>(null)
+  /** R-291 — the check before a Roll back, and the opening it answers for: a press of a Roll back and the confirm closing each move
+   *  it on, so an answer that lands for an opening since closed or replaced is dropped */
+  const [checked, setChecked] = useState<Checked | null>(null)
+  const checking = useRef(0)
+  const reading = checked?.kind === 'reading'
+  /** an ending that moves focus on (live, on the site, gone): the close puts nothing back — the caller focuses what it reads again */
+  const moved = useRef(false)
+
+  // S8e's confirm opens on Cancel (UX-DR14), and R-291's check is sent at once — each press its own opening
+  useEffect(() => {
+    if (asking === null) return
+    moved.current = false
+    if (confirm.current?.open !== true) openOnCancel(confirm.current)
+    void checkFirst(asking)
+  }, [asking, opens])
+
+  /** Cancel or Esc: the confirm closes and focus goes back to the Roll back that opened it — never while its request is out */
+  const cancelConfirm = () => {
+    if (acting !== null) return
+    confirm.current?.close()
+  }
+
+  /** an ending: the confirm closes, then the caller says it */
+  const end = async (row: HistoryRow, outcome: ActOutcome): Promise<void> => {
+    moved.current = outcome.kind === 'live' || outcome.kind === 'uploaded' || outcome.kind === 'gone'
+    confirm.current?.close()
+    await onEnd(row, outcome)
+  }
+
+  /** THE PUT-BACK: "Rolling back…" while it is out, then its ending */
+  const putBack = async (row: HistoryRow): Promise<void> => {
+    if (acting !== null) return
+    setActing(row.id)
+    onActing?.(row.id)
+    const outcome: ActOutcome = await act(row.id).catch((): ActOutcome => ({ kind: 'failed' }))
+    setActing(null)
+    onActing?.(null)
+    await end(row, outcome)
+  }
+
+  /** R-291 — THE CHECK BEFORE A ROLL BACK, sent as its confirm opens: its record is drawn in the confirm, a failed request as D3b's
+   *  unreachable row; a refusal closes the confirm and is the put-back's own ending. An answer for another opening is dropped */
+  const checkFirst = async (row: HistoryRow): Promise<void> => {
+    const ticket = ++checking.current
+    setChecked({ kind: 'reading' })
+    const outcome: CheckOutcome = await check(row.id).catch((): CheckOutcome => ({ kind: 'failed' }))
+    if (ticket !== checking.current) return
+    if (outcome.kind === 'drift' || outcome.kind === 'failed') return setChecked(outcome)
+    setChecked(null)
+    await end(row, outcome)
+  }
+
+  return (
+    <dialog
+      ref={confirm}
+      data-history-confirm
+      data-unstoppable={acting !== null || undefined}
+      aria-labelledby="history-confirm-title"
+      aria-describedby="history-confirm-body"
+      onClick={(event) => {
+        // a containing dialog's own backdrop test must never see a click on this one
+        event.stopPropagation()
+        if (acting === null) closeOnBackdrop(event)
+      }}
+      // once it starts, it finishes (S8c's rule): the cancel is refused, and so is the keydown that would ask for it — a second Esc
+      // after a refused cancel would close it anyway (the wizard's own note). Esc here is this dialog's alone
+      onKeyDown={(event) => {
+        if (event.key !== 'Escape') return
+        event.stopPropagation()
+        if (acting !== null) event.preventDefault()
+      }}
+      onCancel={(event) => {
+        event.stopPropagation()
+        if (acting !== null) event.preventDefault()
+      }}
+      onClose={(event) => {
+        event.stopPropagation()
+        // a close event that arrives after the confirm was opened again belongs to the last opening: nothing to do
+        if (confirm.current?.open === true) return
+        const row = asking
+        const back = !moved.current
+        moved.current = false
+        // the check this opening sent is dropped should it land now (R-291)
+        checking.current++
+        setChecked(null)
+        onClosed()
+        // back to the Roll back that opened it (an ending moves it on once the caller has read again)
+        if (row !== null && back) backTo(row)?.focus()
+      }}
+      // R-291: a drift list longer than the window scrolls INSIDE the confirm — the modal dialog's own `max-height` and
+      // `overflow: auto` (the browser's, which `floor.spec.mjs` measures in a short window) — so nothing is drawn past it
+      className="m-auto w-[410px] max-w-[calc(100vw-20px)] flex-col gap-4 rounded-lg bg-surface p-6 text-ink shadow-modal backdrop:bg-scrim open:flex"
+    >
+      {asking === null ? null : (
+        <>
+          <div className="flex flex-col gap-[5px]">
+            <h3 id="history-confirm-title" className="m-0 font-display text-[19px] font-bold tracking-[-0.01em] text-ink">{HW.confirmTitle(asking.n)}</h3>
+            <p id="history-confirm-body" className="m-0 text-ui-dense leading-[1.5] text-ink-soft">
+              {HW.confirmBody(asking.n, live, asking.drops)}
+            </p>
+          </div>
+          <div data-history-confirm-row className="flex items-center gap-2 rounded-thumb border border-line px-3 py-[9px]">
+            {versionChip(asking, false)}
+            <span className="text-[12px] text-ink-soft">{timeLabel(asking.acceptedAt, now)}</span>
+            <span className="ml-auto">{gscanChip(asking)}</span>
+          </div>
+          {/* R-291 — the check's one region, heard once (UX-DR12) */}
+          <div role="status" data-history-check={checked === null ? undefined : checked.kind === 'drift' ? (checked.drift?.kind ?? 'none') : checked.kind} className="flex flex-col gap-3 empty:hidden">
+            {checked === null ? null : checked.kind === 'reading' ? (
+              <StageRow tone="running" label={DW.reading} />
+            ) : checked.kind === 'failed' ? (
+              <DriftUnverified cause="unreachable" body={causeSentence('unreachable', { host: asking.host, theme: '' })} />
+            ) : checked.drift === null ? null : checked.drift.kind === 'clean' ? (
+              <div className="overflow-hidden rounded-thumb border border-line">
+                <PassRow words={DW.clean(checked.drift.since)} clean />
               </div>
+            ) : checked.drift.kind === 'unverified' ? (
+              <DriftUnverified cause={checked.drift.cause} body={causeSentence(checked.drift.cause, { host: asking.host, theme: checked.drift.theme, ...(checked.drift.status === undefined ? {} : { status: checked.drift.status }) })} />
+            ) : (
+              <>
+                <DriftFound record={checked.drift} idPrefix="history-drift" />
+                <p data-drift-foot className="m-0 text-[12px] leading-[1.55] text-ink-soft [text-wrap:pretty]">{HW.checkFoot(driftCount(checked.drift), asking.n)}</p>
+                {/* Story 7.22 (DW-396): a live zip past the store's size was not kept — no copy, so no Download; the Roll back stays */}
+                {/* Story 7.23b (DW-391): followed so a 404, 502 or the sign-in is said under it, never in place of the page */}
+                {checked.drift.kept === false ? null : <SignedDownload id="history-drift-download" href={liveHref(checked.drift.theme)} label={DW.download} />}
+              </>
             )}
-            <div className="flex justify-end gap-[10px]">
-              <Button type="button" variant="ghost" size={38} weight="font-medium" data-cancel aria-disabled={acting !== null || undefined} onClick={cancelConfirm}>
-                {HW.cancel}
-              </Button>
-              <Button
-                type="button"
-                id="history-confirm-go"
-                variant="primary"
-                size={38}
-                // R-291: while the check reads it waits — the check is what is busy, and its running row says so
-                aria-disabled={acting !== null || reading || undefined}
-                aria-busy={acting === asking.id || undefined}
-                onClick={() => (reading ? undefined : void putBack(asking))}
-              >
-                <BusyLabel pending={acting === asking.id} busy={HW.rollingBack}>
-                  <RollBack size={12} />
-                  {HW.rollBack}
-                </BusyLabel>
-              </Button>
+          </div>
+          {asking.drops === null || asking.drops.length === 0 ? null : (
+            <div data-history-drops className="flex gap-[9px] rounded border border-marigold-line bg-marigold-tint-soft px-[13px] py-[11px]">
+              <AlertTriangle size={14} strokeWidth={1.8} className="mt-px shrink-0 text-marigold-text" />
+              <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
+                <span className="text-[12.5px] font-semibold text-ink">{PREFLIGHT_WORDS.dropped(asking.drops.length, asking.host)}</span>
+                <span className="text-control-label leading-[1.5] text-ink-soft">{PREFLIGHT_WORDS.droppedBody}</span>
+                <ul className="m-0 flex list-none flex-col gap-1 p-0">
+                  {asking.drops.map((name) => (
+                    <li key={name} className="text-control-label leading-[1.5] text-ink">{name}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
-          </>
-        )}
-      </dialog>
+          )}
+          <div className="flex justify-end gap-[10px]">
+            <Button type="button" variant="ghost" size={38} weight="font-medium" data-cancel aria-disabled={acting !== null || undefined} onClick={cancelConfirm}>
+              {HW.cancel}
+            </Button>
+            <Button
+              type="button"
+              id="history-confirm-go"
+              variant="primary"
+              size={38}
+              // R-291: while the check reads it waits — the check is what is busy, and its running row says so
+              aria-disabled={acting !== null || reading || undefined}
+              aria-busy={acting === asking.id || undefined}
+              onClick={() => (reading ? undefined : void putBack(asking))}
+            >
+              <BusyLabel pending={acting === asking.id} busy={HW.rollingBack}>
+                <RollBack size={12} />
+                {HW.rollBack}
+              </BusyLabel>
+            </Button>
+          </div>
+        </>
+      )}
     </dialog>
   )
 }
