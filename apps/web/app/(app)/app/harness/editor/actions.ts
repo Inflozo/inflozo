@@ -212,13 +212,17 @@ const ORIGINAL = (version: string | null): OriginalTheme => ({
   id: '00000000-0000-4000-8000-000000000723', theme: 'casper', version, capturedAt: '2026-11-02T09:00:00.000Z', siteUrl: 'https://harness.example',
 })
 
-/** STORY 7.23b — THE HARNESS'S RESTORE ORIGINAL, the editor's `historyRestore` seam (the route's POST `{ snapshot, act: 'restore' }`
+/** STORY 7.23b — THE HARNESS'S RESTORE ORIGINAL, the editor's `historyRestore` seam (the route's POST `{ snapshot, captured, act: 'restore' }`
  *  everywhere else), answered by `x-inflozo-harness-restore` with no database and no Ghost: `live` (and no header) and `uploaded` its
  *  endings; `refused` Ghost's own check refusing the original (the route's 422, with Ghost's detail); `gone` the route's 404;
  *  `disconnected` and `busy` its 409s; anything else a request that failed. Stateless: a journey switches the history header while
  *  the press is held, so the re-read draws what the restore left. The real restore is `put-back.test.ts`' and walk step 122's. */
-export async function harnessRestore(projectId: string, snapshot: string): Promise<ActOutcome> {
+export async function harnessRestore(projectId: string, snapshot: string, captured: string): Promise<ActOutcome> {
   if (!HARNESS || projectId !== HARNESS_PROJECT.id || typeof snapshot !== 'string') return { kind: 'failed' }
+  // the row History drew, by its id and its capture (Story 7.23b's review): anything else is the route's 404, so a press that sent
+  // the wrong row turns every journey that expects an ending red
+  const drawn = ORIGINAL(null)
+  if (snapshot !== drawn.id || captured !== drawn.capturedAt) return { kind: 'gone' }
   const asked = (await headers()).get('x-inflozo-harness-restore') ?? 'live'
   if (asked === 'live' || asked === 'uploaded') return { kind: asked }
   if (asked === 'refused') return { kind: 'refused', code: 'ghost_theme_refused', detail: 'The theme "casper" is not compatible or contains errors. Missing template post.hbs.' }

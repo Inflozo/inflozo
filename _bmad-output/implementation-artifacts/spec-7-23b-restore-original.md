@@ -2,10 +2,10 @@
 title: 'Story 7.23b — Restore original (split from Story 7.23 by R-290)'
 type: 'feature'
 created: '2026-11-26'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '59dcf65c983ae848809b244898f3adb2e796c3a8'
 owner_test: pending
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-23a-roll-back-and-re-activate-from-history.md']
 ---
 
@@ -339,7 +339,7 @@ gos for the writes.
 
 *UI:*
 - [x] `apps/web/components/editor/deploy-history.tsx`:
-  - the original row (D2a `:58-73` and the rule `:75`) above the list, outside its `<ol>`, with Restore original
+  - the original row (D2a `:58-71` and the rule `:73`) above the list, outside its `<ol>`, with Restore original
     (`Button` secondary, 28);
   - its busy state, outcomes, refusals and the refusal's fallback, as Always says;
   - the confirm's Download (`#history-drift-download`) clicks through `followSigned`, its sentence under it.
@@ -390,9 +390,41 @@ gos for the writes.
   - Story 7.25's card and AD-19's note: the restore joins the per-site lock beside the put-back.
 - [x] `deferred-work.md` -- resolve DW-389 and DW-391.
 
+### Review Findings
+
+*Story 7.23b's Review (2026-11-26): five layers — Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier — then walk step 122 on production and T1 (Verification).*
+
+- [x] [Review][Decision] After Restore original, Inflozo's `routes.yaml` stays on the site — Question 2 below (the owner's).
+- [x] [Review][Patch] A later capture keeps the snapshot's id (the capture upserts on `site_id`), so the matrix's "Gone — snapshot
+  replaced" could never fire and a stale drawer restored a theme it did not name: the restore now carries the row's `captured_at`
+  and answers gone when it moved [`server/deploy/put-back.ts` `restoreOriginal`; `history/route.ts`; `editor.tsx`; `deploy-history.tsx`]
+- [x] [Review][Patch] Deploy only stayed greyed after a restore until a reload (owner test step 4): closing History after a put-back
+  or a restore that landed re-reads the page, as the wizard's close does [`editor.tsx` `historyLanded`]
+- [x] [Review][Patch] After a restore the wizard still said v2 was what the site serves ("keep v2 active", "still serving v2", "live:
+  v2", "v2 → v3"): `previous` and the ship state's `prev` count a version only while the latest activated deploy is still `live`
+  [`deploy-io.ts` `previous`; `lib/deploy.ts` `shipStateOf`]
+- [x] [Review][Patch] A saved zip gone from the store (purged, or replaced mid-capture) was a 502 "Try again" that can never work: it
+  is gone [`put-back-io.ts` `snapshots.get`; `put-back.ts`]
+- [x] [Review][Patch] A snapshot row with no name (the column is nullable) would be sent to Ghost as `null` and drawn as nothing: gone,
+  and no row drawn [`put-back.ts`; `lib/retention.ts` `originalOf`]
+- [x] [Review][Patch] Nothing checked which snapshot the editor sends: the harness answers gone for any other row, and the request's
+  body is pinned by a source test [`harness/editor/actions.ts` `harnessRestore`; `deploy.test.ts`]
+- [x] [Review][Patch] Journey 7.23b (a) would turn red on 2027-01-01 ("Archived Nov 2" gains its year); (c) hard-coded "(opens in a
+  new tab)" instead of `DEPLOY_WORDS.newTab` [`tools/keyboard/journey.spec.mjs`]
+- [x] [Review][Patch] Walk 122c read Deploy only only after a reload: now in the same page with History closed, then reloaded, and its
+  caption "keep your current theme active"; 122i's direct POSTs carry `captured`; and 122b read the button's hidden busy word
+  (`textContent`, found by run 1) — it reads `innerText` [`tools/probe/run-verify-editor.cjs`]
+- [x] [Review][Patch] R-264 (a)'s old meaning in Story 7.18a's criterion (`epics.md`) and the epic context; the epic context's Held list
+  missing journeys (f) and (g); D2a's line citations one or two off (the rule is `:73`, the title `:62`, the button `:69`, D2c's
+  `:239-252`/`:250`) in the code, journeys, EXPERIENCE and this spec's Tasks and criteria (the frozen Intent keeps its `:75`)
+- [x] [Review][Defer] The Sites page's original-theme Download is still a plain link, and the Backup step's Theme row says its
+  failure in a line mounted with its words, in grey — DW-405, owned by Story 7.26 [`sites/(list)/page.tsx`; `deploy-wizard.tsx`] —
+  deferred, pre-existing
+
 **Acceptance Criteria:**
 - **Matches the frame.** Given the editor at 1440 on a project whose linked site has a snapshot, when History opens:
-  - the original row matches D2a `:58-73` and its rule `:75` (D2c `:240-252` on Free), with no Live badge;
+  - the original row matches D2a `:58-71` and its rule `:73` (D2c `:239-252` on Free), with no Live badge;
   - the refused row is drawn in the extrapolated shape: 7.23a's note, D3a's Download, B12b's link.
 - **One press back to the original, really.** Given a project with v1 and v2 shipped live to T1 and a casper snapshot, when
   Restore original is pressed:
@@ -441,6 +473,20 @@ gos for the writes.
   - **Walk step 122** puts the saved copy back under the name `walk-original` and plants the fatal original as `walk-fatal` (both
     T1-deleted by its finally); `STEP122_PLANT` plants B's original as `old-magazine` 2.1.0 — the saved Casper renamed, plus one
     template Handlebars cannot parse, proved blocked on gscan 6.4.2 before anything is stored — as the owner's test names it.
+- **2026-11-26, Review — what the review changed, each a routine call (Review Findings above has the list).**
+  - **Restore original names the row by its id AND its `captured_at`.** The frozen Always says "its id must equal the asked id, else
+    `gone`", written on the belief that a later capture writes a new row. It does not: `captureSnapshot` upserts on `site_id`, so the
+    id stays and only `captured_at` (and the path, name and version) move. POST `{ act: 'restore', snapshot, captured }`; a missing
+    or unreadable `captured` is a 400, a moved one is gone. The walk's repoints (122e/f) keep `captured_at`, so they still restore.
+  - **A saved zip the store no longer has is `gone`** (Storage's `NoSuchKey`, `statusCode` "404" — storage-js 2.115.0's
+    `StorageApiError`, read in source; the download route reads the same answer off the wire), and a row with no name is gone too.
+  - **Closing History after a put-back or a restore that landed re-reads the page** (`router.refresh()`), so Ship it's state
+    follows without a reload — the owner test's step 4 reads it in the same page.
+  - **`previous` and `prev` follow the record too**: the wizard's "keep vN active", "still serving vN", "live: vN" and "vN → vM" name a
+    version only while the latest activated deploy is still `live`. A ship, a Roll back and a refused activation read exactly as
+    before; a restore (or another project's ship to the site) now reads "your current theme".
+  - **D2a's lines, read again:** the row is `:58-71` and its rule `:73` (`:75` is the v10 row); D2c is `:239-252`. The frozen Intent
+    keeps its `:75`; the code, the journeys, EXPERIENCE and the Tasks and criteria here say `:73`.
 
 ## Design Notes
 
@@ -471,8 +517,10 @@ positives forbids. `deploy_kind` `snapshot_restore` stays unwritten, as 7.23a le
 - the site's `live` rows become `uploaded` (D2d's row and its Re-activate follow from 7.23a's `actionOf`);
 - "live here" needs the row still `live`. A Roll back, a ship and a refused activation behave exactly as before.
 
-`activated`/`activated_at` stay, so `previous` and Pre-flight's dropped settings still compare with the last version this project
-had live. That is still right: Ghost keeps theme settings per name (VERIFY 76).
+`activated`/`activated_at` stay, so Pre-flight's dropped settings (`previousCustom`) still compare with the last version this project
+had live. That is still right: Ghost keeps theme settings per name (VERIFY 76). *(Story 7.23b's Review: `previous` — the version the
+wizard says the site serves — no longer follows `activated` alone. It counts only while the latest activated deploy is still
+`live`, so after a restore the wizard says "your current theme", never "v2".)*
 
 **No confirm.** The frame draws none, and the PRD says "one-click". The undo is one press of Re-activate. 7.23a's Re-activate
 needs no confirm for the same reason. A confirm arrives only with Question 1's option 2, which has something to show in it.
@@ -522,6 +570,36 @@ only if Ghost no longer has it. Edition comes back with the April fix. Nothing i
 one press, as the design draws it. Casper and Source always work this way."* The register, FR-J13, FR-J16, EXPERIENCE F1 and F8,
 the card, the epic context and DW-389 follow; the code is Dev's.
 
+### Question 2 — After Restore original, should your site's old routes file come back too?
+
+**In plain English.** Besides the theme, Inflozo uploads a small settings file to your Ghost site, `routes.yaml`. It lists your
+site's addresses (for example a `/podcast/` page) and which page design each one uses. **Restore original switches your old theme
+back on but leaves Inflozo's routes file in place**, exactly as Roll back already does. No page breaks because of it: where a route
+names a page design your old theme does not have, Ghost uses that theme's ordinary page instead (Ghost's own code,
+`templates.js:191`, read for Story 7.23a). Inflozo keeps no copy of the routes file your site had before Inflozo; the Backup step
+before your first ship offers it as a download.
+
+**An example.** Before Inflozo your site was plain Casper with Ghost's standard addresses. In Inflozo you added a "Podcast" page at
+`/podcast/`. You press **Restore original**:
+- **Option 1:** Casper comes back. `/podcast/` still opens, as Casper's ordinary list page. Nothing mentions the routes file.
+- **Option 2:** the same, and the "is live" message adds one line saying your site still uses the addresses you set in Inflozo, and
+  that the routes file you downloaded before your first ship puts your old ones back if you upload it in Ghost.
+- **Option 3:** Inflozo also puts back Ghost's standard routes file, so `/podcast/` disappears — and so would any non-standard address
+  your site had before Inflozo.
+- **Option 4:** Inflozo starts keeping your site's own routes file when it first saves your old theme, and Restore original puts both
+  back together.
+
+1. **(RECOMMENDED) Leave the routes file as it is, as Roll back does.** One press, as built and as the design draws it; every address
+   still opens. The limit is written into FR-J13's note so it is never a surprise.
+2. **Leave it, and add the one-line note to the "is live" message.** No frame draws that line, so it would be extrapolated and
+   checked in your test.
+3. **Put back Ghost's standard routes file with the theme.** One more write to your site on every restore; any address made in
+   Inflozo or before it stops working.
+4. **Keep and restore your site's own routes file.** The fullest "never costs me the site I had", and a new saved file plus a new
+   step, so it would become its own later story; this story ships as option 1 meanwhile.
+
+**Ruled:** _(awaiting the owner)_
+
 ## Owner's manual test
 
 **Before you start:** on your go, Deploy plants two Free test accounts, both connected to T1 (`ghost6.inflozo.com`):
@@ -546,7 +624,7 @@ Use a desktop window at least **1366 px** wide. Keep a tab on `https://ghost6.in
      red **Re-activate** button, and nothing shows a green **Live** dot.
    - Reload ghost6.inflozo.com: it is **Casper** again.
 4. **URL:** A's editor. **Do:** close the panel, then open the small **▾** beside **Ship it**. **See:** the **Deploy only** row is
-   not greyed out. **Do:** press Esc.
+   not greyed out, and under it "Upload v3, keep your current theme active". **Do:** press Esc.
 5. **URL:** A's editor. **Do:** open History, then press **Re-activate** on v2. **See:** "Activating…", then v2 shows the green
    **Live** dot. ghost6.inflozo.com reads "Version 2".
 6. **URL:** A's editor, **keyboard only.** **Do:** close History and open it again with Enter on the clock; press Tab until
@@ -676,3 +754,53 @@ script from `tools/probe/.env`, never on argv, no value printed; the owner's in-
   `inflozo-`/`walk-` theme it uploaded. Its production writes: the throwaway account, its site, project, jobs and deploys through
   the product; the snapshot row repointed twice and deleted, two objects stored under its prefix, its site's `disconnected_at`
   stamped and cleared — all removed by the finally.
+
+**Executed — Review, the main session (2026-11-26, Node 24; every key read inside the process from `tools/probe/.env` by its variable
+name, never on argv, no value printed; the owner's in-session go to walk step 122, "1. Go, up to 3 runs"):**
+- **CI on the Dev head `d15ab252`** (`GITHUB_TOKEN`): run 45782292897 — `rls`, `check` (the whole `pnpm keyboard` gate with it) and
+  `deploy` success; the Render matrix success. **Vercel** (`VERCEL_TOKEN`): `dpl_2R4G8cmLktt56q5wZKkYWNzwu6y6` READY from `d15ab252`.
+  So the Dev's "on the final tree" stands on CI's whole keyboard gate, not only the local `-g "7\.23b"` run.
+- **The Real-infra verifier (read-only):**
+  - **R-99 holds.** Production read through `SUPABASE_DB_POOLER_URL` inside a `read only` transaction: `site_snapshots.theme_version`
+    `text`, nullable, no default, its comment the migration's word for word; every column the diff names on `site_snapshots`,
+    `deploys` and `deploy_jobs` present; `deploy_status` carries `uploaded` and `live`; `site_snapshots_owner_read` present; 5 snapshot
+    rows, none versioned, none nameless. Control: a column that does not exist counts 0.
+  - `authenticated` INSERT/UPDATE on `theme_version` false, SELECT true; `service_role` UPDATE true.
+  - **DW-391's three routes signed out on production** (`/snapshots/…/download`, `/projects/…/deploy/live`, `/projects/…/history/live`):
+    `Accept: application/json` → **401** `Not signed in`, no-store; as a link → **303** `/sign-in`. Control: the same nine asks while
+    production still served `ce08ed50` were all 303.
+  - T1's themes (staff token): `casper` active, `racer`, `source`, `inflozo-ghost6` (the owner's own, kept), no `walk-` theme. Control:
+    the same read with no token, 403.
+- **The review's patches, locally (Node 24):** `pnpm check` — lint and typecheck clean; its one red test (`server-wiring.test.ts` still
+  expecting the original read without `captured_at`) re-expected, then the web package's 1159 tests 0 failing. Each new assertion
+  seen red under a planted reversion, then restored: the `captured_at` compare, the nameless row, the missing object (one each in
+  `put-back.test.ts`), and `previous`'s still-`live` rule (`deploy-run.test.ts`). `pnpm keyboard`, whole: 373 passed, 2 failed — both
+  the browser crashing under another session's load ("Page crashed" at a `goto`, "Target crashed" at a key press, in 7.18c's R-275
+  and 7.10's rich Heading journeys, neither touching History); the two re-run alone, 2 of 2 green. Every 7.23b and 7.23a journey and
+  floor green in the whole run. `python3 tools/doc-audit.py --check`, twice: PASS.
+- **Walk step 122, run 1 — on the Dev head's deployment `d15ab252`** (a cut of steps 1–5 and 122 from a clean worktree at that sha,
+  the review's patched walk in its `tools/probe-debug/`): **63 PASS, 3 FAIL**. Every restore claim held on real Ghost:
+  - (a) two ships; the capture wrote `casper` **5.12.1** (`theme_version`);
+  - (b) the History GET's `original` on R's own session;
+  - (c) Restore original by the keyboard — "Restoring…", said, focus on ✕; T1 `casper*` with `inflozo-restore-test` still installed at
+    **zero** differences from v2's manifest; v2 `uploaded` with `activated`, `activated_at` and `accepted_at` untouched; no row added;
+  - (d) Re-activate v2 ("Version 2"), then Run checks: D3c **"since v2"** — the baseline held;
+  - (e) **VERIFY 10's snapshot half, executed**: `walk-original` (not held — the control) uploaded from the saved zip and activated,
+    its download at zero differences from the saved zip;
+  - (f) a planted fatal original (gscan 6.4.2 GS005-TPL-ERR, proved locally first, the real zip clean): Ghost's 422 said under the
+    row with its detail, the Download pressed — a zip downloaded and the editor stayed (DW-391 through the product) — Design &
+    branding at the site's own Design panel, nothing on T1 or in the rows changed; the control, the row back as captured, accepted;
+  - (g) DW-391 signed in: `200 { url }`, a `PK` zip as an attachment; as a link the opaque 303; signed out 401;
+  - (h) a second session reading along (`[data-readonly]`, the first holding the lock): Restore original said;
+  - (i) another account's POST 404 with T1 untouched; a disconnected site 409 `disconnected`; the row deleted — download 404,
+    restore 404, the GET's `original` null;
+  - finally: T1 `casper*` with `inflozo-ghost6` kept, every theme the run uploaded deleted, `routes.yaml` 130 → 130 bytes; R deleted,
+    objects 0; users 25 → 25, projects 18 → 18; zero CSP violations.
+
+  **The three FAILs, each classified:**
+  - **122b** read the button's `textContent`, which carries the BusyLabel's hidden "Restoring…" — the walk's own read; it now reads
+    `innerText`.
+  - **122c, in the same page** — Deploy only still **greyed** after the restore, with "v2 is already live…". This is the review's
+    finding on production: the page kept its load-time ship state. The control for the fix.
+  - **122c, reloaded** — free, but its caption read **"Upload v3, keep v2 active"** while Casper was live. Also the review's finding,
+    and the control for the `previous`/`prev` fix.

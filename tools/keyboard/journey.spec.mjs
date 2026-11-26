@@ -11879,7 +11879,7 @@ test('7.23a · (r) R-291: a check REFUSED is the put-back\'s own refusal — `bu
   await expect(drawer(page).locator('[data-history-note]:not(:empty)')).toHaveCount(0)
 })
 
-/* ── Story 7.23b — Restore original (FR-J13's safety net; D2a's original-theme row `:58-73` and its rule `:75`; R-292; DW-389;
+/* ── Story 7.23b — Restore original (FR-J13's safety net; D2a's original-theme row `:58-71` and its rule `:73`; R-292; DW-389;
    DW-391; UX-DR12, R-98) ──────────────────────────────────────────────────────────────────────────────────────────────────────
    The row is the harness's own read (`harnessHistory`), by `x-inflozo-harness-history`: `original` (the linked site's saved
    `casper 5.9.4` over v2 live and v1), `original-restored` (the same after a restore: v2 D2d's row, nothing live — a journey switches
@@ -11920,12 +11920,13 @@ test('7.23b · (a) D2a\'s original-theme row: above the list and OUTSIDE its cou
   const name = row.locator('[data-history-original-name]')
   await expect(name).toHaveText('casper 5.9.4')
   expect(await name.evaluate((e) => getComputedStyle(e).fontFamily)).toMatch(/mono/i)
-  await expect(row.locator('[data-history-archived]')).toHaveText(HW.archived('Nov 2'))
+  // the harness's capture is Nov 2, 2026: the year joins the date once it is not this one (`archivedLabel`), so this holds after 2026
+  await expect(row.locator('[data-history-archived]')).toHaveText(HW.archived(new Date().getFullYear() === 2026 ? 'Nov 2' : 'Nov 2, 2026'))
   await expect(row).toContainText(HW.originalQuiet)
   await expect(restoreButton(page)).toHaveAccessibleName(HW.restore)
   expect(Math.round(await restoreButton(page).evaluate((b) => b.getBoundingClientRect().height)), 'the Kit\'s 28').toBe(28)
   await expect(row, 'no Live badge: no record says it is live').not.toContainText(HW.live)
-  // the order: the row, its rule, then the list (D2a `:58-75`)
+  // the order: the row, its rule, then the list (D2a `:58-73`)
   const order = await drawer(page).evaluate((d) => [...d.querySelectorAll('[data-history-original], [data-history-original-rule], ol, [data-history-limit]')].map((e) => e.hasAttribute('data-history-original') ? 'row' : e.hasAttribute('data-history-original-rule') ? 'rule' : e.tagName === 'OL' ? 'list' : 'limit'))
   expect(order).toEqual(['row', 'rule', 'list', 'limit'])
   await expect(page.locator('#deploy-history-close')).toBeFocused()
@@ -11992,7 +11993,7 @@ test('7.23b · (c) Ghost\'s own check refuses the original: under the row, the s
   await expect(place).toHaveAttribute('target', '_blank')
   await expect(place).toContainText(`${HW.originalPlace} ↗`)
   // the line ends with the link
-  expect(await fallback.locator('p').evaluate((p) => p.lastElementChild?.hasAttribute('data-history-original-place') && p.textContent.trim().endsWith('(opens in a new tab)'))).toBe(true)
+  expect(await fallback.locator('p').evaluate((p, w) => p.lastElementChild?.hasAttribute('data-history-original-place') && p.textContent.trim().endsWith(w), DW.newTab)).toBe(true)
   expect(await historySaid(page)).toBe('')
   // the Tab path: Restore original, then the Download, then the link
   await page.keyboard.press('Tab')

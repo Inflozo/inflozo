@@ -117,11 +117,13 @@ export const DEPLOY_IO: DeployIo = {
       const row = rows?.[0]
       return row === undefined ? null : { version: row.version, content_manifest: row.content_manifest ?? null }
     },
+    // Story 7.23b's review: only while this project's latest activated deploy on the site is still `live` — a Restore original (or
+    // another project's ship to the site) demotes it, and the site then serves another theme, never "still serving v2". The latest
+    // activated row is always the live one while any is: every activation stamps `activated_at`, and a demote stamps nothing
     async previous({ projectId, siteId, userId, except }) {
-      let q = supabaseAdmin().from('deploys').select('version').eq('project_id', projectId).eq('site_id', siteId).eq('user_id', userId).eq('activated', true)
-      if (except !== undefined) q = q.neq('id', except)
-      const rows = ok(await q.order('activated_at', { ascending: false }).limit(1), 'previous deploy') as { version: string }[] | null
-      const n = Number(/^(\d+)\.0\.0$/.exec(rows?.[0]?.version ?? '')?.[1])
+      const rows = ok(await supabaseAdmin().from('deploys').select('id, version, status').eq('project_id', projectId).eq('site_id', siteId).eq('user_id', userId).eq('activated', true).order('activated_at', { ascending: false }).limit(2), 'previous deploy') as { id: string; version: string; status: string }[] | null
+      if (rows?.[0]?.status !== 'live') return null
+      const n = Number(/^(\d+)\.0\.0$/.exec(rows.find((r) => r.id !== except)?.version ?? '')?.[1])
       return Number.isFinite(n) && n > 0 ? n : null
     },
   },

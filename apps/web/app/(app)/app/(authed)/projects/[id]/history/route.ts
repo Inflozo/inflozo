@@ -39,7 +39,8 @@ import { PUT_BACK_IO } from '@/server/deploy/put-back-io'
  *
  * STORY 7.23b — RESTORE ORIGINAL. GET adds `original`: the user's `site_snapshots` rows with their site's address, read on the
  * user's OWN session (RLS `site_snapshots_owner_read`), and the project's linked site's picked — never another site's (that site may
- * be another project's now, R-267). POST `{ act: 'restore', snapshot }` — checked before `deploy`, which it does not carry — is
+ * be another project's now, R-267). POST `{ act: 'restore', snapshot, captured }` — the row's id and the `captured_at` History drew
+ * (a later capture keeps the id), checked before `deploy`, which it does not carry — is
  * `restoreOriginal` over the same io: activate the saved original by its name, and upload the saved zip only when Ghost no longer
  * holds it (R-292). Its answers are the act branch's own: 200 `{ outcome }` (`live` · `uploaded`), 404 gone, 409 `{ code }`
  * (`disconnected` · `busy`), 422 Ghost's check with its `detail`, 502 `{ code, message }`. THE RESTORE READS NO PLAN, NO LOCK AND
@@ -145,12 +146,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return no(400, 'Not JSON')
   }
   if (typeof body !== 'object' || body === null) return no(400, 'Not an object')
-  const { deploy, pinned, act, snapshot } = body as Record<string, unknown>
+  const { deploy, pinned, act, snapshot, captured } = body as Record<string, unknown>
 
-  // ── Story 7.23b — Restore original: the saved original's id, never a deploy. No plan, no lock, no gscan (the header says why) ──
+  // ── Story 7.23b — Restore original: the saved original's id and when it was captured (a later capture keeps the id), never a
+  // deploy. No plan, no lock, no gscan (the header says why) ──
   if (act === 'restore') {
-    if (typeof snapshot !== 'string' || !isUuid(snapshot)) return no(400, 'Bad snapshot')
-    return answered(await restoreOriginal(PUT_BACK_IO, { userId: user.id, projectId, snapshotId: snapshot, now: new Date() }))
+    if (typeof snapshot !== 'string' || !isUuid(snapshot) || typeof captured !== 'string' || Number.isNaN(Date.parse(captured))) return no(400, 'Bad snapshot')
+    return answered(await restoreOriginal(PUT_BACK_IO, { userId: user.id, projectId, snapshotId: snapshot, captured, now: new Date() }))
   }
   // ── end of the restore branch ──
 

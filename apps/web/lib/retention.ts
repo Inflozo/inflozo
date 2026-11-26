@@ -149,12 +149,13 @@ export type HistoryAnswer = {
 export type OriginalTheme = { id: string; theme: string; version: string | null; capturedAt: string; siteUrl: string }
 
 /** Story 7.23b — a saved original as the route reads it (`site_snapshots` with its site's address) */
-export type SavedOriginal = { id: string; site_id: string; theme_name: string; theme_version: string | null; captured_at: string; sites: { url: string } | null }
+export type SavedOriginal = { id: string; site_id: string; theme_name: string | null; theme_version: string | null; captured_at: string; sites: { url: string } | null }
 
 /** Story 7.23b — the linked site's saved original, as D2a's row draws it; null with no linked site or no snapshot for it */
 export function originalOf(linkedSiteId: string | null, saved: readonly SavedOriginal[]): OriginalTheme | null {
   const o = linkedSiteId === null ? undefined : saved.find((r) => r.site_id === linkedSiteId)
-  return o === undefined ? null : { id: o.id, theme: o.theme_name, version: o.theme_version ?? null, capturedAt: o.captured_at, siteUrl: o.sites?.url ?? '' }
+  // a row with no name (the column is nullable; the capture always writes one) draws nothing — Restore original refuses it too
+  return o === undefined || typeof o.theme_name !== 'string' || o.theme_name === '' ? null : { id: o.id, theme: o.theme_name, version: o.theme_version ?? null, capturedAt: o.captured_at, siteUrl: o.sites?.url ?? '' }
 }
 
 /** a row as the route reads it, light: every `uploaded`/`live` row of the project, stored or pruned */
@@ -419,16 +420,16 @@ export const HISTORY_WORDS = {
    *  replaced ("it", "both", "all three"…) and the same second sentence. Every other word the check draws is D3's own (R-170) */
   checkFoot: (files: number, n: number) => `Rolling back replaces ${replacedOf(files)} with ${versionLabel(n)}'s. ${KEEP_EDITS}`,
   // ── Story 7.23b — D2a's original-theme row (`D2 Deploy History Completed.dc.html:58-73`) and Restore original ──
-  /** D2a `:63`, the row's title */
+  /** D2a `:62`, the row's title */
   original: 'Your original theme',
-  /** D2a `:64`, the mono line: the name and its version, or the name alone where none was kept */
+  /** D2a `:63`, the mono line: the name and its version, or the name alone where none was kept */
   originalName: (theme: string, version: string | null) => (version === null || version === '' ? theme : `${theme} ${version}`),
-  /** D2a `:66`, "Archived Aug 2" (`archivedLabel`) */
+  /** D2a `:65`, "Archived Aug 2" (`archivedLabel`) */
   archived: (date: string) => `Archived ${date}`,
   archivedToday: 'Archived today',
-  /** D2a `:69`, the quiet line, verbatim */
+  /** D2a `:68`, the quiet line, verbatim */
   originalQuiet: "Kept outside your version limit. Ghost checks every theme on the way in, so a very old theme can be refused — we'll offer the zip if that happens.",
-  /** D2a `:70`, and R-98's present tense while it is out */
+  /** D2a `:69`, and R-98's present tense while it is out */
   restore: 'Restore original',
   restoring: 'Restoring…',
   /** the outcomes, said once (UX-DR12); a refusal under the row (`restoreSaid`) */

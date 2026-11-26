@@ -1521,7 +1521,7 @@ from 1366 up (R-289) and from Ship it ▾ → History at every width; every row 
   copy of the original, or uploads the saved one only when Ghost no longer has it, so nothing is overwritten and no check runs;
   the Inflozo version that was live then shows D2d's "Uploaded, not live" with Re-activate, the undo. The row is the linked
   site's alone.)*
-  *(Story 7.23b's Dev, 2026-11-26 — as built, D2a `:58-73` and its rule `:75`: the row sits above the `<ol>` and outside its count —
+  *(Story 7.23b's Dev, 2026-11-26 — as built, D2a `:58-71` and its rule `:73`: the row sits above the `<ol>` and outside its count —
   above "Nothing shipped yet" too, the limit line still last — with the archive tile, **Your original theme**, the theme's name and
   the version its `package.json` declared at capture in mono (the name alone for one saved before the version was kept),
   "Archived {date}" (the row time's date half; "Archived today" on the day), the frame's quiet line and **Restore original** (the

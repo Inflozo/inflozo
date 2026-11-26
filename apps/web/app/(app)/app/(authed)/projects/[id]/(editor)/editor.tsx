@@ -585,9 +585,9 @@ type EditorProps = EditorData & {
   /** R-291 — the drift check before a Roll back, the route's POST `{ deploy, act: 'check' }` unless named: the harness names
    *  `harnessCheck`, which answers by its header with no database and no Ghost. The app passes none. */
   historyCheck?: (projectId: string, deploy: string) => Promise<CheckOutcome>
-  /** STORY 7.23b — Restore original, the route's POST `{ snapshot, act: 'restore' }` unless named: the harness names
+  /** STORY 7.23b — Restore original, the route's POST `{ snapshot, captured, act: 'restore' }` unless named: the harness names
    *  `harnessRestore`, which answers by its header with no database and no Ghost. The app passes none. */
-  historyRestore?: (projectId: string, snapshot: string) => Promise<ActOutcome>
+  historyRestore?: (projectId: string, snapshot: string, captured: string) => Promise<ActOutcome>
 }
 
 /** P0-1's pill on the selected section (R-122, and the limit's sentence) — the element it is placed over, and its words. */
@@ -2636,10 +2636,16 @@ function EditorShell({
     if (outcome.kind === 'failed') console.error('history: the check failed', { status: answer?.status ?? 0 })
     return outcome
   }
+  /** STORY 7.23b's review — a put-back or a restore landed (live, or on the site) while History was open: its close re-reads the page */
+  const historyLanded = useRef(false)
+  const landed = (outcome: ActOutcome): ActOutcome => {
+    if (outcome.kind === 'live' || outcome.kind === 'uploaded') historyLanded.current = true
+    return outcome
+  }
   /** STORY 7.23b — Restore original, answered as a put-back's outcome is (`actOutcomeOf`); a request that failed is logged by status */
-  const restoreHistory = async (snapshot: string): Promise<ActOutcome> => {
-    if (historyRestore) return historyRestore(project.id, snapshot)
-    const answer = await fetch(historyUrl(), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ snapshot, act: 'restore' }) }).catch(() => null)
+  const restoreHistory = async (snapshot: string, captured: string): Promise<ActOutcome> => {
+    if (historyRestore) return historyRestore(project.id, snapshot, captured)
+    const answer = await fetch(historyUrl(), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ snapshot, captured, act: 'restore' }) }).catch(() => null)
     const body: unknown = await answer?.json().catch(() => null)
     const outcome = actOutcomeOf(answer?.status ?? 0, body)
     if (outcome.kind === 'failed') console.error('history: the restore failed', { status: answer?.status ?? 0 })
@@ -7050,12 +7056,20 @@ function EditorShell({
           projectName={project.name}
           read={readHistory}
           pin={pinHistory}
-          act={actHistory}
+          act={async (deploy) => landed(await actHistory(deploy))}
           check={checkHistory}
           liveHref={(theme) => `${isApp(pathname) ? '/app' : ''}${historyLiveDownloadPath(project.id, theme)}`}
-          restore={restoreHistory}
+          restore={async (snapshot, captured) => landed(await restoreHistory(snapshot, captured))}
           originalHref={(snapshot) => `${isApp(pathname) ? '/app' : ''}${snapshotDownloadPath(snapshot)}`}
-          onClose={() => setHistory((was) => ({ ...was, open: false }))}
+          onClose={() => {
+            setHistory((was) => ({ ...was, open: false }))
+            // Story 7.23b's review: a put-back or a restore that landed re-reads the page on close, as the wizard's close does — so
+            // Ship it's state follows (R-264 (a)'s Deploy only free after a restore, the bar's live version after a Roll back)
+            if (historyLanded.current) {
+              historyLanded.current = false
+              router.refresh()
+            }
+          }}
         />
       ) : null}
 

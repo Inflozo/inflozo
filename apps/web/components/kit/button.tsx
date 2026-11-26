@@ -20,7 +20,7 @@ type Variant = 'coral' | 'primary' | 'secondary' | 'ghost' | 'coral-outline' | '
    `D2 Deploy History Completed.dc.html:337-338`), both at radius 12, 14px and 22 across. */
 /* STORY 7.23a — and the smallest, D2's and S8e's row actions: Roll back and Re-activate draw 26 high at radius 10, 12px and 11
    across (`D2 Deploy History Completed.dc.html:89`, `:98`, `:199`; `S8 Deploy.dc.html:313`, `:321`). */
-/* STORY 7.23b — and 28, D2a's Restore original (`D2 Deploy History Completed.dc.html:70`, D2c `:249`): 28 high at radius 10, 12px and
+/* STORY 7.23b — and 28, D2a's Restore original (`D2 Deploy History Completed.dc.html:69`, D2c `:250`): 28 high at radius 10, 12px and
    11 across, the secondary's surface and hairline. */
 type Size = 44 | 42 | 40 | 38 | 36 | 32 | 28 | 26
 /* The Kit's own weight is 600. A FRAME MAY DRAW A DIFFERENT ONE, and it must be said HERE rather

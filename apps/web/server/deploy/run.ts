@@ -103,7 +103,8 @@ export type DeployIo = {
     /** every other deploy live on this site is no longer live once this one activates — or, with no `except`, every one: Story
      *  7.23b's Restore original, after which no Inflozo theme is live on the site */
     demote: (a: { siteId: string; userId: string; except?: string }) => Promise<void>
-    /** the version the site serves from this project: its last activated deploy's number, or null */
+    /** the version the site serves from this project: its last activated deploy's number — while that deploy is still `live`
+     *  (Story 7.23b's review: a Restore original demotes it, and the site serves the original then) — or null */
     previous: (a: { projectId: string; siteId: string; userId: string; except?: string }) => Promise<number | null>
     /** R-264 (a): the project whose deploy was activated last on this site and is STILL `live` (Story 7.23b: a restore demotes it),
      *  or null — Inflozo's own record of what is live */

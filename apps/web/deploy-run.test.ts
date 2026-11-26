@@ -157,8 +157,12 @@ function world(over: {
         const row = accepted.map((d, i) => ({ d, i })).sort((a, b) => (b.d.accepted_at ?? '').localeCompare(a.d.accepted_at ?? '') || b.i - a.i)[0]?.d
         return row === undefined ? null : { version: row.version, content_manifest: row.content_manifest ?? null }
       },
+      // as `deploy-io.ts` reads it: this project's latest activated deploy other than `except` — only while the latest activated one
+      // is still `live` (Story 7.23b's review: a restore demotes it)
       previous: async ({ except }) => {
-        const live = [...deploys.values()].filter((d) => d.activated && d.id !== except).sort((a, b) => ((a.activated_at ?? '') < (b.activated_at ?? '') ? 1 : -1))[0]
+        const activated = [...deploys.values()].filter((d) => d.activated).sort((a, b) => ((a.activated_at ?? '') < (b.activated_at ?? '') ? 1 : -1))
+        if (activated[0]?.status !== 'live') return null
+        const live = activated.find((d) => d.id !== except)
         return live === undefined ? null : Number(live.version.split('.')[0])
       },
     },
@@ -591,7 +595,13 @@ test('7.23b · R-264 (a) reads the record truthfully: after Restore original dem
   assert.equal(await uploadOnlyRefused({ projectId: P, siteId: S, userId: U }, w.io), false, 'a demoted row is not live here')
   // the real read holds the same rule: `activated` AND still `live`
   const io = readFileSync('server/deploy/deploy-io.ts', 'utf8')
-  assert.match(io, /from\('deploys'\)\.select\('project_id'\)\.eq\('site_id', siteId\)\.eq\('user_id', userId\)\.eq\('activated', true\)\.eq\('status', 'live'\)\.order\('activated_at', \{ ascending: false \}\)\.limit\(1\), 'live project'\)/)
+  assert.match(io, /from\('deploys'\)\.select\('project_id'\)\.eq\('site_id', siteId\)\.eq\('user_id', userId\)\.eq\('activated', true\)\.eq\('status', 'live'\)\.order\('activated_at', \{ ascending: false \}\)\.limit\(1\), 'live project'\)/)  // Story 7.23b's review — and the wizard's "previous" follows: the next job's view no longer says v1 is what the site serves
+  // (D2e's "still serving v1", D2f's "v1 is still what readers see", the chip's "v1 → v2"); the control: before the demote, it did
+  const next = await begin(w)
+  assert.equal((await view({ jobId: next.id, userId: U }, w.io))?.previous, null, 'the original is live: no version of this project is')
+  await w.io.deploys.update(w.jobs.get(job.id)?.deploy_id as string, U, { status: 'live' })
+  assert.equal((await view({ jobId: next.id, userId: U }, w.io))?.previous, 1, 'the control: v1 live again (Re-activate) is the previous')
+  assert.match(io, /async previous\(\{ projectId, siteId, userId, except \}\) \{\n.*\.select\('id, version, status'\)[^\n]*\.eq\('activated', true\)\.order\('activated_at', \{ ascending: false \}\)\.limit\(2\)[^\n]*\n\s*if \(rows\?\.\[0\]\?\.status !== 'live'\) return null/)
 })
 
 test('R-264 (a): Deploy only while Inflozo\'s record says this project\'s theme is the live one uploads nothing — the job rests; Deploy & activate, or another project live, goes ahead', async () => {

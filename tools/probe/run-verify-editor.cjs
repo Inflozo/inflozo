@@ -15656,7 +15656,7 @@ async function main() {
            focus on ✕; T1's active theme is the original again (`GET themes/`, the staff token) while Inflozo's theme is still
            installed — its download at ZERO differences from v2's `content_manifest`; v2's row `uploaded`, its `activated`,
            `activated_at` and `accepted_at` untouched; no `deploys` row added; the drawer: v2 D2d's row with Re-activate, nothing
-           Live; the editor reloaded: Ship it ▾'s Deploy only free (R-264 (a): no `live` row of this project on the site).
+           Live; Ship it ▾'s Deploy only free with "keep your current theme active" — History closed in the same page, then reloaded (R-264 (a)).
        (d) RE-ACTIVATE v2, then Run checks: D3c "Nothing changed on your site since v2" — no row was written, so the drift baseline
            held.
        (e) THE SAVED COPY PUT BACK (VERIFY 10's snapshot half): the original's saved zip with its `package.json` named `walk-original`
@@ -15671,7 +15671,7 @@ async function main() {
        (g) DW-391 ON PRODUCTION, the snapshot's route: asked as the editor's follower asks (`Accept: application/json`) on R's session —
            200 `{ url }`, and that signed URL serving a `PK` zip; asked as a link — the 303 (an opaque redirect); signed out — 401.
        (h) A SECOND SESSION of R reading along (`[data-readonly]`; the first holds the lock): Restore original from its drawer — said.
-       (i) The doors: the walk's account A (step 1's page) POSTs `{ act: 'restore', snapshot }` to R's project's route — 404, T1
+       (i) The doors: the walk's account A (step 1's page) POSTs `{ act: 'restore', snapshot, captured }` to R's project's route — 404, T1
            untouched; R's site stamped disconnected (the service key) — 409 `{ code: disconnected }`, nothing sent — then cleared; the
            snapshot row deleted — the route's download 404, and the restore 404 (gone).
        FINALLY: every plant removed; T1 put back (its own theme active, every inflozo- and walk- theme uploaded deleted, routes.yaml
@@ -15965,7 +15965,8 @@ async function main() {
             title: o.querySelector('.font-semibold')?.textContent ?? null,
             name: o.querySelector('[data-history-original-name]')?.textContent ?? null,
             archived: o.querySelector('[data-history-archived]')?.textContent ?? null,
-            restore: o.querySelector('#history-restore')?.textContent ?? null,
+            // the shown words: the Kit's BusyLabel keeps the hidden "Restoring…" in the DOM (`innerText` skips it, `textContent` does not)
+            restore: o.querySelector('#history-restore')?.innerText.trim() ?? null,
             live: o.querySelector('.bg-mint') !== null,
             ruled: o.nextElementSibling?.hasAttribute('data-history-original-rule') === true,
           },
@@ -16124,17 +16125,27 @@ async function main() {
           v2C?.status === 'uploaded' && v2C.activated === v2C0?.activated && v2C.activated_at === v2C0.activated_at && v2C.accepted_at === v2C0.accepted_at && deploysC.length === deploysC0.length &&
           shownC?.rows.find((r) => r.v === 'v2')?.uploaded === true && shownC.rows.find((r) => r.v === 'v2')?.act === HW122.reactivateName(2) && shownC.rows.every((r) => !r.live),
           JSON.stringify({ before: kept122(v2C0), after: kept122(v2C), rows: `${deploysC0.length} → ${deploysC.length}`, shown: shownC?.rows }))
-        // R-264 (a): reloaded, Ship it ▾'s Deploy only is free — no `live` row of this project on the site
+        // R-264 (a): Ship it ▾'s Deploy only is free — no `live` row of this project on the site — first in the SAME page, History
+        // closed (Story 7.23b's review: a restore that landed re-reads the page on close, as the owner's test step 4 does it), then
+        // reloaded; its caption keeps "your current theme" active, never v2 (the review's `prev`)
+        const menuC = async () => {
+          await pg.locator('#editor-ship + button').click()
+          const only = await until122(() => pg.evaluate((words) => {
+            const li = [...document.querySelectorAll('#editor-ship-menu li')].find((l) => l.textContent.includes(words))
+            return li ? { greyed: [li, ...li.querySelectorAll('*')].some((e) => e.getAttribute('aria-disabled') === 'true' || e.disabled === true), text: li.textContent.replace(/\s+/g, ' ').trim() } : null
+          }, DEP122.DEPLOY_WORDS.uploadOnly).catch(() => null), (r) => r !== null && r.greyed === false, 20000)
+          await pg.keyboard.press('Escape')
+          return only
+        }
         await closed122(pg)
+        const sameC = await menuC()
         await pg.goto(at(`/projects/${P122}`), { waitUntil: 'load' })
         await painted122(pg)
-        await pg.locator('#editor-ship + button').click()
-        const onlyC = await until122(() => pg.evaluate((words) => {
-          const li = [...document.querySelectorAll('#editor-ship-menu li')].find((l) => l.textContent.includes(words))
-          return li ? { greyed: [li, ...li.querySelectorAll('*')].some((e) => e.getAttribute('aria-disabled') === 'true' || e.disabled === true) } : null
-        }, DEP122.DEPLOY_WORDS.uploadOnly).catch(() => null), (r) => r !== null, 10000)
-        await pg.keyboard.press('Escape')
-        check('step 122c — R-264 (a) reads the record truthfully: the editor reloaded, Ship it ▾\'s Deploy only row is NOT greyed', onlyC !== null && onlyC.greyed === false, JSON.stringify(onlyC))
+        const onlyC = await menuC()
+        const captionC = DEP122.DEPLOY_WORDS.uploadOnlyCaption(3, null)
+        check(`step 122c — R-264 (a) reads the record truthfully: History closed, the SAME page's Ship it ▾ Deploy only row is NOT greyed (the close re-read the page), and reads "${captionC}"`,
+          sameC !== null && sameC.greyed === false && sameC.text.includes(captionC), JSON.stringify(sameC))
+        check('step 122c — …and the editor reloaded: Deploy only still NOT greyed, the same caption', onlyC !== null && onlyC.greyed === false && onlyC.text.includes(captionC), JSON.stringify(onlyC))
 
         // ── 122d — Re-activate v2, then Run checks: the baseline held ──
         const d = await reactivate122(pg, 2)
@@ -16232,20 +16243,20 @@ async function main() {
         // ── 122i — the doors: another account, a disconnected site, a row gone ──
         const themesI0 = await names122()
         await page.goto(at('/'), { waitUntil: 'load' })
-        const crossI = await post122(page, { act: 'restore', snapshot: snap122.id })
+        const crossI = await post122(page, { act: 'restore', snapshot: snap122.id, captured: snap122.captured_at })
         await page.goto('about:blank')
         check('step 122i — another account\'s door: the walk\'s account A POSTs { act: restore, snapshot } to R\'s project\'s history route → 404, and nothing reaches Ghost (T1\'s themes as they were)',
           crossI.status === 404 && (await names122()) === themesI0, JSON.stringify(crossI))
         const stamp122 = await call('/rest/v1', `/sites?id=eq.${site122}`, { method: 'PATCH', body: JSON.stringify({ disconnected_at: new Date().toISOString() }) })
         stamped122 = [200, 204].includes(stamp122.status)
-        const offI = await post122(pg, { act: 'restore', snapshot: snap122.id })
+        const offI = await post122(pg, { act: 'restore', snapshot: snap122.id, captured: snap122.captured_at })
         const unstamp = await call('/rest/v1', `/sites?id=eq.${site122}`, { method: 'PATCH', body: JSON.stringify({ disconnected_at: null }) })
         if ([200, 204].includes(unstamp.status)) stamped122 = false
         check('step 122i — a disconnected site: R\'s site stamped disconnected (the service key) → the restore answers 409 { code: disconnected } and nothing reaches Ghost; the stamp cleared, read back',
           stamp122.status !== 0 && offI.status === 409 && offI.body?.code === 'disconnected' && (await names122()) === themesI0 && stamped122 === false, JSON.stringify({ stamp: stamp122.status, answer: offI, unstamp: unstamp.status }))
         const gone = await call('/rest/v1', `/site_snapshots?id=eq.${snap122.id}`, { method: 'DELETE' })
         const goneI = await pg.evaluate(async (u) => (await fetch(u, { headers: { accept: 'application/json' }, cache: 'no-store' })).status, href)
-        const restoreGone = await post122(pg, { act: 'restore', snapshot: snap122.id })
+        const restoreGone = await post122(pg, { act: 'restore', snapshot: snap122.id, captured: snap122.captured_at })
         const answerI = await history122(pg)
         check('step 122i — the row gone (deleted with the service key): the snapshot\'s route answers 404 to the follower, the restore 404 (gone), and the History GET carries no original',
           [200, 204].includes(gone.status) && goneI === 404 && restoreGone.status === 404 && answerI.status === 200 && answerI.body?.original === null && (await names122()) === themesI0,

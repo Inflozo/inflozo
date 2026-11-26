@@ -2,7 +2,7 @@
 // `read.ts` beside the reads that feed it): until now the keyboard harness replaced it everywhere, so nothing ran it.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { shipStateOf, themeNameOf, uploadOnlyBlock } from './lib/deploy.ts'
+import { DEPLOY_WORDS, shipStateOf, themeNameOf, uploadOnlyBlock } from './lib/deploy.ts'
 
 const P = 'p-this'
 const SITE = '00000000-0000-4000-8000-0000000000bb'
@@ -114,6 +114,11 @@ test('7.23b · R-264 (a) in the editor\'s read: "live here" is the site\'s lates
   const state = (liveHere: boolean) => shipStateOf(base({ liveHere, deploys: [{ version: '2.0.0', status: 'uploaded', activated: true, activated_at: '2026-11-02T00:00:00Z' }] }))
   assert.equal(uploadOnlyBlock(state(false)), null, 'a demoted v2: Deploy only is free')
   assert.notEqual(uploadOnlyBlock(state(true)), null, 'the control: live here blocks it')
+  // Story 7.23b's review — and `prev` follows: a demoted v2 is not what the site serves, so Deploy only says "keep your current theme
+  // active", never "keep v2 active"; the control: v2 still live is the prev
+  assert.equal(state(false).prev, null, 'the original is live, not v2')
+  assert.equal(DEPLOY_WORDS.uploadOnlyCaption(3, state(false).prev), 'Upload v3, keep your current theme active')
+  assert.equal(shipStateOf(base({ deploys: [{ version: '2.0.0', status: 'live', activated: true, activated_at: '2026-11-02T00:00:00Z' }] })).prev, 2, 'the control')
 })
 
 test('7.20a: the editor\'s read carries the gate\'s two columns — `backup_confirmed_at` and `hosted_by_ghost` — through the user\'s own session, and shipStateOf reads them', async () => {

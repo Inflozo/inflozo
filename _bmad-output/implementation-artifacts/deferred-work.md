@@ -10920,3 +10920,22 @@ owner: Story 15.1 (the E2E suite): the committed walk now records a 20-second si
   died in the browser (the harness's DW-204 class). Reopen as a product defect if the caption is empty and the button enabled.
 location: `tools/probe/run-verify-editor.cjs` (step 121's `ship121`) · `apps/web/components/editor/deploy-wizard.tsx` (`press`)
 reason: two sightings with no state recorded; a stopped walk publishes and changes nothing (its finally restores T1).
+
+### DW-405: two signed downloads outside the editor's four still leave the page, and the Theme row says its failure differently
+
+plain: The Sites page's "download your original theme" link still swaps the page for a plain error page if the file is gone or the
+  sign-in lapsed, and the Backup step's Theme Download says its failure in grey where the other Downloads say it in red.
+status: open
+severity: low
+origin: Story 7.23b's Review (2026-11-26; Verification Gap and Acceptance Auditor). DW-391 gave the editor's four Downloads one way to
+  follow a signed URL (`followSigned`), and its scope was those four. The Sites page's original-theme row
+  (`app/(app)/app/(authed)/sites/(list)/page.tsx`, Story 7.20b's) is still a plain `<a href="/snapshots/{id}/download">`, so a 404
+  (a disconnected site's snapshot purged — realistic there), a 502 or the sign-in 303 replaces the Sites page. And the Backup step's
+  Theme row (`deploy-wizard.tsx` `fetched`, Story 7.20a's shape) mounts its line already holding its words, in `text-ink-soft`,
+  where `SignedDownload` keeps an empty `role="status"` line mounted first and says its sentence in `text-danger-text`.
+owner: Story 7.26 (Theme ZIP export): its export is a signed download too, so it follows DW-391's way, and the Sites page's
+  original Download and the Theme row's line join it then — one way, one shape.
+location: `app/(app)/app/(authed)/sites/(list)/page.tsx` (the original-theme Download) · `apps/web/components/editor/deploy-wizard.tsx`
+  (`fetchRow`'s `fetched.theme` line)
+reason: nothing unsaved is lost on the Sites page (it holds no editor work), and the Theme row's words are said; a second shape is
+  cosmetic. Not this story's (DW-391 named the editor's four).

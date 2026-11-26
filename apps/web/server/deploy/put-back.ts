@@ -73,8 +73,9 @@ export type PutBackIo = Pick<DeployIo, 'call' | 'log' | 'liveTheme'> & {
   deploys: Pick<DeployIo['deploys'], 'update' | 'demote'>
   /** Story 7.23b — the site's saved pre-Inflozo theme (`site_snapshots`, one row per site), the user's own, or null */
   original: (a: { siteId: string; userId: string }) => Promise<OriginalRow | null>
-  /** Story 7.23b — the `site-snapshots` bucket: an object by its key (no bucket prefix — `snapshotObjectKey`) */
-  snapshots: { get: (key: string) => Promise<Uint8Array> }
+  /** Story 7.23b — the `site-snapshots` bucket: an object by its key (no bucket prefix — `snapshotObjectKey`), or null when the store
+   *  has no such object (purged, or replaced mid-capture) */
+  snapshots: { get: (key: string) => Promise<Uint8Array | null> }
   /** the row, the user's own (`user_id`), or null */
   row: (a: { deployId: string; userId: string }) => Promise<PutBackRow | null>
   /** this project × site's newest upload Ghost accepted (`uploaded`/`live`, stored or pruned), by `accepted_at` — its id, or null */
@@ -89,8 +90,9 @@ export type PutBackIo = Pick<DeployIo, 'call' | 'log' | 'liveTheme'> & {
   moving: (a: { projectId: string; siteId: string; userId: string; since: string }) => Promise<boolean>
 }
 
-/** what Restore original reads of the site's saved original */
-export type OriginalRow = { id: string; theme_name: string; storage_path: string }
+/** what Restore original reads of the site's saved original — `captured_at` tells a later capture from the row History drew: the
+ *  capture upserts on `site_id`, so a replaced snapshot keeps its id (Story 7.23b's review) */
+export type OriginalRow = { id: string; theme_name: string | null; storage_path: string; captured_at: string }
 
 /** a refusal with nothing sent to Ghost — the put-back's and the check's alike */
 export type Refusal = 'gone' | 'elsewhere' | 'live-already' | 'disconnected' | 'busy'
@@ -235,16 +237,19 @@ const GHOST_DEFAULTS: ReadonlySet<string> = new Set(['casper', 'source'])
  * only when Ghost no longer holds that name (never Casper or Source) the saved zip uploaded as `{name}.zip` and activated. Live:
  * every `live` row on the site demoted. No `deploys` row is ever written.
  */
-export async function restoreOriginal(io: PutBackIo, a: { userId: string; projectId: string; snapshotId: string; now: Date }): Promise<RestoreOutcome> {
+export async function restoreOriginal(io: PutBackIo, a: { userId: string; projectId: string; snapshotId: string; captured: string; now: Date }): Promise<RestoreOutcome> {
   let host = ''
   /** whether Ghost has acted — an activation made or an upload accepted — so a record failing after it is said as what it is */
   let acted = false
   try {
-    // 1. the linked site, then its saved original — the one asked, else gone (replaced by a later capture, purged, or another site's)
+    // 1. the linked site, then its saved original — the one asked, else gone (replaced by a later capture, purged, or another site's).
+    // A later capture keeps the row's id (an upsert on `site_id`), so the one History drew is its id AND its `captured_at`
     const linked = await twice(io, 'linked site', () => io.linked({ projectId: a.projectId, userId: a.userId }))
     if (linked === null) return 'gone'
     const original = await twice(io, 'original theme', () => io.original({ siteId: linked.siteId, userId: a.userId }))
-    if (original === null || original.id !== a.snapshotId) return 'gone'
+    if (original === null || original.id !== a.snapshotId || Date.parse(original.captured_at) !== Date.parse(a.captured)) return 'gone'
+    // a row with no name (the column is nullable; the capture always writes one) is never sent to Ghost as `null`
+    if (typeof original.theme_name !== 'string' || original.theme_name === '') return 'gone'
     // 2. the put-back's refusals, in its order, with nothing sent to Ghost
     if (linked.disconnected) return 'disconnected'
     const since = new Date(a.now.getTime() - STALLED_MS).toISOString()
@@ -277,6 +282,8 @@ export async function restoreOriginal(io: PutBackIo, a: { userId: string; projec
 
     // 4. Ghost no longer holds it: the saved zip, uploaded under the original's own name — never the frozen one (the baseline holds)
     const bytes = await twice(io, 'original zip', () => io.snapshots.get(snapshotObjectKey(original.storage_path)))
+    // the store no longer has it (purged, or a capture replacing it since the read): gone, as the download's 404 — never "try again"
+    if (bytes === null) return 'gone'
     const posted = await sendUpload(io, { siteId: linked.siteId, themeName: name, bytes, route: ROUTE })
     if ('thrown' in posted) return ghostSaid(posted.thrown)
     const upload = uploadAnswer(posted)

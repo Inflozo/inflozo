@@ -546,7 +546,7 @@ test('7.23a: the history route\'s act branch — POST `{ deploy, act: \'live\' }
   assert.doesNotMatch(get, /supabaseAdmin/)
 })
 
-test('7.23b: the history route — GET carries the LINKED site\'s saved original, read on the caller\'s session (RLS), never another site\'s; POST `{ act: \'restore\', snapshot }` is checked before `deploy`, its id a uuid, `restoreOriginal` over the put-back\'s io, answered as the act branch is', () => {
+test('7.23b: the history route — GET carries the LINKED site\'s saved original, read on the caller\'s session (RLS), never another site\'s; POST `{ act: \'restore\', snapshot, captured }` is checked before `deploy`, its id a uuid and its capture a time, `restoreOriginal` over the put-back\'s io, answered as the act branch is', () => {
   const flat = flatOf(HISTORY_ROUTE)
   const get = sliceOf(flat, 'export async function GET', 'export async function POST')
   assert.match(get, /sb\.from\('site_snapshots'\)\.select\('id, site_id, theme_name, theme_version, captured_at, sites\(url\)'\)/, 'the user\'s own rows, through RLS')
@@ -556,8 +556,13 @@ test('7.23b: the history route — GET carries the LINKED site\'s saved original
   assert.doesNotMatch(get, /supabaseAdmin/)
   const post = flat.slice(flat.indexOf('export async function POST'))
   const restore = sliceOf(post, "if (act === 'restore') {", "if (typeof deploy !== 'string'")
-  assert.match(restore, /if \(typeof snapshot !== 'string' \|\| !isUuid\(snapshot\)\) return no\(400, 'Bad snapshot'\)/)
-  assert.match(restore, /return answered\(await restoreOriginal\(PUT_BACK_IO, \{ userId: user\.id, projectId, snapshotId: snapshot, now: new Date\(\) \}\)\)/)
+  // Story 7.23b's review: the row History drew is its id AND its capture (a later capture keeps the id)
+  assert.match(restore, /if \(typeof snapshot !== 'string' \|\| !isUuid\(snapshot\) \|\| typeof captured !== 'string' \|\| Number\.isNaN\(Date\.parse\(captured\)\)\) return no\(400, 'Bad snapshot'\)/)
+  assert.match(restore, /return answered\(await restoreOriginal\(PUT_BACK_IO, \{ userId: user\.id, projectId, snapshotId: snapshot, captured, now: new Date\(\) \}\)\)/)
+  // …and the editor sends exactly that: the drawn row's id and `capturedAt`, to this route (the harness seam aside)
+  const editor = flatOf(readFileSync('app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx', 'utf8'))
+  assert.match(editor, /const restoreHistory = async \(snapshot: string, captured: string\): Promise<ActOutcome> => \{ if \(historyRestore\) return historyRestore\(project\.id, snapshot, captured\) const answer = await fetch\(historyUrl\(\), \{ method: 'POST', headers: \{ 'content-type': 'application\/json' \}, body: JSON\.stringify\(\{ snapshot, captured, act: 'restore' \}\) \}\)/)
+  assert.match(flatOf(readFileSync('components/editor/deploy-history.tsx', 'utf8')), /await restore\(original\.id, original\.capturedAt\)/)
   assert.ok(post.indexOf('currentUser()') < post.indexOf("if (act === 'restore')") && post.indexOf("isUuid(projectId)") < post.indexOf("if (act === 'restore')"))
 })
 

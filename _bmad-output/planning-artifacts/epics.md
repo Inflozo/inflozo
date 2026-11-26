@@ -4208,7 +4208,8 @@ re-activate action, because "failed" would be wrong and silence would be worse
 **And** the wizard state matches D2e, and the deploy-only ending matches D2f —
 "Uploaded on purpose, not live, with Activate one click away" (UX-DR7).
 **And** *(Story 7.18a's Dev — owner, 2026-10-18, **R-264**)* while Inflozo's own record says this project's theme is the
-one live on the site (the site's latest activated deploy is this project's), **Deploy only is greyed** — the ▾ row and
+one live on the site (the site's latest activated deploy *that is still `live`* is this project's — Story 7.23b, 2026-11-26: a
+Restore original demotes it, and Deploy only is then offered again), **Deploy only is greyed** — the ▾ row and
 S8a's card — with "v{prev} is already live on {host}, so Ghost would switch to v{n} the moment it uploads. Use Deploy &
 activate." in its caption slot, and the server refuses it; and whenever Ghost's answer to an upload says the theme is
 active (`themes[0].active`), the deploy is live and activated, no separate activation is sent, routes are offered and the
@@ -4777,6 +4778,10 @@ the zip is not for Windows.
 **And** *(DW-346 — from Story 7.5's Create, 2026-10-08)* the theme's `README.md` states, after Story 7.5's Scripts
 section, the **install steps**, the **Style Pack and font pairing in use**, and **where to re-import** (prd.md §7.4); the
 `routes.yaml` step stays Story 7.17's and the credit Story 7.28's. The owner test opens the exported zip and reads it.
+**And** *(DW-405 — from Story 7.23b's review, 2026-11-26)* the export's download, a signed URL, follows DW-391's one way
+(`followSigned`, `lib/signed-download.ts`), and the Sites page's original-theme Download joins it — a 404, a 502 or the sign-in
+said beside the button, never in place of the page; the Backup step's Theme row says its failure in the same mounted
+`role="status"` line and colour as the other Downloads.
 
 ### Story 7.27: Library updates and the consent step
 

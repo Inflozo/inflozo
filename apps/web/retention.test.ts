@@ -232,7 +232,7 @@ test('the row\'s time, as D2a draws it: "Today · 2:14 PM" on the day, "Aug 28 �
   assert.equal(timeLabel('2026-11-25T20:00:00Z', now, 'Asia/Kolkata'), 'Nov 26 · 1:30 AM')
 })
 
-test('7.23b · "Archived {date}", D2a\'s (`:66`): `timeLabel`\'s date half — "Archived today" on the day, "Archived Aug 2" this year, the year once it is not this one — in the viewer\'s own zone', () => {
+test('7.23b · "Archived {date}", D2a\'s (`:65`): `timeLabel`\'s date half — "Archived today" on the day, "Archived Aug 2" this year, the year once it is not this one — in the viewer\'s own zone', () => {
   const zone = 'UTC'
   const now = new Date('2026-11-25T18:00:00Z')
   assert.equal(archivedLabel('2026-11-25T01:00:00Z', now, zone), 'Archived today')
@@ -280,6 +280,8 @@ test('7.23b · the route\'s answer picks the linked site\'s original out of the 
   assert.equal(answer(A, []), null, 'no snapshot, no row')
   assert.equal(answer(A), null)
   assert.equal(answer(A, [{ ...mine, theme_version: null }])?.version, null, 'saved before the column: the name alone')
+  // Story 7.23b's review: a row with no name draws nothing (the column is nullable; Restore original refuses it as gone)
+  assert.equal(answer(A, [{ ...mine, theme_name: null }]), null, 'no name, no row')
 })
 
 test('the job\'s plan read refuses AD-28\'s degradation: a read that logged its failure throws `plan_unread` (and the line is still logged) — a read that worked answers its plan (the control)', async () => {

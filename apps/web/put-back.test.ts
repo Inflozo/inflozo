@@ -20,8 +20,9 @@ const S = '00000000-0000-4000-8000-0000000000bb'
 const OTHER = '00000000-0000-4000-8000-0000000000dd'
 const U = '00000000-0000-4000-8000-0000000000cc'
 const NOW = new Date('2026-11-25T12:00:00Z')
-/** Story 7.23b — the linked site's saved original's id */
+/** Story 7.23b — the linked site's saved original's id, and when it was captured (as PostgREST answers a timestamptz) */
 const SNAP = '00000000-0000-4000-8000-0000000000ee'
+const CAPTURED = '2026-11-01T00:00:00+00:00'
 
 type Answer = { ok: boolean; status: number; body: unknown; text: string }
 const ok = (active = false): Answer => ({ ok: true, status: 200, body: { themes: [{ name: 'inflozo-notes', active }] }, text: '' })
@@ -50,6 +51,8 @@ function world(over: {
   original?: OriginalRow | null
   originalFails?: number
   demoteFails?: number
+  /** Story 7.23b's review: the row stands but the store has no object under its key */
+  objectGone?: boolean
 } = {}) {
   const rows = new Map((over.rows ?? [row(1), row(2), row(3, { status: 'live' })]).map((r) => [r.id, { ...r }]))
   const bucket = new Map<string, Uint8Array>([...rows.values()].flatMap((r) => (r.artifact_path ? [[r.artifact_path, new TextEncoder().encode(`zip of ${r.id}`)] as const] : [])))
@@ -66,8 +69,8 @@ function world(over: {
   const liveReads: string[] = []
   const puts: { path: string; opts: unknown }[] = []
   /** Story 7.23b: the saved original, the `site-snapshots` bucket, every key read from it, and every row update (a restore writes none) */
-  const original = over.original === undefined ? { id: SNAP, theme_name: 'casper', storage_path: `site-snapshots/${U}/${S}/20261101T000000000Z-casper.zip` } : over.original
-  const snapshots = new Map<string, Uint8Array>(original === null ? [] : [[original.storage_path.replace(/^site-snapshots\//, ''), new TextEncoder().encode(`saved ${original.theme_name}`)]])
+  const original = over.original === undefined ? { id: SNAP, theme_name: 'casper', storage_path: `site-snapshots/${U}/${S}/20261101T000000000Z-casper.zip`, captured_at: CAPTURED } : over.original
+  const snapshots = new Map<string, Uint8Array>(original === null || over.objectGone ? [] : [[original.storage_path.replace(/^site-snapshots\//, ''), new TextEncoder().encode(`saved ${original.theme_name}`)]])
   const snapshotReads: string[] = []
   const updates: string[] = []
   let originalFails = over.originalFails ?? 0
@@ -105,7 +108,8 @@ function world(over: {
     snapshots: {
       get: async (key) => {
         snapshotReads.push(key)
-        return snapshots.get(key) as Uint8Array
+        // the real io's answer for no such object (`NoSuchKey`): null
+        return snapshots.get(key) ?? null
       },
     },
     deploys: {
@@ -146,7 +150,7 @@ function world(over: {
   }
   const put = (deployId: string): Promise<PutBackOutcome> => putBack(io, { userId: U, projectId: P, deployId, now: NOW })
   const check = (deployId: string): Promise<CheckBefore> => checkBeforePutBack(io, { userId: U, projectId: P, deployId, now: NOW })
-  const restore = (snapshotId = SNAP, userId = U): Promise<RestoreOutcome> => restoreOriginal(io, { userId, projectId: P, snapshotId, now: NOW })
+  const restore = (snapshotId = SNAP, userId = U, captured = CAPTURED): Promise<RestoreOutcome> => restoreOriginal(io, { userId, projectId: P, snapshotId, captured, now: NOW })
   return { io, rows, bucket, calls, reads, logs, put, check, restore, liveReads, puts, snapshotReads, updates }
 }
 
@@ -499,7 +503,7 @@ test('R-291: an infrastructure failure, twice, is ours — `deploy_infrastructur
 // ── Story 7.23b — Restore original (R-292: activate the original by its name first; upload the saved zip only when Ghost no longer
 // holds it, never Casper or Source; live demotes every live row on the site; no `deploys` row is ever written) ──────────────────
 
-const theme = (name: string, over: Partial<OriginalRow> = {}): OriginalRow => ({ id: SNAP, theme_name: name, storage_path: `site-snapshots/${U}/${S}/20261101T000000000Z-${name}.zip`, ...over })
+const theme = (name: string, over: Partial<OriginalRow> = {}): OriginalRow => ({ id: SNAP, theme_name: name, storage_path: `site-snapshots/${U}/${S}/20261101T000000000Z-${name}.zip`, captured_at: CAPTURED, ...over })
 const notHeld = (name: string) => bad(422, { errors: [{ type: 'ValidationError', message: `${name} cannot be activated because it was not found in the theme directory.` }] })
 const refusedCheck = bad(422, { errors: [{ type: 'ThemeValidationError', message: 'Theme is not compatible or contains errors.', context: 'Missing template post.hbs' }] })
 /** what a restore may change: the rows' statuses, nothing else */
@@ -618,7 +622,15 @@ test('7.23b · the refusals that send nothing to Ghost: gone (no link, no snapsh
   const none = world({ original: null })
   assert.equal(await none.restore(), 'gone', 'no snapshot')
   const replaced = world()
-  assert.equal(await replaced.restore('00000000-0000-4000-8000-0000000000ff'), 'gone', 'replaced by a later capture since History was read')
+  assert.equal(await replaced.restore('00000000-0000-4000-8000-0000000000ff'), 'gone', 'another row since History was read (purged, then captured again)')
+  // Story 7.23b's review: a later capture UPSERTS on `site_id`, so the row keeps its id — its `captured_at` is what moved. The
+  // control: the same instant written another way (the editor's ISO string) is the row History drew
+  const recaptured = world({ original: theme('edition', { captured_at: '2026-11-20T08:00:00+00:00' }) })
+  assert.equal(await recaptured.restore(SNAP, U, CAPTURED), 'gone', 'replaced by a later capture since History was read: same id, later capture')
+  assert.equal(await world().restore(SNAP, U, '2026-11-01T00:00:00.000Z'), 'live', 'the control: the capture History drew')
+  // a row with no name is never sent to Ghost as `null` (the column is nullable)
+  const nameless = world({ original: theme('casper', { theme_name: null }) })
+  assert.equal(await nameless.restore(), 'gone', 'no name')
   const someoneElse = world()
   assert.equal(await someoneElse.restore(SNAP, 'someone-else'), 'gone', 'another user\'s: the fake scopes by user as the real io does')
   // the order: a replaced snapshot on a disconnected site is still gone; a busy disconnected site is disconnected
@@ -629,7 +641,7 @@ test('7.23b · the refusals that send nothing to Ghost: gone (no link, no snapsh
   const busy = world({ moving: true })
   assert.equal(await busy.restore(), 'busy')
   assert.ok(busy.reads.includes(`moving:${new Date(NOW.getTime() - STALLED_MS).toISOString()}`), 'moving within STALLED_MS of now')
-  for (const [name, w] of Object.entries({ unlinked, none, replaced, someoneElse, goneOff, off, busy })) {
+  for (const [name, w] of Object.entries({ unlinked, none, replaced, recaptured, nameless, someoneElse, goneOff, off, busy })) {
     assert.equal(w.calls.length, 0, `${name}: nothing sent to Ghost`)
     assert.deepEqual(w.updates, [], `${name}: nothing written`)
   }
@@ -649,6 +661,19 @@ test('7.23b · infrastructure: a read failing twice before Ghost acted is ours (
   assert.equal(unrecorded.refused.message, HISTORY_WORDS.restoreUnrecorded('ghost6.inflozo.com'))
   assert.equal(HISTORY_WORDS.restoreUnrecorded('ghost6.inflozo.com'), "Your original theme reached ghost6.inflozo.com, but History couldn't record it. Try again.")
   assert.deepEqual(after.logs.at(-1), ['restore: infrastructure failed', { code: undefined, acted: 'yes' }])
+})
+
+test('7.23b · the saved zip is no longer in the store (purged, or a capture replacing it since the read) when Ghost no longer holds the theme: gone, never "try again" — nothing uploaded, nothing written; the control: the object there is uploaded', async () => {
+  const w = world({ original: theme('edition'), activate: [notHeld('edition')], objectGone: true })
+  const before = snapshotOf(w)
+  assert.equal(await w.restore(), 'gone')
+  assert.deepEqual(w.calls.map((c) => c.item), ['theme_activate'], 'the activation alone: no upload')
+  assert.equal(snapshotOf(w), before)
+  const control = world({ original: theme('edition'), activate: [notHeld('edition'), ok()], upload: [ok(false)] })
+  assert.equal(await control.restore(), 'live')
+  // the real io reads Storage's `NoSuchKey` (`statusCode` "404") as null, and only that
+  const io = readFileSync('server/deploy/put-back-io.ts', 'utf8')
+  assert.match(io, /if \(missing\?\.code === 'NoSuchKey' \|\| missing\?\.statusCode === '404'\) return null\n\s*const blob = ok\(answer, 'original download'\)/)
 })
 
 // ── the source rules ─────────────────────────────────────────────────────────────────────────────────────────────────

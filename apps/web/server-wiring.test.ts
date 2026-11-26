@@ -743,7 +743,7 @@ test('DW-77: disconnect takes both keys out in ONE transaction, with the begin()
 
 test('Story 7.23b: the snapshot bucket is read on the put-back io\'s service-role reason — the saved original\'s row by `user_id` and `site_id`, its object by the key that row names — and `put-back.ts` itself reads neither the service role nor the bucket', () => {
   const io = readFileSync(PUT_BACK_IO, 'utf8')
-  assert.match(io, /supabaseAdmin\(\)\.from\('site_snapshots'\)\.select\('id, theme_name, storage_path'\)\.eq\('site_id', siteId\)\.eq\('user_id', userId\)/)
+  assert.match(io, /supabaseAdmin\(\)\.from\('site_snapshots'\)\.select\('id, theme_name, storage_path, captured_at'\)\.eq\('site_id', siteId\)\.eq\('user_id', userId\)/)
   assert.match(io, /supabaseAdmin\(\)\.storage\.from\(SNAPSHOT_BUCKET\)\.download\(key\)/)
   const back = readFileSync(PUT_BACK, 'utf8')
   assert.doesNotMatch(back, /supabaseAdmin|SNAPSHOT_BUCKET|\.storage\./, 'the decision imports no client and names no bucket')

@@ -65,11 +65,16 @@ export const PUT_BACK_IO: PutBackIo = {
     return (rows ?? []).length > 0
   },
   async original({ siteId, userId }) {
-    return ok(await supabaseAdmin().from('site_snapshots').select('id, theme_name, storage_path').eq('site_id', siteId).eq('user_id', userId).maybeSingle(), 'original theme') as OriginalRow | null
+    return ok(await supabaseAdmin().from('site_snapshots').select('id, theme_name, storage_path, captured_at').eq('site_id', siteId).eq('user_id', userId).maybeSingle(), 'original theme') as OriginalRow | null
   },
   snapshots: {
     async get(key) {
-      const blob = ok(await supabaseAdmin().storage.from(SNAPSHOT_BUCKET).download(key), 'original download') as Blob
+      const answer = await supabaseAdmin().storage.from(SNAPSHOT_BUCKET).download(key)
+      // no such object: Storage's `NoSuchKey`, `statusCode` "404" (the download route reads the same answer off the wire; storage-js
+      // 2.115.0's `StorageApiError` carries both, read in source) — the restore says gone, never "try again"
+      const missing = answer.error as { code?: unknown; statusCode?: unknown } | null
+      if (missing?.code === 'NoSuchKey' || missing?.statusCode === '404') return null
+      const blob = ok(answer, 'original download') as Blob
       return new Uint8Array(await blob.arrayBuffer())
     },
   },

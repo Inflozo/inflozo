@@ -61,7 +61,7 @@ import {
  * the Roll back allowed; null (no two manifests), nothing. A check REFUSED (404, 409) closes the confirm and is handled exactly as
  * the put-back's same refusal (`settle`). Focus stays on Cancel as it lands. Re-activate runs no check: it replaces nothing.
  *
- * STORY 7.23b — D2a'S ORIGINAL-THEME ROW (`D2 Deploy History Completed.dc.html:58-73`, its rule `:75`; D2c `:240-252` on Free): the
+ * STORY 7.23b — D2a'S ORIGINAL-THEME ROW (`D2 Deploy History Completed.dc.html:58-71`, its rule `:73`; D2c `:239-252` on Free): the
  * linked site's saved pre-Inflozo theme, above the versions and OUTSIDE their `<ol>` (outside the count), drawn above "Nothing
  * shipped yet" too — the archive tile, "Your original theme", the mono name and version, "Archived {date}", the frame's quiet line
  * and Restore original (the Kit's secondary at 28). Never another site's, and no Live badge: no record says it is live, and the
@@ -112,8 +112,9 @@ export function DeployHistory({ projectName, read, pin, act, check, liveHref, re
   check: (deploy: string) => Promise<CheckOutcome>
   /** R-291 — the address of the live zip a found check kept (`history/live`), named by the theme it read */
   liveHref: (theme: string) => string
-  /** Story 7.23b — Restore original (POST `{ act: 'restore', snapshot }`), answered as a put-back's outcome is */
-  restore: (snapshot: string) => Promise<ActOutcome>
+  /** Story 7.23b — Restore original (POST `{ act: 'restore', snapshot, captured }`: the row's id and when it was captured, since a
+   *  later capture keeps the id), answered as a put-back's outcome is */
+  restore: (snapshot: string, captured: string) => Promise<ActOutcome>
   /** Story 7.23b — the saved original's download (Story 2.5's route), for the refusal's fallback */
   originalHref: (snapshot: string) => string
   onClose: () => void
@@ -257,7 +258,7 @@ export function DeployHistory({ projectName, read, pin, act, check, liveHref, re
     if (acting !== null || busy !== null) return
     setNote(null)
     setActing(original.id)
-    const outcome: ActOutcome = await restore(original.id).catch((): ActOutcome => ({ kind: 'failed' }))
+    const outcome: ActOutcome = await restore(original.id, original.capturedAt).catch((): ActOutcome => ({ kind: 'failed' }))
     setActing(null)
     const host = hostOf(original.siteUrl)
     if (outcome.kind === 'live' || outcome.kind === 'uploaded') {
@@ -396,7 +397,7 @@ export function DeployHistory({ projectName, read, pin, act, check, liveHref, re
     </p>
   )
 
-  /** STORY 7.23b — D2a's original-theme row (`:58-73`), then its rule (`:75`) */
+  /** STORY 7.23b — D2a's original-theme row (`:58-71`), then its rule (`:73`) */
   const originalRow = (o: OriginalTheme) => {
     const out = acting === o.id
     const said = note?.id === o.id ? note : null

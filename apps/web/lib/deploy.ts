@@ -830,7 +830,10 @@ export function shipStateOf(a: {
   const activated = rows
     .filter((r) => r.activated === true && typeof r.activated_at === 'string')
     .sort((x, y) => (String(x.activated_at) < String(y.activated_at) ? 1 : -1))[0]
-  const prev = activated === undefined ? NaN : versionNumber(String(activated.version))
+  // the version the site serves from this project: its latest activated deploy — while it is still `live`. Story 7.23b's review: a
+  // Restore original demotes it (and so does another project's ship to the site), and the original, not that version, is then live —
+  // so Deploy only says "keep your current theme active", never "keep v2 active"
+  const prev = activated === undefined || activated.status !== 'live' ? NaN : versionNumber(String(activated.version))
   const localeOf = (settings: unknown): string | null => {
     const locale = (settings as { locale?: unknown } | null | undefined)?.locale
     return typeof locale === 'string' && locale.trim() !== '' ? locale : null
