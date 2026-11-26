@@ -12126,7 +12126,7 @@ test('7.23b · (f) reading along (R-192): while another session holds the lock t
 })
 
 test('7.23b · (g) the request fails (the network drops it): the row unchanged, "didn\'t go back… Try again." under it, focus back on Restore original; the list not re-read and nothing said in the drawer\'s region', async ({ page }) => {
-  // `harnessRestore` answers any other header as a request that failed — the route's status 0, as `restoreHistory` reads it
+  // `harnessRestore` answers any other header as a request that failed — the route's status 0, as `historyRequests`' `restore` reads it (`history-requests.ts`, since Story 7.23c)
   await openOriginal(page, 'original', 'failed')
   await pressRestore(page)
   await expect(originalRow(page).locator('[data-history-note]')).toHaveText(HW.restoreFailed, { timeout: 15_000 })

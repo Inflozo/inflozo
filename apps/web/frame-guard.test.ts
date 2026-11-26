@@ -7,7 +7,7 @@ import { NextRequest } from 'next/server.js'
 // the `(authed)` layout, so its own first line is its only guard; until Story 5.24d the tests read that line back as text.
 // Here each `GET` is called with a real `NextRequest`, signed out and signed in.
 //
-// THE ONLY TEST THAT REGISTERS A MODULE HOOK, and why: a route is written for Next's bundler. `next` ships no `exports`
+// A TEST THAT REGISTERS A MODULE HOOK (as `history-requests.test.ts` does, for `@/` alone), and why: a route is written for Next's bundler. `next` ships no `exports`
 // map, so a bare `next/server` does not resolve under Node (its `server.js` does), and `@/` is tsconfig's alias, not
 // Node's. The hook maps exactly those names, and `@/lib/supabase/server` to THIS file, whose `currentUser` the tests set
 // — `mock.module` resolves the name first and fails the same way.

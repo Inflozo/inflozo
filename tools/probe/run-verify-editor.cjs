@@ -7494,7 +7494,7 @@ async function main() {
       /what works here/i.test(notice97.heading ?? '') && notice97.rows.length === 1 && notice97.rows[0].words === 'Your sites' && /\/sites$/.test(notice97.rows[0].href ?? '') && notice97.rows[0].h === 56 && !notice97.overflow &&
       notice97.card !== null && notice97.card.above && notice97.card.title === RET97.HISTORY_WORDS.cardTitle && want97 !== null && !notice97.billing &&
       notice97.card.kind === want97.kind &&
-      (want97.kind === 'live' ? (notice97.card.act ?? null) === (want97.undo === null ? null : RET97.HISTORY_WORDS.rollBackName(want97.undo.n))
+      (want97.kind === 'live' ? (notice97.card.line ?? '').startsWith(`${RET97.HISTORY_WORDS.live} v${want97.live.n} · `) && (notice97.card.act ?? null) === (want97.undo === null ? null : RET97.HISTORY_WORDS.rollBackName(want97.undo.n))
         : notice97.card.line === { empty: RET97.HISTORY_WORDS.empty, unlinked: RET97.HISTORY_WORDS.unlinked, notLive: RET97.HISTORY_WORDS.noneLive }[want97.kind]),
       JSON.stringify({ heading: notice97.heading, rows: notice97.rows, overflow: notice97.overflow, card: notice97.card, want: want97?.kind ?? 'unread', billing: notice97.billing }))
     await phone.waitForTimeout(5000)
@@ -16362,8 +16362,8 @@ async function main() {
 
     /* ── step 123 — Story 7.23c: THE PHONE'S DEPLOY HISTORY CARD (D4f `:401-414`, FR-J9, R-118, R-291), WRITING TO T1 ──
        Runs only with `T1_WRITES=1`, on the owner's in-session go worded for the whole run: two ships of "Phone test" through the
-       product (uploads and activations under the frozen name), five Roll backs from the phone through the product (each an upload
-       under the frozen name), one hand-edited theme uploaded with the Admin API key under the frozen name, a stamped and cleared
+       product (uploads and activations under the frozen name), a Roll back from the phone through the product at (b), (c), (c)'s
+       control and (e) (each an upload under the frozen name; (d) is cancelled and (f) refused at the check), one hand-edited theme uploaded with the Admin API key under the frozen name, a stamped and cleared
        disconnect (the service key), and the put-back of T1. A throwaway Free account N (`editor-harness-n-…`) connects T1 through
        the wizard at 1440 and "Phone test" (step 1's fixture) is linked; each version's Home headline names its number ("Version n"),
        so a read of T1's `/` says which version is live. Every phone step runs in an iPhone 13 context (Playwright's descriptor:
@@ -16395,7 +16395,7 @@ async function main() {
        instead: a NEW address, the two ships, and (c)'s invisible hand edit on v2 — live — then it stops, leaving the account, its
        site and T1 as they are. Keys are read in-process by NAME and scrubbed; never printed. SELF-CONTAINED, as 121 and 122 are. */
     if (process.env.T1_WRITES !== '1') {
-      note('step 123 — NOT RUN', 'it writes to T1 (two ships and five Roll backs through the product, one hand-edited theme uploaded with the Admin API key, and the put-back) and to production (a stamped and cleared disconnect): set T1_WRITES=1 on the owner\'s in-session go')
+      note('step 123 — NOT RUN', 'it writes to T1 (two ships and the phone\'s Roll backs at (b), (c), its control and (e) through the product, one hand-edited theme uploaded with the Admin API key, and the put-back) and to production (a stamped and cleared disconnect): set T1_WRITES=1 on the owner\'s in-session go')
     } else {
       const imp123 = (f) => import(require('node:url').pathToFileURL(path.join(REPO, f)).href)
       const [DEP123, RET123, DR123, CR123, PR123, AR123, RU123, ZIP123, GATE123, FL123] = await Promise.all([
@@ -16421,7 +16421,7 @@ async function main() {
       }
       const missing123 = NAMES123.filter((k) => !ENV123[k])
       if (missing123.length) throw new Error(`step 123: ${missing123.join(', ')} not in tools/probe/.env`)
-      const SECRETS123 = [ENV123.GHOST6_ADMIN_API_KEY, ENV123.GHOST6_STAFF_ACCESS_TOKEN].flatMap((k) => [k, k.split(':')[1] ?? '']).concat([ENV123.GHOST6_CONTENT_API_KEY]).filter((x) => x.length >= 8)
+      const SECRETS123 = [ENV123.GHOST6_ADMIN_API_KEY, ENV123.GHOST6_STAFF_ACCESS_TOKEN].flatMap((k) => [k, k.split(':')[1] ?? '']).concat([ENV123.GHOST6_CONTENT_API_KEY, SECRET ?? '']).filter((x) => x.length >= 8)
       const scrub123 = (x) => SECRETS123.reduce((t, k) => t.split(k).join('<key>'), String(x))
       const ORIGIN123 = new URL(ENV123.GHOST6_URL).origin
       const ghost123 = async (credential, method, p, body) => {
@@ -16654,7 +16654,7 @@ async function main() {
           line: c.querySelector('[data-history-card-line]')?.textContent ?? null,
           // its name is its visible label (`rollBackName`): the button carries no aria-label
           act: b?.textContent.trim() ?? null,
-          said: c.querySelector('[data-history-said]')?.textContent ?? '',
+          said: c.querySelector('[data-history-said] span:not([data-walk-heard])')?.textContent ?? '',
           note: note?.querySelector('span:not([data-history-detail])')?.textContent ?? '',
           focus: a?.id || (a?.hasAttribute('data-history-act') ? 'roll-back' : a?.tagName ?? null),
           geometry: {
@@ -16688,7 +16688,7 @@ async function main() {
       const ended123 = (p) => p.waitForFunction(() => {
         const c = document.querySelector('[data-history-card]')
         if (!c || document.querySelector('dialog[data-history-confirm]')?.open) return false
-        const said = c.querySelector('[data-history-said]')?.textContent ?? ''
+        const said = c.querySelector('[data-history-said] span:not([data-walk-heard])')?.textContent ?? ''
         const note = c.querySelector('[data-history-note] span:not([data-history-detail])')?.textContent ?? ''
         if (said === '' && note === '') return false
         if (said !== '' && document.activeElement?.id !== 'small-screen-history') return false
@@ -16696,10 +16696,11 @@ async function main() {
       }, null, { timeout: 300000, polling: 250 }).then(() => card123(p), () => null)
       /** ONE ROLL BACK FROM THE PHONE: the card's Roll back TAPPED (the confirm opens on Cancel), its title and focus read, its check
        *  (R-291) waited for and read; `before`, if given, runs on that; then the confirm's Roll back tapped — or, `cancel`, its Cancel
-       *  — and the card's ending read. The said and noted words are cleared first, so an ending is this press's own */
+       *  — and the card's ending read. The words said before are marked first (never emptied), so an ending is this press's own */
       const CHECK_ENDED123 = /^(clean|found|unverified|none|failed)$/
       const phoneBack123 = async (p, { before = null, cancel = false } = {}) => {
-        await p.evaluate(() => document.querySelectorAll('[data-history-card] [data-history-said] span').forEach((s) => s.replaceChildren())).catch(() => {})
+        // the words already said are MARKED, never emptied (React owns the region — 7.3's crash): each saying is a new keyed span
+        await p.evaluate(() => document.querySelectorAll('[data-history-card] [data-history-said] span').forEach((s) => s.setAttribute('data-walk-heard', ''))).catch(() => {})
         const act = p.locator('[data-history-card] [data-history-act]')
         if (!(await act.count())) return { asked: null, checked: null, ended: null }
         await act.tap()
@@ -16772,6 +16773,8 @@ async function main() {
         if (PLANT123) {
           // ── the plant: (c)'s invisible hand edit on v2, LIVE — the owner's first Roll back finds it — read back, then STOP ──
           const editP = await handEdit123(v2)
+          // `leave123` left the page on about:blank, where the route's read would be cross-origin with no session: back on the app
+          await pg.goto(at('/'), { waitUntil: 'load' })
           const answerP = await history123(pg)
           const cardP = RET123.phoneCard(answerP.body ?? { linkedSiteId: null, liveVersion: null, rows: [], original: null })
           planted123 = check(`step 123 (plant) — ${PLANT123}: T1 connected through the wizard, "Phone test" shipped v1 then v2 ("Version n" on T1 each time); then v2's files with an invisible hand edit to ${editP.path} uploaded under ${theme123} with the Admin API key — active, so live at once (R-264) — T1's download differing from v2 by that file alone (R-291), ${ORIGIN123}/ still "Version 2"; the card's rule answers Live v2 with the undo v1`,

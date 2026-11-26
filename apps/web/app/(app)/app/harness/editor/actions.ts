@@ -161,7 +161,7 @@ const ROLLBACK = [
  *     it while the restore is held, so the drawer's re-read draws it);
  *   - `original-unversioned`: `original` with no version kept (the mono line is the name alone);
  *   - `original-empty`: the saved original and no version — the row above "Nothing shipped yet".
- * STORY 7.23c — two more states of the phone's Deploy history card (`phoneCard`):
+ * STORY 7.23c — more states of the phone's Deploy history card (`phoneCard`), and the one row it draws at its widest:
  *   - `first`: v1 live alone — a first ship, so the card draws its header and no undo row;
  *   - `unlinked`: v1 and v2 kept with no linked site — "This project isn't linked to a site.";
  *   - `rolled-back`: `rollback` after its Roll back to v4 landed — v4 live and accepted newest, so v5 is the next row and the undo

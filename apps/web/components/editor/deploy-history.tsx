@@ -101,6 +101,19 @@ export const versionChip = (r: HistoryRow, tinted: boolean) => (
     {versionLabel(r.n)}
   </span>
 )
+/** a refusal, said under its row — its own polite region, there (empty, and out of the row's flow) before its words so they are
+ *  heard; Ghost's own words in mono. The drawer's rows and, since Story 7.23c, the phone card's undo row draw this one (`id` names it
+ *  for the card's Roll back's `aria-describedby`) */
+export const RowNote = ({ rowId, note, id }: { rowId: string; note: { id: string; words: string; detail?: string } | null; id?: string }) => (
+  <p id={id} role="status" data-history-note={rowId} className="m-0 flex basis-full flex-col gap-[3px] text-[11.5px] leading-[1.5] text-danger-text empty:absolute [text-wrap:pretty]">
+    {note?.id === rowId ? (
+      <>
+        <span>{note.words}</span>
+        {note.detail === undefined ? null : <span data-history-detail className="break-words font-mono text-[10.5px] text-ink-soft">{note.detail}</span>}
+      </>
+    ) : null}
+  </p>
+)
 const gscanChip = (r: HistoryRow) =>
   r.gscan === null ? null : (
     <span data-history-gscan>
@@ -358,18 +371,8 @@ export function DeployHistory({ projectName, read, pin, act, check, liveHref, re
     )
   }
 
-  /** a refusal, said under its row — its own polite region, there (empty, and out of the row's flow) before its words so they are
-   *  heard; Ghost's own words in mono */
-  const status = (r: HistoryRow) => (
-    <p role="status" data-history-note={r.id} className="m-0 flex basis-full flex-col gap-[3px] text-[11.5px] leading-[1.5] text-danger-text empty:absolute [text-wrap:pretty]">
-      {note?.id === r.id ? (
-        <>
-          <span>{note.words}</span>
-          {note.detail === undefined ? null : <span data-history-detail className="break-words font-mono text-[10.5px] text-ink-soft">{note.detail}</span>}
-        </>
-      ) : null}
-    </p>
-  )
+  /** a refusal, said under its row (`RowNote`) */
+  const status = (r: HistoryRow) => <RowNote rowId={r.id} note={note} />
 
   /** STORY 7.23b — D2a's original-theme row (`:58-71`), then its rule (`:73`) */
   const originalRow = (o: OriginalTheme) => {
@@ -671,7 +674,8 @@ export function RollBackConfirm({ asking, opens, live, act, check, liveHref, bac
   onClosed: () => void
 }) {
   const confirm = useRef<HTMLDialogElement>(null)
-  const now = useMemo(() => new Date(), [])
+  /** the clock the summary row's time is read against — each opening's own, so a page left open past midnight says the day right */
+  const [now, setNow] = useState(() => new Date())
   /** the row whose put-back is out */
   const [acting, setActing] = useState<string | null>(null)
   /** R-291 — the check before a Roll back, and the opening it answers for: a press of a Roll back and the confirm closing each move
@@ -686,6 +690,7 @@ export function RollBackConfirm({ asking, opens, live, act, check, liveHref, bac
   useEffect(() => {
     if (asking === null) return
     moved.current = false
+    setNow(new Date())
     if (confirm.current?.open !== true) openOnCancel(confirm.current)
     void checkFirst(asking)
   }, [asking, opens])

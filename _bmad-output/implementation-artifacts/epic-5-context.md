@@ -890,7 +890,7 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
       truncation". The chip and the page-2 pill share one grid row.
     - **D4f's Deploy history and Billing are absent until 7.23 and 12.5 (R-118).** Those stories' criteria gain the rows.
       - **Story 7.23c's Dev (2026-11-26):** the Deploy history card is built — first under "What works here", above Your sites,
-        reading History once (no lock, no sync, no IndexedDB, no Ghost read before a tap); its Roll back is S8e's confirm with
+        reading History as it opens and again after a Roll back (no lock, no sync, no IndexedDB, no Ghost read before a tap); its Roll back is S8e's confirm with
         R-291's check, shared with the laptop's drawer. Billing stays absent until Story 12.5. The coarse 44px rule covers
         `[data-small-screen]` too.
     - DW-281: the rail's thumbnails are the Layers rows' one generic `LayerThumb`, where D8a draws one per category.

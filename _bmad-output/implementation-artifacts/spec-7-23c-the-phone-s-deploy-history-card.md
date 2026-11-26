@@ -2,10 +2,10 @@
 title: 'Story 7.23c — The phone''s Deploy history card (split from Story 7.23 by R-290)'
 type: 'feature'
 created: '2026-11-26'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: 7d97297f5b1a12efd1daa742e66b762495069755
 owner_test: pending
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-23a-roll-back-and-re-activate-from-history.md', '{project-root}/_bmad-output/implementation-artifacts/spec-5-22-the-editor-s-responsive-floor.md']
 ---
 
@@ -321,6 +321,46 @@ existed. Story 7.23a built Roll back, so a bad ship still cannot be undone from 
 - **A phone starts nothing else.** Given the notice, when it has read History and no Roll back was tapped, then there is no lock
   or sync request, no `edit_locks` row and no `inflozo-*` database.
 
+### Review Findings
+
+*Story 7.23c's Review (2026-11-26): five layers — Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier — then walk steps 97 and 123 on production and T1 (Verification). No question for the owner; nothing deferred.*
+
+- [x] [Review][Patch] Deploy's plant would always fail: `STEP123_PLANT` read History after `leave123` had put the page on
+  about:blank, where the route's fetch is cross-origin with no session — so the plant's own check threw and its account was
+  deleted. The page goes back to the app first [`tools/probe/run-verify-editor.cjs` step 123's plant]
+- [x] [Review][Patch] History's real requests ran in no test: every journey reaches `history-requests.ts` through the harness's seams,
+  and `deploy.test.ts` matched the restore's text only, so a put-back sent as `act: 'check'` (or the reverse) passed every gate.
+  `history-requests.test.ts` calls each request against a stubbed `fetch` and reads back its method, address and body; seen red with
+  `live` and `check` swapped, green restored byte for byte [`apps/web/history-requests.test.ts`; `frame-guard.test.ts`' "only test"
+  comment]
+- [x] [Review][Patch] Walk 123 emptied the card's polite region by hand (`replaceChildren`), the pattern that crashed the editor at
+  7.3: the words already said are now marked and an ending is a new span with words [`run-verify-editor.cjs` `phoneBack123`,
+  `ended123`, `card123`]
+- [x] [Review][Patch] The card and the confirm read their times against the moment they mounted: a phone left open past midnight
+  would label the version a Roll back just made live with yesterday's date. The card takes a fresh clock with each read, the confirm
+  with each opening [`small-screen-notice.tsx`; `deploy-history.tsx` `RollBackConfirm`]
+- [x] [Review][Patch] The refusal under the card's row was the drawer's markup copied: one `RowNote` in `deploy-history.tsx` now draws
+  both, and the card's row is `relative` as the drawer's is, so the empty note sits in it [`deploy-history.tsx`;
+  `small-screen-notice.tsx`]
+- [x] [Review][Patch] Walk 97's re-expected check named the Roll back for a live card but never its "Live v{n} · …" line
+  [`run-verify-editor.cjs` step 97]
+- [x] [Review][Patch] Step 123's header and its NOT RUN note said "five Roll backs" (there are four put-backs: (d) is cancelled and (f)
+  refused at the check) — worded without a count; the step's scrub lacked the Supabase key [`run-verify-editor.cjs`]
+- [x] [Review][Patch] Stale words: the harness's "two more states" over a list of four (`actions.ts`); a 7.23b journey comment naming
+  `restoreHistory`, gone into `historyRequests` (`journey.spec.mjs`); Epic 5's context "reading History once" (it reads again after a
+  Roll back); this spec's Verification expecting journeys (a)–(f) where (g) exists
+
+Dismissed after reading the code: the confirm's put-back no longer waiting on a drawer pin (the row's Roll back is `aria-disabled`
+while a pin is out and the confirm is modal, so it cannot open then); the close event racing the stale ending's focus (`close()` queues
+its event before the re-read's request is sent); the check moved into an effect (the floor's one-request count is green in the gate);
+a tap during a re-read (the server answers a stale row, and the card reads again); "one-tap" meaning the button on the card (R-291
+puts every Roll back behind its check — Design Notes); the forward Roll back's label (7.23a's word, R-170); no retry on a failed read,
+no Re-activate, no dangling time (the spec's own states; `accepted_at` is a database timestamp); the notice's height (its body
+scrolls); the seams' type (checked structurally where `Editor` passes its props); the coral literal and the 15.5 clock note (the
+frame's own values); the plain `<button>` (Change Log 5); the refusal heard as status and description (History's own pattern);
+`clockHalf`'s order (nothing calls `timeLabel` at load); a 200 with no rows (the route's contract).
+
 ## Spec Change Log
 
 **Dev (2026-11-26).** Each entry is outside the frozen block and was made where the build met a fact the plan did not hold.
@@ -431,10 +471,10 @@ from T1.
 ## Verification
 
 **Commands:**
-- `pnpm check` -- expected: green. That is lint, typecheck and every package test, among them `retention.test.ts` and
-  `busy.test.ts`. The run prints its own counts; never write one down.
+- `pnpm check` -- expected: green. That is lint, typecheck and every package test, among them `retention.test.ts`,
+  `history-requests.test.ts` (the Review's) and `busy.test.ts`. The run prints its own counts; never write one down.
 - `python3 tools/doc-audit.py --check`, run twice -- expected: green.
-- `pnpm keyboard` -- expected: journeys 7.23c (a)–(f), 7.23a's and 7.23b's unchanged, 5.22's phone floor re-expected and 7.23c's
+- `pnpm keyboard` -- expected: journeys 7.23c (a)–(g), 7.23a's and 7.23b's unchanged, 5.22's phone floor re-expected and 7.23c's
   floor at 390 and 320 all green.
 - `grep -rn "Deploy history and Billing\|ONE ROW, NOT THREE" apps/web tools` -- expected: nothing stale.
 
@@ -461,6 +501,56 @@ from T1.
   test above.
 - **Vercel:** the deployment is READY from the Dev head.
 - **The owner's test above (R-80).**
+
+**Executed — Review, the main session (2026-11-26, Node 24; every key read inside the process from `tools/probe/.env` by its variable
+name, never on argv, no value printed; the owner's in-session go for walk steps 97 and 123, "1. Go", up to three runs each):**
+- **CI on the Dev head `f3bb27e1`** (`GITHUB_TOKEN`): run 45863606017 — `rls`, `check` (the whole `pnpm keyboard` gate with it) and
+  `deploy` success; the Render matrix success. **Vercel** (`VERCEL_TOKEN`): `dpl_J2hEDi5XAsoArDCM82TqEMoTsp3m` READY from `f3bb27e1`,
+  aliased to `app.inflozo.com`, `inflozo.com` and `www.inflozo.com`. Control: before it, production was `dpl_C4gx…` at the Create.
+- **The Real-infra verifier (read-only):**
+  - **R-99 holds with nothing to apply:** no file under `supabase/` and none under the History route changed. Production, read through
+    `SUPABASE_DB_POOLER_URL` in `BEGIN READ ONLY` transactions: every column the route and the put-back read or write on `projects`,
+    `deploys`, `site_snapshots`, `sites` and `deploy_jobs` answers a `LIMIT 0` select; `deploy_status` carries `uploaded` and `live`;
+    `pin_version(uuid,uuid,integer)` exists. Controls: a column that does not exist, `42703`; a function that does not, no row.
+  - **The route signed out** on production: the card's GET **401** "Not signed in", a POST `act: 'check'` **401**, `history/live` 303
+    to `/sign-in`, the project page 307; `/harness/editor` **404** — production has no harness, so the card reads the real route.
+  - **The deployed script carries the card's sentences:** "None of your kept versions is live on your site.", "Couldn't load your
+    deploy history…" and "This project isn't linked to a site." in the chunk that holds "The editor needs a bigger screen." on
+    `f3bb27e1`; all three absent on `7d97297f` (the control), and a sentence the app never says in no chunk on either.
+  - T1's themes (staff token): `casper` active, `racer`, `source`, `inflozo-ghost6`. Control: the same read with no token, 403.
+- **Walk step 97, re-expected — on the Dev head's deployment** (a cut of steps 1–5 and 97 from a clean worktree at `f3bb27e1`, the
+  review's patched walk in its `tools/probe-debug/`): **0 FAIL, 49 PASS.** The iPhone 13 opens A's "Pilot sections" on D4f's notice,
+  no editor and no canvas; the card first under What works here and above the one 56px Your sites row, in A's state as the route
+  answers A's own session ("Nothing shipped yet", `empty`); Billing absent; no lock or sync request and no `edit_locks` row after 5s;
+  nothing sideways; zero CSP violations; users 25 → 25, projects 18 → 18.
+- **Walk step 123 — on the same deployment and T1, run 1:** **0 FAIL, 58 PASS**, first time:
+  - T1 on `casper` at the start (`routes.yaml` read); N connected T1 through the wizard; v1 then v2 shipped, `/` "Version 1" then
+    "Version 2", v2 live under `inflozo-phone-test`; the route answering v2 Live and v1 the undo;
+  - (a) the phone a phone by `PHONE`, no editor, no canvas, no lock or sync request, no `edit_locks` row, no `inflozo-` database; the
+    card "Live v2 · today 10:58 PM" with "Roll back to v1" at D4f's geometry (14 padding, radius 12, 11 gap, the 34 tile, the row
+    9 × 11 at radius 10 with a 9 gap, the button 44 high, 14 across, 13px 600, radius 10), above Your sites, nothing sideways;
+  - (b) the confirm "Roll back to v1?" on Cancel; the check REAL on T1: D3c "Nothing changed on your site since v2"; confirmed: "v1 is
+    live on ghost6.inflozo.com." said once, focus on the heading, the card "Live v1" with "Roll back to v2"; T1's download at **zero**
+    differences from v1's `content_manifest`, `/` "Version 1"; v1's own row live with the newest `accepted_at`, rows 2 → 2;
+  - (c) a hand edit to `home.hbs` uploaded with the Admin API key, live; the phone's check FINDS it — D3a naming "Home" with
+    "Download the live theme first", which downloaded `inflozo-phone-test-live.zip` equal to T1's live manifest with the page and
+    the confirm staying; the Roll back still went — v2 live at zero differences, the edit replaced; the control: the next Roll back
+    checked clean "since v2" and went;
+  - (d) Cancel after the check: the check the only POST, T1 unchanged, the card unchanged, focus back on the Roll back;
+  - (e) N's 1440 editor holding the lock, the phone's Roll back to v2 landed ("Version 2");
+  - (f) the site stamped disconnected: the check's 409 said under the row — "Reconnect ghost6.inflozo.com in Sites to roll back." —
+    focus back on the Roll back, nothing in the region, nothing sent to Ghost; the stamp cleared and read back;
+  - finally: T1 `casper*` with `racer`, `source` and `inflozo-ghost6`, the run's theme deleted, `routes.yaml` 130 → 130 bytes; N's
+    objects 0, T1 disconnected, N deleted; users 27 → 27, projects 20 → 20 inside the step and 25 → 25, 18 → 18 for the run; zero CSP
+    violations. The plant's path (Deploy's) is not this run's: its read-from-about:blank fix is a page load before the read.
+- **The review's patches, locally:** `pnpm check` exit 0 — every package 0 failing, each printing its own count, the web package's run
+  among them `history-requests.test.ts` (seen red with `live` and `check` swapped in `history-requests.ts`, green restored byte for
+  byte). `pnpm keyboard`, whole (42.4 min): 383 passed, 5 failed — all five at `open()` waiting for the editor's first layer row
+  (5 s) in one burst under the machine's load (5.19's ⌘D and Hand-picked, the pill, FR-D21's page 2, DW-257), none touching History
+  or the notice; the five re-run alone, 5 of 5 green. Every 7.23c journey and floor, and 7.22's, 7.23a's and 7.23b's, green in the
+  whole run. `node --check tools/probe/run-verify-editor.cjs` clean. CI runs the whole gate again on the Review push.
+- **The Review's app changes run on the deployed site from the Review's push on** (`RowNote`, the fresh clocks): the walk ran on the Dev
+  head's deployment with the Review's walk; Deploy's `STEP123_PLANT` and the owner's test are on the Review's deployment.
 
 **Executed — Dev, the main session (2026-11-26, Node 24; every key read inside the script from `tools/probe/.env` by its variable
 name, never on argv, no value printed):**

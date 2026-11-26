@@ -1,9 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
-import { RollBackConfirm, versionChip } from '@/components/editor/deploy-history'
+import { RollBackConfirm, RowNote, versionChip } from '@/components/editor/deploy-history'
 import type { HistoryRequests } from '@/components/editor/history-requests'
 import { variants } from '@/components/kit/button'
 import { ring } from '@/components/kit/greyed'
@@ -118,7 +118,8 @@ type Shown = { kind: 'loading' } | { kind: 'failed' } | PhoneCard
 function DeployHistoryCard({ history }: { history: HistoryRequests }) {
   const [shown, setShown] = useState<Shown>({ kind: 'loading' })
   const [said, say] = useSaid()
-  const now = useMemo(() => new Date(), [])
+  /** the clock the times are read against — each read's own, so a page left open past midnight says "today" right after a Roll back */
+  const [now, setNow] = useState(() => new Date())
   /** the row S8e's confirm is open for, and each press (`RollBackConfirm`) */
   const [asking, setAsking] = useState<HistoryRow | null>(null)
   const [opens, setOpens] = useState(0)
@@ -131,7 +132,10 @@ function DeployHistoryCard({ history }: { history: HistoryRequests }) {
   const load = async (): Promise<PhoneCard | null> => {
     const answer = await history.read().catch(() => null)
     const next: Shown = answer === null ? { kind: 'failed' } : phoneCard(answer)
-    flushSync(() => setShown(next))
+    flushSync(() => {
+      setNow(new Date())
+      setShown(next)
+    })
     return next.kind === 'failed' ? null : next
   }
 
@@ -216,7 +220,7 @@ function DeployHistoryCard({ history }: { history: HistoryRequests }) {
           {undo === null || live === null ? null : (
             // D4f `:408-411`: the version before the Live one, its time as History draws it, and its Roll back; the row wraps the
             // button under the chip and the time where the width runs out (v10, another year, a 320 phone) — never sideways
-            <div data-history-undo={versionLabel(undo.n)} className="flex flex-wrap items-center gap-[9px] rounded-thumb border border-line px-[11px] py-[9px]">
+            <div data-history-undo={versionLabel(undo.n)} className="relative flex flex-wrap items-center gap-[9px] rounded-thumb border border-line px-[11px] py-[9px]">
               {versionChip(undo, false)}
               <span data-history-time className="grow text-[11.5px] text-ink-soft">{timeLabel(undo.acceptedAt, now)}</span>
               <button
@@ -235,15 +239,8 @@ function DeployHistoryCard({ history }: { history: HistoryRequests }) {
                 <RollBack size={13} />
                 {HW.rollBackName(undo.n)}
               </button>
-              {/* a refusal, said under the row — its own polite region, there (empty, and out of the row's flow) before its words */}
-              <p id="small-screen-history-note" role="status" data-history-note={undo.id} className="m-0 flex basis-full flex-col gap-[3px] text-[11.5px] leading-[1.5] text-danger-text empty:absolute [text-wrap:pretty]">
-                {note?.id === undo.id ? (
-                  <>
-                    <span>{note.words}</span>
-                    {note.detail === undefined ? null : <span data-history-detail className="break-words font-mono text-[10.5px] text-ink-soft">{note.detail}</span>}
-                  </>
-                ) : null}
-              </p>
+              {/* a refusal, said under the row — History's own (`RowNote`), its polite region there before its words */}
+              <RowNote id="small-screen-history-note" rowId={undo.id} note={note} />
             </div>
           )}
         </>
