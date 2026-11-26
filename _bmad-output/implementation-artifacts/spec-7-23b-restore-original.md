@@ -602,7 +602,7 @@ before your first ship offers it as a download.
 
 ## Owner's manual test
 
-**Before you start:** on your go, Deploy plants two Free test accounts, both connected to T1 (`ghost6.inflozo.com`):
+**Before you start:** Deploy planted two Free test accounts on your go (2026-11-26), both connected to T1 (`ghost6.inflozo.com`):
 - **A — `umngkmr+restore723b@gmail.com`, project "Restore test".** v1 and then v2 were shipped live. v2's home page headline reads
   "Version 2". The first ship saved T1's Casper as this site's original theme.
 - **B — `umngkmr+restorerefused723b@gmail.com`, project "Restore refused".** It is linked to T1 and nothing has been shipped. Its
@@ -611,40 +611,40 @@ before your first ship offers it as a download.
 Sign in at `https://app.inflozo.com/sign-in` with each address and open the link that arrives: A in one browser, B in a second.
 Use a desktop window at least **1366 px** wide. Keep a tab on `https://ghost6.inflozo.com`.
 
-1. **URL:** `https://app.inflozo.com/projects/{A's project — Deploy fills}` (signed in as A). **Screen:** the editor. **Do:** press
+1. **URL:** `https://app.inflozo.com/projects/d6676488-452b-4db5-9149-dcd0ad96b3a8` (signed in as A). **Screen:** the editor. **Do:** press
    the clock icon left of **Ship it**. **Type:** nothing. **See:**
-   - At the top of the History panel, a pale box with a small archive icon, **Your original theme**, `casper` and its version
-     number in small code type, **Archived** with the date Deploy planted it, a grey line starting "Kept outside your version
+   - At the top of the History panel, a pale box with a small archive icon, **Your original theme**, `casper` and `5.12.1`
+     in small code type, **Archived today** (on a later day, **Archived Nov 26**), a grey line starting "Kept outside your version
      limit…", and a white **Restore original** button.
    - A thin line under it, then **v2** with a green **Live** dot, then **v1**.
 2. **URL:** `https://ghost6.inflozo.com`. **Do:** reload it. **See:** the headline reads "Version 2".
-3. **URL:** A's editor, as in step 1. **Do:** press **Restore original**. **See:**
+3. **URL:** `https://app.inflozo.com/projects/d6676488-452b-4db5-9149-dcd0ad96b3a8` (A's editor, as in step 1). **Do:** press **Restore original**. **See:**
    - The button says "Restoring…".
    - Then the panel reloads its list: the original box is still on top, **v2** now shows a blue **Uploaded, not live** chip and a
      red **Re-activate** button, and nothing shows a green **Live** dot.
    - Reload ghost6.inflozo.com: it is **Casper** again.
-4. **URL:** A's editor. **Do:** close the panel, then open the small **▾** beside **Ship it**. **See:** the **Deploy only** row is
+4. **URL:** `https://app.inflozo.com/projects/d6676488-452b-4db5-9149-dcd0ad96b3a8` (A's editor). **Do:** close the panel, then open the small **▾** beside **Ship it**. **See:** the **Deploy only** row is
    not greyed out, and under it "Upload v3, keep your current theme active". **Do:** press Esc.
-5. **URL:** A's editor. **Do:** open History, then press **Re-activate** on v2. **See:** "Activating…", then v2 shows the green
+5. **URL:** `https://app.inflozo.com/projects/d6676488-452b-4db5-9149-dcd0ad96b3a8` (A's editor). **Do:** open History, then press **Re-activate** on v2. **See:** "Activating…", then v2 shows the green
    **Live** dot. ghost6.inflozo.com reads "Version 2".
-6. **URL:** A's editor, **keyboard only.** **Do:** close History and open it again with Enter on the clock; press Tab until
+6. **URL:** `https://app.inflozo.com/projects/d6676488-452b-4db5-9149-dcd0ad96b3a8` (A's editor), **keyboard only.** **Do:** close History and open it again with Enter on the clock; press Tab until
    **Restore original** is focused; press Enter. **See:** "Restoring…", then focus lands on the panel's **✕**, and
    ghost6.inflozo.com shows Casper.
-7. **URL:** `https://app.inflozo.com/projects/{B's project — Deploy fills}` (signed in as B, in the second browser). **Do:** open
-   History. **See:** the original box reads `old-magazine` and a version, and under it are "Nothing shipped yet" and the limit line.
-8. **URL:** B's editor. **Do:** press **Restore original**. **See:**
+7. **URL:** `https://app.inflozo.com/projects/5acdf051-1c42-4c33-beaa-54f43b73248b` (signed in as B, in the second browser). **Do:** open
+   History. **See:** the original box reads `old-magazine` and `2.1.0`, and under it are "Nothing shipped yet" and the limit line.
+8. **URL:** `https://app.inflozo.com/projects/5acdf051-1c42-4c33-beaa-54f43b73248b` (B's editor). **Do:** press **Restore original**. **See:**
    - "Restoring…".
    - Then, under the box: "Ghost's own theme check refused your original theme, so nothing on your site changed.", Ghost's own
      message in small grey code type, a **Download your original theme** button, and a line ending in a **Design & branding ↗**
      link.
    - ghost6.inflozo.com is unchanged (Casper).
-9. **URL:** B's editor. **Do:** press **Download your original theme**. **See:** a zip downloads, and the editor stays where it
+9. **URL:** `https://app.inflozo.com/projects/5acdf051-1c42-4c33-beaa-54f43b73248b` (B's editor). **Do:** press **Download your original theme**. **See:** a zip downloads, and the editor stays where it
    was.
-10. **URL:** B's editor. **Do:** press **Design & branding ↗**. **See:** a new tab opens ghost6.inflozo.com's Ghost Admin, on its
+10. **URL:** `https://app.inflozo.com/projects/5acdf051-1c42-4c33-beaa-54f43b73248b` (B's editor). **Do:** press **Design & branding ↗**. **See:** a new tab opens ghost6.inflozo.com's Ghost Admin, on its
     Design & branding settings. Sign in to Ghost Admin there if it asks.
 
-**After the test:** say "passed", or list what you saw. On your go, Claude then removes the two test themes from T1. Casper stays
-live.
+**After the test:** say "passed", or list what you saw. On your go, Claude then removes the test theme `inflozo-restore-test` from
+T1 (the plant uploaded no other; Ghost never accepts `old-magazine`). Casper stays live.
 
 ## Verification
 
@@ -816,3 +816,51 @@ name, never on argv, no value printed; the owner's in-session go to walk step 12
   - Finally: T1 `casper*` with `inflozo-ghost6` kept, every uploaded theme deleted, `routes.yaml` 130 → 130 bytes; R deleted, objects 0;
     users 25 → 25, projects 18 → 18; zero CSP violations.
   Two of the owner's three runs used; nothing left on T1 or production. **Not run:** `STEP122_PLANT` — Deploy's, on its own go.
+
+**Executed — Deploy (2026-11-26, Node 24; keys by their variable names, read in-process, no value printed; the production and T1
+writes on the owner's in-session go, "1. Go", up to 3 runs, run in the main session):**
+- **Deployment: `dpl_4ZooiyFvvyX2igk2Mx81FwQrPpUK`** (`inflozo-9burfyem5-umangkagathara.vercel.app`), READY, target production,
+  built from `e98a03ab` (the Review's last commit), aliased to `app.inflozo.com`, `inflozo.com` and `www.inflozo.com` (`VERCEL_TOKEN`,
+  `VERCEL_TEAM_ID`, `VERCEL_PROJECT`, `v6/deployments` and `v13/deployments/{id}`); `https://app.inflozo.com/sign-in` and
+  `https://inflozo.com/` answer 200. `git diff --stat 78a3e182 e98a03ab -- apps packages supabase` is empty, so this is the app
+  code walk step 122 ran 0 FAIL 66 PASS on at Review.
+- **CI on `e98a03ab`** (`GITHUB_TOKEN`, read only): run 45797368887 — `check` (the whole keyboard gate among it), `rls` and `deploy`
+  success; the Render matrix (45797368847) success.
+- **Schema:** applied on production at Dev (the Schema push, R-99) and read back at Dev and at Review; nothing since.
+  **`bash supabase/tests/run-rls-gate.sh`: exit 0**, with "PASS (7.23b): site_snapshots.theme_version is a nullable text with no
+  default, commented and client-unwritable".
+- **Before the plant, read only:** T1's themes with `GHOST6_STAFF_ACCESS_TOKEN` (`GET themes/`, 200): `casper*`, `racer`, `source`,
+  `inflozo-ghost6`, no `walk-` or test theme; neither plant address among production's 23 users (`SUPABASE_SECRET_KEY`).
+- **The owner's test plant** — walk step 122's `STEP122_PLANT=umngkmr+restore723b@gmail.com,umngkmr+restorerefused723b@gmail.com`
+  with `T1_WRITES=1`, as a cut copy (steps 1–5, then 122, then the walk's `finally`) from a clean detached worktree at the deployed
+  `e98a03ab` (`tools/probe/.env` linked in, never copied), the launcher reading `SUPABASE_URL`, `SUPABASE_SECRET_KEY`,
+  `SUPABASE_DB_POOLER_URL`, `VERCEL_TOKEN` and `VERCEL_TEAM_ID` in-process and the step its own `GHOST6_*` keys. Three runs, the
+  owner's limit:
+  - **Run 1: 1 FAIL, 45 PASS** — "ship 2 ended awaiting_ship". Classified with Vercel's request rows (`VERCEL_TOKEN`, the
+    `request-logs` endpoint, 20 s windows, none capped): ship 1's Pre-flight and Ship it POSTs answered 202 and landed; ship 2's
+    Pre-flight POST answered 202 at 13:54:28Z, and after it **no `POST …/deploy` row** — only the editor's lock beats every 15 s until
+    the walk gave up at 13:59:32Z. The press was issued (no DW-404 note) and never reached Vercel: the harness-hold class of DW-204,
+    not the product. Its `finally` put T1 back (`casper*`, the run's theme deleted, `routes.yaml` 130 → 130 bytes), deleted the failed
+    plant's account (objects 0, T1 disconnected), users 25 → 25 and projects 18 → 18 inside the step, 23 → 23 and 16 → 16 overall.
+  - **Run 2: died in step 2** (`page.waitForURL` 30 s on opening the project card), before step 122 — no T1 write; both throwaway
+    accounts deleted, users 23 → 23.
+  - **Run 3: 0 FAIL, 44 PASS** (one `stall` note, a 30 s editor load retried once):
+    - **A — `umngkmr+restore723b@gmail.com`**, Free, **Restore test** (`d6676488-452b-4db5-9149-dcd0ad96b3a8`): T1 connected through
+      the wizard; v1 then v2 shipped (Deploy & activate), T1's Home reading "Version 1" then "Version 2"; the first ship's capture
+      saved `casper` with `theme_version` **5.12.1**;
+    - **B — `umngkmr+restorerefused723b@gmail.com`**, Free, **Restore refused** (`5acdf051-1c42-4c33-beaa-54f43b73248b`): T1
+      connected, the project linked, nothing shipped; its saved original planted as `old-magazine` 2.1.0 (stored 200, row 201) —
+      A's saved Casper renamed plus one template the pinned gscan 6.4.2 blocks (`GS005-TPL-ERR` fatal, `GS120-NO-UNKNOWN-GLOBALS`;
+      the original itself 0 errors), a theme T1 does not hold;
+    - each history route answering its original (`casper 5.12.1`, `old-magazine 2.1.0`, B with no rows); zero CSP violations; the
+      step-1 throwaways deleted, users 23 → 25 and projects 16 → 18 (two each kept by the plant).
+- **Read back afterwards, GET only** (`GHOST6_STAFF_ACCESS_TOKEN`, `SUPABASE_SECRET_KEY`): T1's themes `casper`, `racer`, `source`,
+  `inflozo-ghost6`, `inflozo-restore-test*`, its Home reading "Version 2"; A on `free`, Restore test linked to a connected ghost6,
+  deploys 1.0.0 `uploaded` (activated) and 2.0.0 `live`, each with its zip, the snapshot `casper 5.12.1`; B on `free`, Restore
+  refused linked to a connected ghost6, no deploys, the snapshot `old-magazine 2.1.0`.
+- **The Owner's manual test** carries both projects' URLs in every step, `casper 5.12.1` and `old-magazine 2.1.0`, and "Archived
+  today" (Nov 26 on a later day). Its closing line said "the two test themes"; the plant uploads one, `inflozo-restore-test`
+  (Ghost never accepts `old-magazine`), so it now says so. `owner_test` stays `pending`. Afterwards `inflozo-restore-test` is
+  deleted from T1 on his go, Casper live.
+- **Not hit in Deploy:** Resend and Dodo (a restore sends no email and reads no plan). Ghost 5's half stays postponed to DW-326.
+- **Question 2 is still open** (routes.yaml after a restore); the build ships option 1, as built, meanwhile.
