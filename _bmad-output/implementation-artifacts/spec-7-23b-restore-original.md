@@ -1,0 +1,565 @@
+---
+title: 'Story 7.23b — Restore original (split from Story 7.23 by R-290)'
+type: 'feature'
+created: '2026-11-26'
+status: 'ready-for-dev'
+owner_test: pending
+review_loop_iteration: 0
+context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-23a-roll-back-and-re-activate-from-history.md']
+---
+
+## In plain English
+
+After this story, the editor's **History** panel shows **Your original theme** at the top: the theme your Ghost site had before
+Inflozo replaced it, with its name and version, the date Inflozo saved it, and a **Restore original** button. One press switches
+your site back to that theme in seconds; your Inflozo versions stay in the list, and the one that was live shows **Re-activate**,
+so going back to Inflozo is one press too. If Ghost refuses your old theme because it no longer passes Ghost's own checks, the
+panel says so in Ghost's words, offers the theme as a download and links to Ghost's Design & branding settings — and every
+Download button in the editor now says what went wrong beside the button instead of leaving the page.
+
+**Question 1 is open** (below): it decides how Restore original puts the old theme back, and whether it checks first. This spec is
+written for the recommended option; nothing waits on the owner before Dev except Question 1 and the in-session gos for the writes.
+
+<frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
+
+## Intent
+
+**Problem:** Story 7.20a saves each site's pre-Inflozo theme (`site_snapshots`), but nothing can put it back:
+- FR-J13's safety net — "trying Inflozo never costs me the site I had" — has no button;
+- the History drawer lacks D2a's original-theme row (R-290 moved it here);
+- the only download of the saved theme, the Backup step's Theme Download, replaces the whole editor with a bare error page
+  when Story 2.5's route answers anything but the zip — and D3a's and the Roll back confirm's "Download the live theme first"
+  do the same (DW-391).
+
+**Approach:**
+- **D2a's original-theme row** sits above the versions, outside the count, for the project's linked site when that site has a
+  snapshot. Its **Restore original** is one press with no confirm, as drawn.
+- **How it puts the theme back (Question 1, recommended option — see "What Question 1 decides" in Design Notes):** activate the
+  theme by its name first (`PUT themes/{name}/activate/`). Only when Ghost no longer holds that name, upload the saved zip as
+  `{name}.zip`, then activate it. Ghost's own Casper and Source are only ever activated (DW-389). Nothing on the site is
+  overwritten, so no check runs.
+- **The records.** The site's `live` deploys rows are demoted to `uploaded`. Inflozo's version therefore shows as 7.23a's D2d row,
+  "Uploaded, not live", with **Re-activate** — the undo. No `deploys` row is written, so the drift baseline does not move.
+- **Ghost refuses** (its 422): nothing changes, and the row says so with Ghost's detail, a **Download your original theme**
+  button and Ghost's **Design & branding ↗** link (R-281's fallback).
+- **One way to follow a signed download** (DW-391) serves all four Downloads: the Backup step's Theme Download, D3a's, the Roll
+  back confirm's and this row's.
+
+**Frame (R-74):**
+- `D2 Deploy History Completed.dc.html`:
+  - D2a `:58-73` is the original-theme row: the archive tile, "Your original theme", the mono name and version, "Archived {date}",
+    the quiet line and Restore original. The rule after it is `:75`.
+  - D2c `:240-252` is the same row on Free.
+- No frame draws the restore's refusal. It is extrapolated from the nearest frames:
+  - 7.23a's per-row `role="status"` refusal line, with Ghost's detail in mono;
+  - D3a's secondary Download button;
+  - B12b's linked "Design & branding ↗" (`SNAPSHOT_WORDS.placeLink`, `adminAt(url, 'design')`).
+
+**The epic's criteria, word for word (R-195), and how this story meets each:**
+- **Given** deploy history per project × site, on a site with a pre-Inflozo snapshot (Story 7.20a), **when** I open it, **then**
+  the list carries **two rows that are not ordinary versions**: **the pre-Inflozo snapshot**, above the versions, outside the
+  count, actioned as **restore original**; and an **`uploaded`-but-not-`activated` row**, shown **without an active badge** and
+  actioned as **re-activate rather than as a recompile** *(Story 7.23a's, R-290)*.
+  — The original row is this story's. D2d's row is 7.23a's, kept as built.
+- **Rollback is exempt from the Pro exit gating** — restoring an artifact that already ran is always allowed, on any plan.
+  — The restore reads no plan.
+- **Rollback and snapshot restore redeploy stored artifacts, not the working document, so they never require the edit lock.**
+  — The restore reads no lock and no working document.
+- *(R-281)* Restoring is a one-click redeploy that skips *Inflozo's* gscan gate — but **Ghost validates every upload with its own
+  gscan**, so an old fork can be rejected on the way back in; that case has a designed fallback too, offering the zip as a download
+  and pointing at Settings → Design.
+  — The refusal row described above.
+- *(R-284)* "Restore original" puts back the site's one saved snapshot, which is **the theme Inflozo replaced most recently**.
+  — `site_snapshots`' one row per site, as 7.20a keeps it. Question 1 decides whether Ghost's own copy of that theme or the
+  saved copy goes back.
+- *(DW-389)* Restoring a default theme as the original is an activation of Ghost's installed copy, never a re-upload of the
+  snapshot.
+- *(DW-391)* The snapshot's download is followed so that a failure of Story 2.5's route — a 404 when the row has gone, a 502 when
+  signing fails, the sign-in redirect — is said where the button is and never replaces the page; one way for D2a's
+  original-theme row and the Backup step's Theme Download (`deploy-wizard.tsx` `follow`).
+- *(DW-391, extended)* The same way serves D3a's **Download the live theme first** (`#deploy-drift-download` →
+  `projects/[id]/deploy/live`): its 404, 502 and sign-in redirect are said under the button, never in place of the editor.
+  — The same way also serves 7.23a's confirm Download (`#history-drift-download` → `history/live`), which has the same shape.
+- *(Story 7.21's Dev, under R-287)* A rollback or a restore that **uploads a stored artefact records that upload as the newest
+  accepted one** — a `deploys` row with status `uploaded` or `live` carrying **the artefact's own `content_manifest`** — because
+  Ghost replaces every file under the theme's name on that upload, and the next drift check compares the site with the newest
+  upload Ghost accepted (`deploys.baseline`).
+  — A restore never uploads under the frozen name the baseline describes, so it writes no row and the baseline holds (Design
+  Notes).
+- *(Story 7.22's Dev, moved by R-290)* **This story adds** the original-theme row. — Built here.
+- The original-theme row matches D2a (R-290). — The first acceptance criterion.
+- *(Story 7.23a's Review)* Whether Restore original runs FR-J16's drift check is this story's to ask the owner (R-83).
+  — Question 1.
+
+## Boundaries & Constraints
+
+**Always:**
+- **The row.** It is drawn when the project's linked site has a `site_snapshots` row. It is one per site and never another site's,
+  for 7.23a's reason: that site may be another project's now (R-267).
+  - It sits above the version list, outside its `<ol>` (outside the count), followed by D2a's rule.
+  - It is drawn also above "Nothing shipped yet". The limit line stays at the foot.
+  - Its contents, every word from `HISTORY_WORDS`:
+    - the archive tile;
+    - "Your original theme";
+    - the mono line: `{theme_name} {theme_version}`, or the name alone when the version is null;
+    - "Archived {date}": `captured_at` as `timeLabel`'s date half ("Aug 2"; the year when not this year; "Archived today");
+    - the frame's quiet line, verbatim;
+    - Restore original.
+- **Restore** (`restoreOriginal` in `server/deploy/put-back.ts`, over `PutBackIo` handed in). The steps, in order:
+  1. The project's linked site (`io.linked`). Then the site's snapshot (`io.original`): its id must equal the asked id, else
+     `gone`.
+  2. Refuse with nothing sent to Ghost, in 7.23a's order: `disconnected`; `busy` (a fresh moving job on this project × site,
+     `STALLED_MS`).
+  3. **Activate first:** `sendActivate(io, { themeName: theme_name })` read by `activateAnswer`:
+     - `ok` → live;
+     - 429 or 5xx → `ghost_unavailable`;
+     - Ghost's check (`ThemeValidationError`) → `ghost_theme_refused` with its detail;
+     - `themeNotHeld` → step 4. For `casper` or `source` it is instead Ghost's words, and nothing is uploaded (DW-389).
+  4. **Upload the saved zip:** the `site-snapshots` object (`snapshotObjectKey(storage_path)`) through `sendUpload` as
+     `{theme_name}.zip`, read by `uploadAnswer`:
+     - refused → said with its detail, never retried (VERIFY 10);
+     - `active` → live;
+     - otherwise `sendActivate` → live, or `uploaded` (on the site, not live).
+- **The records, when it goes live:** `deploys.demote({ siteId, userId })` with no `except` — every `live` row on the site, any
+  project of the user's, becomes `uploaded`; `activated`, `activated_at` and `accepted_at` are left untouched. Ghost refusing,
+  or `uploaded`: nothing is written.
+- **R-264 (a) reads the record truthfully.** "This project's theme is live on the site" is the site's latest activated deploy
+  **that is still `live`**: `deploy-io.ts`' `liveProject` and `(editor)/read.ts:346` gain `status = 'live'`. So after a restore,
+  Deploy only is offered again.
+- **The outcomes, said once (UX-DR12), every word in `HISTORY_WORDS` (R-170):**
+  - **Live:** "Your original theme is live on {host}." — then the list is read again and focus goes to ✕.
+  - **Uploaded:** "Your original theme is on {host} but isn't live yet." — same handling.
+  - **Gone:** the list is read again; then "Your saved original theme has changed since you opened History. Check it and try
+    again." or, with none left, "Your original theme is no longer kept."; focus on ✕.
+  - **Refusals, said under the row** in its `role="status"` line, with focus back on Restore original:
+    - `disconnected`: "Reconnect {host} in Sites to restore your original theme.";
+    - `busy`: 7.23a's `refused.busy`;
+    - Ghost's other answers and ours: `deployError`'s message, or "Your original theme didn't go back on your site. Try again.";
+    - after Ghost acted, a record write failing twice: "Your original theme reached {host}, but History couldn't record it. Try
+      again."
+  - **Ghost's check refused it:** under the row, "Ghost's own theme check refused your original theme, so nothing on your site
+    changed." Then Ghost's detail in mono. Then **Download your original theme** (secondary, Download icon, through DW-391's
+    one way). Then "Download it to keep a copy, or to have it updated for this version of Ghost — then upload it in Ghost under
+    **Design & branding ↗**" (new tab, the site's own Design panel).
+- **R-98:** Restore original says "Restoring…" with `aria-busy` and `aria-disabled` while out. Every action and pin waits (7.23a's
+  `acting`). The drawer carries `data-unstoppable`, and Esc, ✕ and the backdrop wait.
+- **R-192:** Restore original stays live in a read-only editor, as the pin does — it changes no design.
+- **The History GET** adds `original: { id, theme, version, capturedAt, siteUrl } | null`. It is read through the user's own
+  session (RLS `site_snapshots_owner_read`) for the linked site.
+- **`site_snapshots.theme_version`** (new, nullable) is written by `captureSnapshot` from the `version` it already reads. It is
+  pushed first, as its own `Schema` (R-99).
+- **DW-391 — one way to follow a signed download.**
+  - The three routes:
+    - `snapshots/[id]/download`;
+    - `projects/[id]/deploy/live`;
+    - `projects/[id]/history/live`.
+  - When asked with `Accept: application/json`, each answers `200 { url }` (the same 60-second signed URL), or `401` when
+    signed out. Otherwise it answers exactly as today: a 303, which the `/restore` page's plain links still follow.
+  - One client function, `followSigned(href)`, fetches that answer and clicks a link to `url`. The signed URL is an attachment,
+    so the page stays. It answers null, or one of three sentences in one list:
+    - gone (404);
+    - signed out (401, or a fetch redirected to `/sign-in`);
+    - couldn't prepare it (anything else).
+  - Each of the four Downloads stays an `<a href>`, its click intercepted. Its sentence goes under that button in a
+    `role="status"` line. Its words say "Preparing…" while the fetch is out (R-98).
+
+**Ask First:**
+- **Every production write and every T1 write needs the owner's in-session go**, asked in R-83's shape, run in the main session
+  and never by a subagent. Word each ask for the run's whole set of writes. That covers:
+  - the migration's apply (`SUPABASE_DB_POOLER_URL`);
+  - walk step 122;
+  - Deploy's plant.
+- Question 1 ruled other than option 1 (the intent changes: see "What Question 1 decides").
+- Anything a restore sends to Ghost beyond activate and upload (AD-10's list) — `routes.yaml` included.
+
+**Never:**
+- Write, copy or delete a `deploys` row for a restore. Never touch `accepted_at` or `content_manifest`.
+- Upload `casper.zip` or `source.zip`; Ghost refuses both (`storage.js:53-56`).
+- Call `holdsLock`, `resolveEntitlement` or any plan read on the restore path, or run Inflozo's gscan gate.
+- Retry Ghost's 422.
+- Draw an original row for another site, or a Live badge on the original row: no record says it is live, and the outcome sentence
+  says it once.
+- Build what belongs to other stories:
+  - 7.23c: the phone card;
+  - 7.25: the per-site lock — the restore joins it when it lands, beside the put-back;
+  - 7.26: a version's zip download;
+  - 7.20b: the orphan purge.
+
+## I/O & Edge-Case Matrix
+
+| Scenario | Input / State | Expected Output / Behavior | Error Handling |
+|----------|--------------|---------------------------|----------------|
+| Restore, Ghost holds it | v2 live; the snapshot is `casper` (or any theme Ghost still holds) | `PUT themes/{name}/activate/` only; live; the site's live rows demoted (v2 `uploaded`, `activated`/`accepted_at` untouched); "Your original theme is live on {host}."; re-read: the original row, then v2 as D2d's row with Re-activate | N/A |
+| Ghost no longer holds it | non-default name, deleted in Ghost Admin (activation → `themeNotHeld`) | the saved zip uploaded as `{name}.zip` → `active` false → `PUT activate` → live, as above | activation refused after the upload → `uploaded`: "…on {host} but isn't live yet."; nothing written |
+| Default theme | snapshot `casper`/`source` | activation only — never an upload | `themeNotHeld` (never seen: Ghost never deletes them, `storage.js:167-170`) → Ghost's words, no upload |
+| Ghost's check refuses | 422 `ThemeValidationError` on the activation or the upload | nothing changes; under the row: the refusal, Ghost's detail in mono, Download your original theme, Design & branding ↗ | logged by code; never retried |
+| Other Ghost failures | 401, 429/5xx, unreachable | `deployError(code).message` under the row; nothing written | logged by code |
+| The undo | after a restore, Re-activate on v2 (7.23a) | v2 live; Ghost's copy of Inflozo's theme untouched by the restore | N/A |
+| The original already live | switched back by hand in Ghost Admin | activation answers live; any stale live row demoted; said | N/A |
+| Disconnected | linked site disconnected | row drawn | 409 `disconnected` → its sentence under the row |
+| A ship under way | fresh `snapshotting`/`uploading`/`activating` job | nothing sent | 409 `busy` → 7.23a's sentence |
+| Gone | snapshot replaced (a later Theme Download) or purged since the read, or not the linked site's | — | 404 → re-read; "changed" or "no longer kept"; focus ✕ |
+| No row | no linked site, or no snapshot | no original row | N/A |
+| Nothing shipped | a snapshot, no versions | the row above "Nothing shipped yet" and the limit line | N/A |
+| Reading along, any plan | another session holds the lock; Free or lapsed | Restore works | N/A |
+| Baseline after a restore | restore, Re-activate v2, Run checks | D3c "Nothing changed on your site since v2" — no row written, baseline unchanged | N/A |
+| Deploy only after a restore | restore, then Ship it ▾ | Deploy only offered (no `live` row of this project on the site, R-264 (a)) | N/A |
+| Version unknown | a snapshot captured before the column | mono line is the name alone | N/A |
+| Request fails | network | row unchanged; "didn't go back… Try again." | logged |
+| Unrecorded | Ghost acted, then the demote fails twice | "Your original theme reached {host}, but History couldn't record it. Try again." | logged |
+| DW-391 served | any of the four Downloads; the route signs | the zip downloads; the page stays | N/A |
+| DW-391 failed | 404 / 401 or `/sign-in` / 502 or network | that sentence under that button; the page stays | logged by status |
+
+</frozen-after-approval>
+
+## Code Map
+
+- `supabase/migrations/20261125120100_deploys_accepted_at.sql` -- the latest migration; the pattern to follow: header, `add column
+  if not exists`, `comment on column`, `notify pgrst`.
+- Architecture `SCHEMA.sql` `site_snapshots` `:222-245` -- edited in place (`theme_version` after `theme_name`'s comment, LAST
+  by `add column`'s order — 7.20b's note). `RLS-TEST.sql` 7.20a's snapshot block `:3327-3450`, copied byte for byte to
+  `supabase/tests/rls.sql`.
+- `apps/web/server/snapshot.ts`:
+  - `SnapshotIo.upsert` `:54`;
+  - `version` `:124`;
+  - the upsert `:163`.
+
+  `server/snapshot-io.ts` upsert `:43-47`.
+- `apps/web/server/deploy/put-back.ts`:
+  - `PutBackIo` `:54-70`;
+  - `admit` `:90-104` (the refusal order to mirror);
+  - `putBack` `:131-200`, with its `ghostSaid`, `acted` and the Re-activate fall-through `:159-175` — the restore's shape;
+  - `ROUTE` `:83`.
+
+  `put-back-io.ts`: `linked` `:50-57`, `moving` `:58-61`, `demote` `:66-68`, `call` `:79`. `deploy-io.ts` `demote` `:90-92`
+  (held equal to put-back-io's by `put-back.test.ts:502-520`) and `liveProject` `:93-96`.
+- `apps/web/server/deploy/run.ts` `sendUpload`/`sendActivate`/`twice`/`STALLED_MS` (exported by 7.23a);
+  `uploadOnlyRefused` `:803-808`.
+- `apps/web/lib/deploy.ts`:
+  - `uploadAnswer` `:195-211`, `activateAnswer`, `themeNotHeld`, `deployError`;
+  - `SNAPSHOT_WORDS.placeLink` `:493`;
+  - `ShipState.liveHere` `:785-787`, `uploadOnlyBlock` `:903-908`.
+- `apps/web/app/(app)/app/(authed)/account/deletion-rule.ts` -- `SNAPSHOT_BUCKET` `:91`, `snapshotObjectKey` `:92`.
+- `apps/web/lib/paywall.ts` `adminAt(url, 'design')` `:125` -- the Design panel link.
+- `apps/web/lib/backup-gate.ts` `snapshotDownloadPath` `:75`.
+- `apps/web/lib/retention.ts`:
+  - `HistoryAnswer` `:116-142`;
+  - `timeLabel` `:283-298`;
+  - `HISTORY_WORDS` `:301-385`, with `said` `:335-345` and `refused` `:372-377`;
+  - `actOutcomeOf` `:401-412`, `actSaid` `:414-429` (the restore reads the same answers).
+- `apps/web/app/(app)/app/(authed)/projects/[id]/history/route.ts`:
+  - GET `:60-109`;
+  - POST `:111-141` — the `deploy` uuid check `:125` comes after the new restore branch.
+
+  `history/live/route.ts` `:35-66` and `deploy/live/route.ts` (the same shape); `app/(app)/app/snapshots/[id]/download/route.ts`
+  `:39-87` (Story 2.5's; `/restore`'s links keep its 303).
+- `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts:346` -- R-264's live read.
+- `apps/web/components/editor/deploy-history.tsx`:
+  - props `:87-100`;
+  - `settle` `:196-228` (the endings and refusals pattern);
+  - the per-row `status` line `:332-341`;
+  - the list `:499-523`;
+  - the confirm's Download `:600-603`;
+  - `acting` `:113`.
+- `apps/web/components/editor/deploy-wizard.tsx`:
+  - `follow` `:121-127` (replaced);
+  - `fetchRow` `:814-830`;
+  - D3a's Download `:1446`;
+  - B12b's linked place line `:1968` (the link's pattern).
+- `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx`:
+  - harness seams `:575-587`;
+  - the fetchers `:2598-2633`;
+  - the mount `:7034-7041`.
+- Kit:
+  - `button.tsx`: `sizes` `:54-62` has no 28 — the frame's button is 28 high, radius 10, 12px, 600;
+  - `icons.tsx` `Download` `:541` (there is no archive icon; the frame's svg is `D2:60`).
+- Harness `app/(app)/app/harness/editor/layout.tsx` (the history header's doc `:167`) and `actions.ts` (`harnessHistory`
+  `:160`, `harnessAct` `:201`, `harnessCheck` `:230`).
+- Tests:
+  - `tools/keyboard/journey.spec.mjs` 7.23a's block `:11262`–EOF;
+  - `tools/keyboard/floor.spec.mjs` 7.23a `:1112`;
+  - `tools/probe/run-verify-editor.cjs` step 121 `:14761` with `STEP121_PLANT` (the pattern); the last step is 121.
+- **Ghost, read in source or executed:**
+  - Ghost keeps the previous theme installed beside the active one (VERIFY 61, §15h, executed both majors);
+  - an activation of a held name is live (§91 step 6);
+  - a name Ghost does not hold answers `ValidationError` "not found in the theme directory" (`activate.js:46-54`; walk 121e2);
+  - activation runs `checkSafe` (`activate.js:55-60`), so a theme failing today's check is refused at activation and at upload
+    alike;
+  - `setFromZip` refuses `casper.zip`/`source.zip` (`storage.js:53-56`), and `destroy` refuses to delete them (`:167-170`);
+  - an upload under an inactive name answers `active` false (§91 step 1);
+  - a fatal theme answers 422 and replaces nothing (§91 step 5).
+
+## Tasks & Acceptance
+
+**Dev gate:** Question 1 must be ruled before Dev starts. If it is ruled other than option 1, the intent is renegotiated first.
+
+**Execution:**
+
+*Schema — its own push, first (R-99):*
+- [ ] `supabase/migrations/<Dev's date>120000_site_snapshots_theme_version.sql` -- create it:
+  - `add column if not exists theme_version text`;
+  - a `comment on column`: the active theme's `package.json` version at capture, null before Story 7.23b or when the theme
+    declares none; written by the capture alone; select-only to the client.
+
+  No grant change (the table is in the client's read-only set) and no backfill (the version was never stored).
+- [ ] Architecture `SCHEMA.sql` -- the same, in place. Then `RLS-TEST.sql`, copied byte for byte to `supabase/tests/rls.sql`:
+  one assertion that the column exists, and that `authenticated` cannot update it.
+
+*Server:*
+- [ ] `apps/web/server/snapshot.ts`, `snapshot-io.ts` -- the upsert writes `theme_version: version`.
+- [ ] `apps/web/lib/retention.ts`:
+  - `HistoryAnswer.original`;
+  - `archivedLabel(at, now, tz?)`;
+  - every word in Always, in `HISTORY_WORDS` — the frame's line verbatim, and "Restoring…";
+  - `restoreSaid(outcome, host)` over `actOutcomeOf`'s outcomes.
+- [ ] `apps/web/server/deploy/put-back.ts` -- `restoreOriginal(io, { userId, projectId, snapshotId, now })`, exactly as Always
+  states. It returns `live | uploaded | gone | disconnected | busy | { refused: DeployError }`. `PutBackIo` gains:
+  - `original({ siteId, userId })` → `{ id, theme_name, storage_path } | null`;
+  - `snapshots.get(key)`;
+  - `deploys.demote`'s `except` becomes optional.
+
+  The header comment names the restore, DW-389 and the baseline note.
+- [ ] `apps/web/server/deploy/put-back-io.ts`, `deploy-io.ts`:
+  - `original`, with the service role and `user_id` plus `site_id` clauses;
+  - `snapshots.get`, from `SNAPSHOT_BUCKET` by key;
+  - `demote` with an optional `except`, the same in both files;
+  - `liveProject` gains `.eq('status', 'live')`, with a comment naming R-264 (a) and the restore.
+- [ ] `(editor)/read.ts:346` -- the same `status = 'live'`. `lib/deploy.ts` `liveHere`'s comment says "still live".
+- [ ] `history/route.ts`:
+  - GET adds `original`: the user's `site_snapshots` rows (RLS) with `sites(url)`, the linked site's picked.
+  - POST `{ act: 'restore', snapshot }`, checked before `deploy`. It validates `snapshot` with `isUuid` and calls
+    `restoreOriginal`. The answers are the act branch's own: 200 `{ outcome }`, 404, 409 `{ code }`, 422, 502.
+  - Its header says the restore reads no plan, lock or gscan.
+- [ ] DW-391 -- one server helper answers a signed URL as `200 { url }` or a 303, and sign-in as `401` or a 303, by `Accept`.
+  The three routes use it. A client `followSigned(href)` with its three words goes in one module.
+
+*UI:*
+- [ ] `apps/web/components/editor/deploy-history.tsx`:
+  - the original row (D2a `:58-73` and the rule `:75`) above the list, outside its `<ol>`, with Restore original
+    (`Button` secondary, 28);
+  - its busy state, outcomes, refusals and the refusal's fallback, as Always says;
+  - the confirm's Download (`#history-drift-download`) clicks through `followSigned`, its sentence under it.
+  - New props: `restore`, `originalHref`.
+- [ ] Kit -- `button.tsx` size `28` (`h-7 px-[11px] text-[12px] rounded-thumb`). `icons.tsx` `Archive` from `D2:60`. Both are
+  recorded on the Kit page.
+- [ ] `apps/web/components/editor/deploy-wizard.tsx`:
+  - `follow` is replaced by `followSigned`; the Theme Download's failure is said under its row through the existing `fetched`;
+  - D3a's Download (`#deploy-drift-download`) clicks through `followSigned`, its sentence under it.
+- [ ] `editor.tsx`:
+  - `restoreHistory(snapshot)` POSTs `{ snapshot, act: 'restore' }`;
+  - `originalHref(id)` is the `/app` prefix plus `snapshotDownloadPath`;
+  - the harness seam is `historyRestore`.
+- [ ] Harness `layout.tsx`/`actions.ts`:
+  - `x-inflozo-harness-history` gains `original` (casper with a version, v2 live, v1), `original-unversioned` and
+    `original-empty` (a snapshot, no versions);
+  - `harnessRestore` answers by `x-inflozo-harness-restore: live | refused | gone | disconnected | busy`, with no database and no
+    Ghost.
+
+*Tests* (each assertion seen red under a planted reversion):
+- [ ] `put-back.test.ts` -- every I/O row of the restore, including:
+  - zero Ghost calls on each refusal;
+  - never an upload of `casper.zip`;
+  - no `deploys` insert and no `accepted_at` write;
+  - a source test that the restore and the route's restore branch name no `holdsLock`, `resolveEntitlement` or gscan gate.
+
+  Also `retention.test.ts` (`archivedLabel`, `restoreSaid`, the original passed through), `snapshot.test.ts` (the version
+  written), `deploy-run.test.ts` and `read.test.ts` (a demoted row is not "live here"), `deploy.test.ts` (the three routes' JSON
+  and 303 answers), `busy.test.ts` (Restoring…, Preparing…), `server-wiring.test.ts` (the snapshot bucket read on put-back-io's
+  service-role reason), and a test for `followSigned` over a fake fetch.
+- [ ] `tools/keyboard/journey.spec.mjs` -- the 7.23b journeys:
+  - (a) the row's anatomy, outside the list's count; the unversioned mono line; the row above "Nothing shipped yet";
+  - (b) Enter on Restore original: "Restoring…", the drawer unstoppable, said once, focus on ✕, v2 drawn as D2d's row;
+  - (c) refused: the note, the mono detail, the Download and the link (its `href` is `adminAt`'s, new tab);
+  - (d) `gone`, `disconnected` and `busy`;
+  - (e) DW-391: each of the four Downloads with `page.route` answering 404, 401 and 502 — the sentence under the button, the URL
+    unchanged — and 200 `{ url }` firing a download.
+
+  `floor.spec.mjs`: the drawer with the original row, and the refused row, at 1440, 1280 and 820, with no sideways scroll.
+- [ ] `tools/probe/run-verify-editor.cjs` step 122 -- the Verification's real-infra run, with a `STEP122_PLANT` mode for Deploy.
+
+*Propagation* (standing rules 3 and 7; end with a grep for `follow(` and for the `liveHere`/`liveProject` reads):
+- [ ] Planning documents:
+  - FR-J9 and FR-J13: dated notes (as built; Question 1's ruling);
+  - EXPERIENCE F8's original row and F1's Restore row;
+  - VERIFY-AT-BUILD 10's snapshot half, from walk 122 — a real customer theme still open, and Ghost 5's half to DW-326;
+  - Story 7.25's card and AD-19's note: the restore joins the per-site lock beside the put-back.
+- [ ] `deferred-work.md` -- resolve DW-389 and DW-391.
+
+**Acceptance Criteria:**
+- **Matches the frame.** Given the editor at 1440 on a project whose linked site has a snapshot, when History opens:
+  - the original row matches D2a `:58-73` and its rule `:75` (D2c `:240-252` on Free), with no Live badge;
+  - the refused row is drawn in the extrapolated shape: 7.23a's note, D3a's Download, B12b's link.
+- **One press back to the original, really.** Given a project with v1 and v2 shipped live to T1 and a casper snapshot, when
+  Restore original is pressed:
+  - T1's active theme is `casper`;
+  - Inflozo's theme is still installed, and its download's manifest equals v2's `content_manifest`;
+  - v2's row is `uploaded`, with `accepted_at` unchanged;
+  - no `deploys` row was inserted.
+- **The saved copy goes back when Ghost lost it.** Given a non-default snapshot Ghost does not hold, when Restore original is
+  pressed, then T1's active theme is that name, and its download's files equal the saved zip's.
+- **The baseline holds.** Given a restore and then Re-activate on v2, when Pre-flight runs, then D3c passes "since v2".
+- **No lock, no plan, no gscan.** Given a Free account reading along, when Restore original is pressed, then it completes, and
+  the source test holds.
+- **Ghost says no, nothing changes.** Given a fatal snapshot, then Ghost's 422 detail is said with the Download and the link,
+  T1's active theme is unchanged, and no row changed.
+- **DW-391.** Given any of the four Downloads, when its route answers 404, 401 or 502, then its sentence is said under it and
+  the editor stays.
+
+## Spec Change Log
+
+## Design Notes
+
+**What Question 1 decides — the one table to change if he rules otherwise.**
+
+| | Option 1 (planned) | Option 2 | Option 3 |
+|---|---|---|---|
+| A held non-default original | activated as Ghost holds it | the saved zip uploaded over it, after a check | the saved zip uploaded over it |
+| An original Ghost no longer holds | the saved zip uploaded, then activated | the same | the same |
+| Casper or Source (DW-389) | activated | activated | activated |
+| Check / confirm | none — nothing is overwritten | S8e's confirm shape: Ghost's copy of the original compared with the saved zip's manifest (`unzipTheme`, `compareManifests`), D3a's list and Ghost's copy as a download; restore still allowed | none |
+
+**Why Roll back's own check does not apply.** R-291's check compares Inflozo's theme under the frozen name with its newest
+accepted upload. It exists because a Roll back overwrites those files. A restore never does:
+- it activates another theme (Ghost keeps Inflozo's installed — VERIFY 61), or it uploads under the original's own name;
+- Re-activate then brings Inflozo's back, hand edits and all (§91 step 6).
+
+So that check would warn about losses that cannot happen. The only thing a restore could overwrite is a changed copy of the old
+theme, and only under options 2 and 3.
+
+**No `deploys` row, and the baseline holds.** The 7.21 criterion's own "because" names its scope: Ghost replaces the files under
+the name the drift check reads. A restore activates or uploads under the original's name, never the frozen one (AD-19). So the
+newest accepted upload under the frozen name is unchanged, and the next check compares the right two manifests. A row carrying the
+snapshot's manifest would compare Inflozo's theme with the old one: a false drift on every ship, which FR-J16's zero false
+positives forbids. `deploy_kind` `snapshot_restore` stays unwritten, as 7.23a left `rollback`.
+
+**The demote, and R-264 (a).** After a restore no Inflozo theme is live on the site, so the record must stop saying so:
+- the site's `live` rows become `uploaded` (D2d's row and its Re-activate follow from 7.23a's `actionOf`);
+- "live here" needs the row still `live`. A Roll back, a ship and a refused activation behave exactly as before.
+
+`activated`/`activated_at` stay, so `previous` and Pre-flight's dropped settings still compare with the last version this project
+had live. That is still right: Ghost keeps theme settings per name (VERIFY 76).
+
+**No confirm.** The frame draws none, and the PRD says "one-click". The undo is one press of Re-activate. 7.23a's Re-activate
+needs no confirm for the same reason. A confirm arrives only with Question 1's option 2, which has something to show in it.
+
+**The refusal's honest sentence.** R-281's "points the user at Settings → Design, where Ghost still holds the previous theme" is
+half true. Ghost's activation runs the same check as its upload (`activate.js:55-60`), so a theme refused here cannot be switched
+on there either. The row therefore offers the zip "to keep a copy, or to have it updated", and links Ghost's Design & branding as
+the place to upload it.
+
+**`theme_version` is a column** because the frame draws `casper 5.9.4`. The capture already reads the version (`snapshot.ts:124`),
+and reading it back out of a stored zip on every History open is out of proportion.
+
+**DW-391 by `Accept`, not `redirect: 'manual'`.** A manual fetch sees an opaque redirect for both the signed URL and the sign-in
+303, so it cannot tell them apart. A JSON answer names the URL, and plain links keep their 303. That covers `/restore`, scripts-off
+forms and middle-click.
+
+## Questions for the owner
+
+### Question 1 — Should Restore original check your site first, as Roll back does?
+
+**In plain English.** Roll back checks your site first (your ruling R-291), because it overwrites Inflozo's theme there, and
+someone may have changed that theme in Ghost Admin. **Restore original never overwrites Inflozo's theme.** Ghost keeps it
+installed, and History then shows it as "Uploaded, not live" with **Re-activate**, so one press brings it back, changes and all.
+Roll back's check would look at files Restore never touches.
+
+The one thing Restore *could* overwrite is your **old** theme: Ghost may still have it, and someone may have changed it after
+Inflozo replaced it. How Restore puts the old theme back decides whether that can happen. Your R-284 already chose *which* theme
+counts as your original. This question is about which copy of it goes back: Ghost's own copy, or the copy Inflozo saved.
+
+**An example.** In March, Inflozo replaced your "Edition" theme and saved a copy. In April, your designer uploaded a fixed Edition
+in Ghost Admin but did not switch it on. In May you press **Restore original**.
+- **Option 1:** Edition comes back **with** the April fix.
+- **Option 2:** a box says "Edition changed on your site since Inflozo saved it" and offers to download Ghost's copy first; if you
+  go on, the **March** copy comes back.
+- **Option 3:** the March copy comes back, and the April fix is gone without a warning.
+
+1. **(RECOMMENDED) Switch on the copy Ghost already has; upload Inflozo's saved copy only if Ghost no longer has it.** Nothing on
+   your site is ever overwritten, so there is no check and no box: one press, as the design draws it, and Re-activate undoes it.
+   Casper and Source always work this way, because Ghost refuses them as uploads.
+2. **Always put back Inflozo's saved copy, and check first.** A box like Roll back's opens and compares your old theme on Ghost with
+   the saved copy. If they differ, it lists the files and offers Ghost's copy as a download; you can still restore.
+3. **Always put back Inflozo's saved copy, with no check.** One press. Anything changed in the old theme since it was saved is
+   replaced without a warning.
+
+**Ruled:** _(awaiting the owner)_
+
+## Owner's manual test
+
+**Before you start:** on your go, Deploy plants two Free test accounts, both connected to T1 (`ghost6.inflozo.com`):
+- **A — `umngkmr+restore723b@gmail.com`, project "Restore test".** v1 and then v2 were shipped live. v2's home page headline reads
+  "Version 2". The first ship saved T1's Casper as this site's original theme.
+- **B — `umngkmr+restorerefused723b@gmail.com`, project "Restore refused".** It is linked to T1 and nothing has been shipped. Its
+  saved original was swapped for a planted theme, `old-magazine`, which T1 does not have and which Ghost's own check refuses.
+
+Sign in at `https://app.inflozo.com/sign-in` with each address and open the link that arrives: A in one browser, B in a second.
+Use a desktop window at least **1366 px** wide. Keep a tab on `https://ghost6.inflozo.com`.
+
+1. **URL:** `https://app.inflozo.com/projects/{A's project — Deploy fills}` (signed in as A). **Screen:** the editor. **Do:** press
+   the clock icon left of **Ship it**. **Type:** nothing. **See:**
+   - At the top of the History panel, a pale box with a small archive icon, **Your original theme**, `casper` and its version
+     number in small code type, **Archived** with the date Deploy planted it, a grey line starting "Kept outside your version
+     limit…", and a white **Restore original** button.
+   - A thin line under it, then **v2** with a green **Live** dot, then **v1**.
+2. **URL:** `https://ghost6.inflozo.com`. **Do:** reload it. **See:** the headline reads "Version 2".
+3. **URL:** A's editor, as in step 1. **Do:** press **Restore original**. **See:**
+   - The button says "Restoring…".
+   - Then the panel reloads its list: the original box is still on top, **v2** now shows a blue **Uploaded, not live** chip and a
+     red **Re-activate** button, and nothing shows a green **Live** dot.
+   - Reload ghost6.inflozo.com: it is **Casper** again.
+4. **URL:** A's editor. **Do:** close the panel, then open the small **▾** beside **Ship it**. **See:** the **Deploy only** row is
+   not greyed out. **Do:** press Esc.
+5. **URL:** A's editor. **Do:** open History, then press **Re-activate** on v2. **See:** "Activating…", then v2 shows the green
+   **Live** dot. ghost6.inflozo.com reads "Version 2".
+6. **URL:** A's editor, **keyboard only.** **Do:** close History and open it again with Enter on the clock; press Tab until
+   **Restore original** is focused; press Enter. **See:** "Restoring…", then focus lands on the panel's **✕**, and
+   ghost6.inflozo.com shows Casper.
+7. **URL:** `https://app.inflozo.com/projects/{B's project — Deploy fills}` (signed in as B, in the second browser). **Do:** open
+   History. **See:** the original box reads `old-magazine` and a version, and under it are "Nothing shipped yet" and the limit line.
+8. **URL:** B's editor. **Do:** press **Restore original**. **See:**
+   - "Restoring…".
+   - Then, under the box: "Ghost's own theme check refused your original theme, so nothing on your site changed.", Ghost's own
+     message in small grey code type, a **Download your original theme** button, and a line ending in a **Design & branding ↗**
+     link.
+   - ghost6.inflozo.com is unchanged (Casper).
+9. **URL:** B's editor. **Do:** press **Download your original theme**. **See:** a zip downloads, and the editor stays where it
+   was.
+10. **URL:** B's editor. **Do:** press **Design & branding ↗**. **See:** a new tab opens ghost6.inflozo.com's Ghost Admin, on its
+    Design & branding settings. Sign in to Ghost Admin there if it asks.
+
+**After the test:** say "passed", or list what you saw. On your go, Claude then removes the two test themes from T1. Casper stays
+live.
+
+## Verification
+
+**Commands:**
+- `pnpm check` -- expected: green. That is lint, typecheck and every package test, among them the put-back, retention, snapshot,
+  deploy-run, read, deploy, busy and server-wiring tests. The run prints its own counts; never write one down.
+- `bash supabase/tests/run-rls-gate.sh` -- expected: exit 0, with `theme_version` present and not client-writable.
+- `python3 tools/doc-audit.py --check`, run twice -- expected: green.
+- `pnpm keyboard` -- expected: journeys 7.23b (a)–(e), 7.23a's and 7.22's unchanged, and the floor all green.
+- `grep -n "holdsLock\|resolveEntitlement" apps/web/server/deploy/put-back.ts` -- expected: nothing.
+
+**Real infrastructure** (R-82; each on the owner's in-session go, in the main session):
+- **Supabase production database.** Apply the migration through `SUPABASE_DB_POOLER_URL`. Read back the column and its comment,
+  and that `authenticated` cannot write it. Control: the column is absent before the apply.
+- **Walk step 122, on production and T1**, with a throwaway Free account, from a clean worktree at the deployed sha:
+  - connect T1 (Casper live) and ship v1 — the capture writes `casper` with its version — then ship v2;
+  - the History GET's `original`;
+  - Restore original: read T1's active theme (`GET themes/`, staff token) as `casper`; download Inflozo's theme and compare its
+    manifest with v2's; v2 `uploaded` with `accepted_at` unchanged; the `deploys` row count unchanged; the editor's
+    `liveHere` false;
+  - Re-activate, then Pre-flight's D3c "since v2";
+  - the saved copy put back: the snapshot swapped for Casper's files renamed `walk-original`, not held by T1. Restore uploads,
+    activates, and `walk-original`'s download equals the saved zip. This is VERIFY 10's snapshot half, executed;
+  - a planted fatal original: 422 said with its detail, T1's active theme unchanged (control: the same press with the real zip is
+    accepted);
+  - DW-391 on production: the snapshot route's JSON answer, then its signed URL serving a `PK` zip; a removed row answering 404;
+  - a second session without the lock;
+  - another account's restore of this snapshot answering 404, and a disconnected site 409;
+  - finally T1 back on `casper*`, `walk-original` and the probe themes deleted, the account deleted, the users and projects counted
+    back.
+
+  **Ghost 5's half** (T3, R-238) is postponed to DW-326's pass at Story 15.7.
+- **Vercel:** the deployment is READY from the Dev head.
+- **The owner's test above (R-80).**
