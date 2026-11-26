@@ -2,7 +2,8 @@
 title: 'Story 7.23b — Restore original (split from Story 7.23 by R-290)'
 type: 'feature'
 created: '2026-11-26'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: '59dcf65c983ae848809b244898f3adb2e796c3a8'
 owner_test: pending
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-23a-roll-back-and-re-activate-from-history.md']
@@ -297,13 +298,13 @@ gos for the writes.
 **Execution:**
 
 *Schema — its own push, first (R-99):*
-- [ ] `supabase/migrations/<Dev's date>120000_site_snapshots_theme_version.sql` -- create it:
+- [x] `supabase/migrations/<Dev's date>120000_site_snapshots_theme_version.sql` -- create it *(Dev: `20261126120000_site_snapshots_theme_version.sql`)*:
   - `add column if not exists theme_version text`;
   - a `comment on column`: the active theme's `package.json` version at capture, null before Story 7.23b or when the theme
     declares none; written by the capture alone; select-only to the client.
 
   No grant change (the table is in the client's read-only set) and no backfill (the version was never stored).
-- [ ] Architecture `SCHEMA.sql` -- the same, in place. Then `RLS-TEST.sql`, copied byte for byte to `supabase/tests/rls.sql`:
+- [x] Architecture `SCHEMA.sql` -- the same, in place. Then `RLS-TEST.sql`, copied byte for byte to `supabase/tests/rls.sql`:
   one assertion that the column exists, and that `authenticated` cannot update it.
 
 *Server:*

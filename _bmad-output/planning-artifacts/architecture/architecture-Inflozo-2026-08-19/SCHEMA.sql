@@ -241,10 +241,16 @@ create table public.site_snapshots (
   -- `download_offered_at`, which FR-A5 stamps (DW-43: one column, one meaning). Purge-job-written, select-only to the
   -- client. LAST, because `add column` appends.
   orphan_notice_at timestamptz,
+  -- Story 7.23b (D2a): the saved theme's package.json version at capture, drawn beside `theme_name` on History's
+  -- original-theme row. Null before 7.23b (never stored, no backfill) or when the theme declares none. Capture-written,
+  -- select-only to the client. LAST, because `add column` appends.
+  theme_version text,
   unique (site_id)                                        -- one pre-Inflozo snapshot per site record
 );
 comment on column public.site_snapshots.orphan_notice_at is
   'When FR-C6''s orphan notice (Story 7.20b, R-285: one email two weeks before the deletion) was last sent for this original theme. Compared against sites.disconnected_at: a notice older than the latest disconnect no longer counts. Null = never sent. Written only by the purge job (purge-snapshots).';
+comment on column public.site_snapshots.theme_version is
+  'The saved original theme''s package.json version at capture (Story 7.23b): drawn beside theme_name on History''s original-theme row (D2a). Null before Story 7.23b, or when the theme declares none. Written only by the capture (captureSnapshot); select-only to the client.';
 
 -- ============================================================================
 -- 3. projects & canvases — FR-B1..B7, FR-D5..D22, FR-E1..E5, FR-Q1

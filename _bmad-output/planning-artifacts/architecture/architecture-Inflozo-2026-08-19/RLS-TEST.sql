@@ -3586,3 +3586,28 @@ begin
   end if;
   raise notice 'PASS (7.23a): deploys.accepted_at is a nullable timestamptz with no default, commented and client-unwritable';
 end $$;
+
+-- ============================================================================
+-- Story 7.23b — `site_snapshots.theme_version`: the saved original theme's version, drawn beside its name on History's
+-- original-theme row (D2a). Capture-written with the service role; `site_snapshots` carries no client write at all, so no
+-- grant was added. This block holds that it exists with its shape and its comment, and that `authenticated` cannot write
+-- it. With the 7.23b migration withheld it fails.
+-- ============================================================================
+do $$
+begin
+  if (select count(*) from information_schema.columns
+       where table_schema = 'public' and table_name = 'site_snapshots' and column_name = 'theme_version'
+         and data_type = 'text' and is_nullable = 'YES' and column_default is null) <> 1 then
+    raise exception 'FAIL (7.23b): site_snapshots.theme_version (text, nullable, no default) is missing';
+  end if;
+  if coalesce(col_description('public.site_snapshots'::regclass,
+       (select attnum from pg_attribute where attrelid = 'public.site_snapshots'::regclass and attname = 'theme_version')), '')
+     not like '%version at capture%D2a%captureSnapshot%select-only to the client%' then
+    raise exception 'FAIL (7.23b): site_snapshots.theme_version''s comment does not name what it records, D2a, its one writer and the select-only';
+  end if;
+  if has_column_privilege('authenticated', 'public.site_snapshots', 'theme_version', 'INSERT')
+     or has_column_privilege('authenticated', 'public.site_snapshots', 'theme_version', 'UPDATE') then
+    raise exception 'FAIL (7.23b): authenticated can write site_snapshots.theme_version';
+  end if;
+  raise notice 'PASS (7.23b): site_snapshots.theme_version is a nullable text with no default, commented and client-unwritable';
+end $$;
