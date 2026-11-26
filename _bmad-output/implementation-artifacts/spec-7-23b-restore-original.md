@@ -804,3 +804,15 @@ name, never on argv, no value printed; the owner's in-session go to walk step 12
     finding on production: the page kept its load-time ship state. The control for the fix.
   - **122c, reloaded** — free, but its caption read **"Upload v3, keep v2 active"** while Casper was live. Also the review's finding,
     and the control for the `previous`/`prev` fix.
+- **CI on the Review head `78a3e182`** (`GITHUB_TOKEN`): run 45791908548 — `check` (the whole keyboard gate), `rls` and `deploy`
+  success. **Vercel** (`VERCEL_TOKEN`): `dpl_EFUsZnuk3VH2TkRUZoMQiTzJcbBM` READY from `78a3e182`.
+- **Walk step 122, run 2 — on the Review's deployment `78a3e182`** (the same cut, the worktree moved to that sha): **66 PASS, 0 FAIL.**
+  Everything run 1 held, held again, and the three run-1 FAILs passed:
+  - 122b: D2a's row reads "Your original theme", `casper 5.12.1`, "Archived today", "Restore original", no Live dot, outside the list,
+    then its rule;
+  - 122c, the same page: History closed after the restore, Ship it ▾'s Deploy only **not greyed**, reading "Upload v3, keep your current
+    theme active" — the close re-read the page (run 1's control: greyed, "v2 is already live…");
+  - 122c, reloaded: the same, free, "keep your current theme active" (run 1's control: "keep v2 active").
+  - Finally: T1 `casper*` with `inflozo-ghost6` kept, every uploaded theme deleted, `routes.yaml` 130 → 130 bytes; R deleted, objects 0;
+    users 25 → 25, projects 18 → 18; zero CSP violations.
+  Two of the owner's three runs used; nothing left on T1 or production. **Not run:** `STEP122_PLANT` — Deploy's, on its own go.

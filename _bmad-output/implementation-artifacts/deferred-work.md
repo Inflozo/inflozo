@@ -10614,7 +10614,9 @@ resolution: Story 7.23b's Dev (2026-11-26), R-292 — `restoreOriginal` (`apps/w
   original by its name first (`PUT themes/{name}/activate/`, already on `ADMIN_WRITES`) and uploads the saved zip as `{name}.zip`
   only when Ghost answers it no longer holds that name (`themeNotHeld`) — and never for `casper` or `source` (`GHOST_DEFAULTS`): a
   not-found for either is said as Ghost's words with nothing uploaded. Held by `put-back.test.ts` (Casper and Source never
-  uploaded, the control a non-default name that is) and its source test; walk step 122 restores T1's own theme on production.
+  uploaded, the control a non-default name that is) and its source test; walk step 122 restores T1's own theme on production —
+  executed at the Review (2026-11-26, deployment `78a3e182`, 66 PASS 0 FAIL): Casper back on T1 by its activation alone, Inflozo's
+  theme still installed at zero differences.
 severity: medium
 origin: Story 7.20's Create (2026-10-26), read in Ghost's source on both pinned majors. `services/themes/storage.js`'
   `setFromZip` throws a `ValidationError` ("Please rename your zip, it's not allowed to override the default theme.") when
@@ -10664,7 +10666,9 @@ resolution: Story 7.23b's Dev (2026-11-26) — one way to follow a signed downlo
   `role="status"` line, "Preparing…" while it is out. All four Downloads go through it: the Backup step's Theme Download
   (`fetchRow`, `follow` removed), D3a's (`#deploy-drift-download`), the Roll back confirm's (`#history-drift-download`) and History's
   original-theme row's (`#history-original-download`). Held by `signed-download.test.ts`, `deploy.test.ts` (the routes' source) and
-  journeys 7.23b (e1)–(e4) (each Download against 404, 401 and 502, then a zip downloaded, the page unmoved).
+  journeys 7.23b (e1)–(e4) (each Download against 404, 401 and 502, then a zip downloaded, the page unmoved). On production at the
+  Review (2026-11-26): walk 122f's "Download your original theme" pressed — a zip, the editor unmoved — and 122g's `200 { url }`
+  serving a `PK` attachment, 401 signed out; the three routes signed out answer 401 to JSON and the sign-in 303 to a link.
 severity: low
 origin: Story 7.20a's Review (2026-10-26; Blind Hunter and Edge Case Hunter). The wizard's `follow()` clicks a link to
   `/snapshots/{id}/download`, which is right when the route answers its 303 to a signed attachment (walk 117a, on
