@@ -17,8 +17,9 @@ so going back to Inflozo is one press too. If Ghost refuses your old theme becau
 panel says so in Ghost's words, offers the theme as a download and links to Ghost's Design & branding settings — and every
 Download button in the editor now says what went wrong beside the button instead of leaving the page.
 
-**Question 1 is open** (below): it decides how Restore original puts the old theme back, and whether it checks first. This spec is
-written for the recommended option; nothing waits on the owner before Dev except Question 1 and the in-session gos for the writes.
+Question 1 was ruled option 1 (R-292, owner, 2026-11-26): Restore original switches on the copy of your old theme Ghost already
+has, and uploads Inflozo's saved copy only if Ghost no longer has it, so nothing is overwritten and there is no check. Nothing
+waits on the owner before Dev but the in-session gos for the writes.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -34,7 +35,7 @@ written for the recommended option; nothing waits on the owner before Dev except
 **Approach:**
 - **D2a's original-theme row** sits above the versions, outside the count, for the project's linked site when that site has a
   snapshot. Its **Restore original** is one press with no confirm, as drawn.
-- **How it puts the theme back (Question 1, recommended option — see "What Question 1 decides" in Design Notes):** activate the
+- **How it puts the theme back (Question 1, ruled option 1 — R-292; see "What Question 1 decided" in Design Notes):** activate the
   theme by its name first (`PUT themes/{name}/activate/`). Only when Ghost no longer holds that name, upload the saved zip as
   `{name}.zip`, then activate it. Ghost's own Casper and Source are only ever activated (DW-389). Nothing on the site is
   overwritten, so no check runs.
@@ -89,7 +90,7 @@ written for the recommended option; nothing waits on the owner before Dev except
 - *(Story 7.22's Dev, moved by R-290)* **This story adds** the original-theme row. — Built here.
 - The original-theme row matches D2a (R-290). — The first acceptance criterion.
 - *(Story 7.23a's Review)* Whether Restore original runs FR-J16's drift check is this story's to ask the owner (R-83).
-  — Question 1.
+  — Question 1, ruled option 1 (R-292): no check, because a restore overwrites nothing.
 
 ## Boundaries & Constraints
 
@@ -169,7 +170,6 @@ written for the recommended option; nothing waits on the owner before Dev except
   - the migration's apply (`SUPABASE_DB_POOLER_URL`);
   - walk step 122;
   - Deploy's plant.
-- Question 1 ruled other than option 1 (the intent changes: see "What Question 1 decides").
 - Anything a restore sends to Ghost beyond activate and upload (AD-10's list) — `routes.yaml` included.
 
 **Never:**
@@ -291,7 +291,8 @@ written for the recommended option; nothing waits on the owner before Dev except
 
 ## Tasks & Acceptance
 
-**Dev gate:** Question 1 must be ruled before Dev starts. If it is ruled other than option 1, the intent is renegotiated first.
+**Dev gate:** Question 1 is ruled (option 1, R-292); Dev builds exactly that. Nothing else waits on the owner but the in-session
+gos for the writes.
 
 **Execution:**
 
@@ -409,9 +410,9 @@ written for the recommended option; nothing waits on the owner before Dev except
 
 ## Design Notes
 
-**What Question 1 decides — the one table to change if he rules otherwise.**
+**What Question 1 decided — option 1, R-292 (owner, 2026-11-26).** Options 2 and 3 are kept here as the record of what was declined.
 
-| | Option 1 (planned) | Option 2 | Option 3 |
+| | Option 1 (ruled, built) | Option 2 (declined) | Option 3 (declined) |
 |---|---|---|---|
 | A held non-default original | activated as Ghost holds it | the saved zip uploaded over it, after a check | the saved zip uploaded over it |
 | An original Ghost no longer holds | the saved zip uploaded, then activated | the same | the same |
@@ -482,7 +483,10 @@ in Ghost Admin but did not switch it on. In May you press **Restore original**.
 3. **Always put back Inflozo's saved copy, with no check.** One press. Anything changed in the old theme since it was saved is
    replaced without a warning.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-11-26) — R-292.** *"(RECOMMENDED) Switch on the copy Ghost already has; upload Inflozo's saved copy
+only if Ghost no longer has it. Edition comes back with the April fix. Nothing is ever overwritten, so there is no check and no box:
+one press, as the design draws it. Casper and Source always work this way."* The register, FR-J13, FR-J16, EXPERIENCE F1 and F8,
+the card, the epic context and DW-389 follow; the code is Dev's.
 
 ## Owner's manual test
 

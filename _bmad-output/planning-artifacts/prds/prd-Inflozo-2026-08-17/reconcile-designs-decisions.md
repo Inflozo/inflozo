@@ -6263,6 +6263,37 @@ run, it says "couldn't verify" and lets you continue, as Ship it does."*
   - ✅ `epic-7-context.md`;
   - ✅ the code (`server/deploy/put-back.ts`, `run.ts`, the History route, `deploy-history.tsx`) — Story 7.23a's Review.
 
+**R-292 — Restore original switches on the copy of the old theme Ghost already holds, and uploads Inflozo's saved copy only when
+Ghost no longer has it; it runs no check.** Story 7.23b's Create, Question 1, ruled **option 1** (owner, 2026-11-26): *"(RECOMMENDED)
+Switch on the copy Ghost already has; upload Inflozo's saved copy only if Ghost no longer has it. Edition comes back with the April
+fix. Nothing is ever overwritten, so there is no check and no box: one press, as the design draws it. Casper and Source always work
+this way."*
+
+- **Why it was a question.** R-291 made a Roll back run FR-J16's drift check, and Story 7.23b's card asked whether Restore original
+  runs it too. A restore never overwrites Inflozo's theme — Ghost keeps it installed beside the one it activates (VERIFY 61), and
+  Re-activate brings it back — so that check would look at files a restore never touches. What a restore COULD overwrite is a
+  copy of the old theme Ghost still holds and someone changed after Inflozo replaced it; whether it can depends on which copy goes
+  back, Ghost's or the one Inflozo saved (R-284 chose which THEME counts as the original, not which copy of it).
+- **The rule.**
+  - **Restore original** sends `PUT themes/{name}/activate/` for the saved original's name first. Only when Ghost answers that it
+    does not hold the name (`themeNotHeld`) does it upload the saved zip as `{name}.zip` and activate it. Ghost's own Casper and
+    Source are only ever activated (DW-389: Ghost refuses them as uploads and never deletes them).
+  - Nothing on the site is overwritten, so a restore runs **no drift check** and has **no confirm**: one press, as D2a draws it,
+    and 7.23a's Re-activate on the Inflozo version is the undo.
+  - Ghost's own check (its 422, at the activation or the upload) changes nothing and is said with its detail, the saved zip's
+    Download and Ghost's Design & branding (R-281's fallback).
+- **Declined.** Option 2, always upload the saved copy after a check of Ghost's copy of the old theme, in a confirm; option 3,
+  always upload the saved copy with no check.
+- Targets:
+  - ✅ this entry;
+  - ✅ Story 7.23b's spec (Question 1's Ruled line, the In plain English, the Dev gate, Design Notes' table);
+  - ✅ `prd.md` FR-J13 and FR-J16 (dated notes);
+  - ✅ `EXPERIENCE.md` F1's Restore row and F8's original-theme row;
+  - ✅ `epics.md` Story 7.23b's card;
+  - ✅ `epic-7-context.md`;
+  - ✅ `deferred-work.md` DW-389 (its owner line);
+  - ☐ the code (`server/deploy/put-back.ts`' `restoreOriginal`) — Story 7.23b's Dev.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

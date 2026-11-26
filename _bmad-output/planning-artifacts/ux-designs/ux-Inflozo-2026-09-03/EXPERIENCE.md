@@ -1037,6 +1037,12 @@ the site's Design panel, never a menu path (E-5's rule). "this project" reads "t
 is Manage keys' **Add token** (R-170), which opens D1b's view inside the wizard; a kept token ships again, capturing, and Back
 returns to B12b. **Deploy without a snapshot** ships with the capture skipped. **Restore** is Story 7.23b's (R-281, R-290). *)*
 
+*(Story 7.23b's Create — owner, 2026-11-26, **R-292**: the **Restore** row's behaviour. Restore original switches on the copy of
+the original Ghost already holds, and uploads the saved zip under the theme's own name only when Ghost no longer has it; Casper and
+Source are only ever activated (DW-389). It overwrites nothing, so it runs no drift check and opens no confirm. Ghost checks a theme
+at activation as at upload, so the fallback offers the zip "to keep a copy, or to have it updated" and links Design & branding ↗ as
+the place to upload it, rather than as a place where the refused theme could be switched on.)*
+
 > **B12b's copy was wrong in the way that matters most** (corrected 2026-09-04, A7 item 2). It said "your integration key may not have
 > theme read permission … Check the key." Ghost's `tokenPermissionCheck` allowlists only
 > `themes: ['POST','PUT']` for Custom Integration tokens, so **every** `GET /themes/*` made with an
@@ -1500,6 +1506,10 @@ from 1366 up (R-289) and from Ship it ▾ → History at every width; every row 
   is **Restore original**, and it carries the honest caveat that **Ghost validates every upload with
   its own gscan**, so an old theme can be rejected on the way back in — in which case the zip is
   offered as a download and the user is pointed at Settings → Design.
+  *(Story 7.23b's Create — owner, 2026-11-26, **R-292**: one press with no confirm, as D2a draws it — it switches on Ghost's own
+  copy of the original, or uploads the saved one only when Ghost no longer has it, so nothing is overwritten and no check runs;
+  the Inflozo version that was live then shows D2d's "Uploaded, not live" with Re-activate, the undo. The row is the linked
+  site's alone.)*
 - **A partial-success row** — status `uploaded`, `activated` false. It appears **without an active
   badge**, so a retry is a one-click **re-activate** rather than a recompile. See below.
 

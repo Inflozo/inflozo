@@ -4645,7 +4645,10 @@ compares the site with the newest upload Ghost accepted (`deploys.baseline`)
 **And** the original-theme row matches D2a (R-290).
 **And** *(Story 7.23a's Review, 2026-11-25 — an open question for this story's Create)* R-291 made a Roll back run FR-J16's drift
 check first, its confirm listing any drift with the live theme's download; whether Restore original, which also replaces the
-theme on the site, runs the same check is this story's to ask the owner (R-83)
+theme on the site, runs the same check is this story's to ask the owner (R-83) — *ruled at its Create (owner, 2026-11-26,
+**R-292**, Question 1 option 1): Restore original switches on the copy of the old theme Ghost already holds, and uploads the
+saved copy only when Ghost no longer has it (Casper and Source only ever activated); nothing on the site is overwritten, so it
+runs no check and has no confirm, and 7.23a's Re-activate is the undo*
 
 **FRs:** FR-J9 (restore original) · FR-J13 (the snapshot's restore). · **Frame:** `D2 Deploy History Completed.dc.html` D2a
 (the original-theme row). · **Owner test:** yes. · **Verification:** a real snapshot restored on T1 (moved from Story 7.20,

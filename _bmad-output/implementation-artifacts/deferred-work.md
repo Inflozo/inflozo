@@ -10620,7 +10620,8 @@ origin: Story 7.20's Create (2026-10-26), read in Ghost's source on both pinned 
 owner: Story 7.23b (Restore original; split from Story 7.23 by R-290, owner, 2026-11-25), which took the restore criterion word for word
   under R-281 (owner, 2026-10-26), and whose card carries this entry's sentence with its id. It restores a
   default theme by `PUT themes/{name}/activate/` (an Admin-key write already on `ADMIN_WRITES`), and anything else by upload,
-  with Ghost's 422 fallback (VERIFY-AT-BUILD 10).
+  with Ghost's 422 fallback (VERIFY-AT-BUILD 10). *(R-292, owner, 2026-11-26, Story 7.23b's Create: every restore activates the
+  original by name first, and uploads the saved zip only when Ghost no longer holds the name — never for Casper or Source.)*
 location: Story 7.23b's restore action (not yet built) · `apps/web/server/snapshot.ts` (Story 7.20a, which stores `theme_name`)
 reason: restore is not built in Story 7.20a; the finding must reach the story that builds it before its Create.
 
