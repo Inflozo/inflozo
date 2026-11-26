@@ -598,7 +598,9 @@ before your first ship offers it as a download.
 4. **Keep and restore your site's own routes file.** The fullest "never costs me the site I had", and a new saved file plus a new
    step, so it would become its own later story; this story ships as option 1 meanwhile.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-11-26) — R-293.** *"Leave it, as built (RECOMMENDED). One press, as the design draws it, and every
+address still opens. The limit gets written into FR-J13's note so it never surprises anyone."* Asked in-session after the Deploy. The
+register and FR-J13's note follow; no code changes, since option 1 is as built.
 
 ## Owner's manual test
 

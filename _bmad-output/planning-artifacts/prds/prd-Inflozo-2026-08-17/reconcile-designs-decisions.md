@@ -6294,6 +6294,27 @@ this way."*
   - ✅ `deferred-work.md` DW-389 (its owner line);
   - ☐ the code (`server/deploy/put-back.ts`' `restoreOriginal`) — Story 7.23b's Dev.
 
+**R-293 — Restore original puts back the theme only; Inflozo's `routes.yaml` stays on the site, as after a Roll back.** Story 7.23b's
+Review, Question 2, ruled **option 1** (owner, 2026-11-26, in-session after the Deploy): *"Leave it, as built (RECOMMENDED). One press,
+as the design draws it, and every address still opens. The limit gets written into FR-J13's note so it never surprises anyone."*
+
+- **Why it was a question.** Besides the theme, a ship uploads `routes.yaml`. A restore switches the old theme back on and leaves
+  Inflozo's routes file in place, as 7.23a's Roll back does. Inflozo keeps no copy of the site's pre-Inflozo `routes.yaml`, so
+  "never costs me the site I had" (FR-J13) could be read as owing it back.
+- **The rule.** Restore original sends only the activation, and the upload when Ghost no longer holds the theme (R-292). Nothing
+  breaks: a route naming a template the original theme lacks renders that theme's default template (Ghost's
+  `frontend/services/rendering/templates.js:191`, read for Story 7.23a). The Backup step before a site's first ship asks the
+  customer to keep their own copy of `routes.yaml` (R-283), and that copy is the way back to the old addresses.
+- **Declined.** Option 2, a line in the "is live" message about the routes file (no frame draws it); option 3, putting back Ghost's
+  standard routes file on every restore (one more write; every address made in Inflozo or before it stops working); option 4, saving
+  and restoring the site's own routes file (a new saved file and a new step, which would be its own later story).
+- Targets:
+  - ✅ this entry;
+  - ✅ Story 7.23b's spec (Question 2's Ruled line);
+  - ✅ `prd.md` FR-J13 (a dated note);
+  - ✅ `epic-7-context.md`;
+  - — the code: none, option 1 is as built.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a
