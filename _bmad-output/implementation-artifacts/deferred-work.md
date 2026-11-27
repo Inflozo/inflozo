@@ -10307,7 +10307,13 @@ reason: no deploy is ever deleted before 7.22, and a reused number on one name i
 plain: Run checks while another check of the same project is still running (closed with Esc during Checking, then opened
   again) starts a second compile beside the first. Only a check already resting at "ready to ship" is abandoned, so two can
   end up resting side by side, the older one never cleaned up until the next Run checks.
-status: open
+status: done 2026-11-27 (Story 7.25)
+resolution: Story 7.25's Dev (2026-11-27) — `start()` (`apps/web/server/deploy/run.ts`) reads this project × site's jobs still at
+  `queued`, `compiling` or `checking` beside the resting ones (`deploy-io.ts`' `jobs.resting`) and FLAGS each through `cancel()`,
+  so it stops at its next edge and leaves no `deploys` row and no object, exactly as after a Cancel; one that reached
+  `awaiting_ship` between the read and the flag is abandoned as a resting one. Never handed back: its results would be for inputs
+  the customer has just changed. A flagged job still counts in R-295's budget. Held by `deploy-run.test.ts` (a second Pre-flight
+  while the first is held at `checking`); walk step 125 (d) on production.
 severity: low
 origin: Story 7.18a's Review (2026-10-19), the Blind Hunter layer — `run.ts`' `start` abandons `awaiting_ship` rows only.
 owner: Story 7.25 (rate limits, the compile budget and the advisory lock), which bounds how many compiles one project runs.
@@ -10423,7 +10429,14 @@ resolution: Story 7.18b (2026-10-19) — each a check of its own: `jobs.claim`'s
 
 plain: If one of your projects is in the middle of sending its theme to a site, and in another window you move that site to
   a different project, the theme being sent still arrives and can go live — on a site that now belongs to the other project.
-status: open
+status: done 2026-11-27 (Story 7.25)
+resolution: Story 7.25's Dev (2026-11-27) — `switchWith` (`apps/web/lib/site-switch.ts`) runs its read, plan and writes under the
+  CHOSEN site's advisory lock (`SwitchIo.lock`, bound by `switchSite` to `withSiteLock(siteId, …)`), and Ship it holds the same
+  lock over its whole invocation after its first read, its link re-read (DW-374) inside it. So a switch waits for a deploy to the
+  site it is moving, and a ship that waited behind a switch reads the new link and refuses `site_changed`; a switch not let in
+  within 30 s says "Another deploy to this site is already running — try again in a moment." and writes nothing. The site a
+  project LEAVES is not locked: a ship already uploading there finishes there, the project's site when it was sent (DW-374's
+  own line). Held by `site-switch.test.ts`; the picker's sentence by journey 7.25 (c).
 severity: low
 origin: Story 7.18b's Review (2026-10-19), the Blind Hunter and Edge Case Hunter layers. DW-374's re-read sits before Ship it's
   claim, so a job already past it (uploading, activating — or a stale artefact re-compiling after the claim) is not stopped,

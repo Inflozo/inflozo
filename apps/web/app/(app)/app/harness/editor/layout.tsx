@@ -132,7 +132,8 @@ import { GHOST_5_SITE, HARNESS_PROJECT, HARNESS_SITES, MEMBERS_OFF_SITE, SURFACE
  * STORY 7.18b — the same header's two more shapes: `refused`, a site a refused upload marked Preview-only (R-270's line and Run
  * checks), and `unlinked`, no site linked with three to choose from (Choose a site); every shape but none carries the picker's
  * rows (`HARNESS_SITES`: one another project holds, one set to German). The switch itself is `actions.ts`' `harnessSwitch`
- * (`x-inflozo-harness-switch: gone` refuses it, `confirm-held` asks the move's confirm again). `x-inflozo-harness-preflight:
+ * (`x-inflozo-harness-switch: gone` refuses it, `confirm-held` asks the move's confirm again, `busy` answers Story 7.25's
+ * running sentence — the chosen site's lock held past its wait). `x-inflozo-harness-preflight:
  * all` makes the project Arabic, acknowledged, on Ghost 5.40, and `x-inflozo-harness-picks: <n>` plants a second post grid
  * hand-picked n deep — so a canned Pre-flight meets every warning row.
  *

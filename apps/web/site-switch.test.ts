@@ -100,8 +100,10 @@ test('R-277 (owner, 2026-10-20, Story 7.18c\'s Review): a failed read of the con
 
 /** A fake `SwitchIo` over one project and its candidate site: `reads` are answered in turn (the last one repeats), every write
  *  is recorded, and `links` are the link's answers in turn. */
-function io(reads: (Awaited<ReturnType<SwitchIo['read']>>)[], links: ('ok' | 'taken' | 'error')[] = ['ok'], unlinks = true, holds = true) {
+function io(reads: (Awaited<ReturnType<SwitchIo['read']>>)[], links: ('ok' | 'taken' | 'error')[] = ['ok'], unlinks = true, holds = true, locked = true) {
   const writes: string[] = []
+  /** Story 7.25: the chosen site's lock, entered and left around the work (`lock`, `unlock`) — or not held within its wait */
+  const locks: string[] = []
   let r = 0
   let l = 0
   const fake: SwitchIo = {
@@ -109,8 +111,15 @@ function io(reads: (Awaited<ReturnType<SwitchIo['read']>>)[], links: ('ok' | 'ta
     read: async () => reads[Math.min(r++, reads.length - 1)] ?? null,
     unlink: async () => (writes.push('unlink'), unlinks),
     link: async (language) => (writes.push(`link:${language ?? '-'}`), links[Math.min(l++, links.length - 1)] ?? 'ok'),
+    lock: async (run) => {
+      locks.push(`lock@${r}`)
+      if (!locked) return { held: false }
+      const value = await run()
+      locks.push(`unlock@${r}`)
+      return { held: true, value }
+    },
   }
-  return { fake, writes, read: () => r }
+  return { fake, writes, locks, read: () => r }
 }
 const on = (language: string, linkedSiteId: string | null, s: SwitchSite | null, overridden = false) => ({ project: { language, linkedSiteId, overridden }, site: s })
 const go = (fake: SwitchIo, id: string, confirmed: Confirmed = null) => switchWith(fake, { projectId: P, siteId: id, confirmed })
@@ -235,4 +244,34 @@ test('switchWith (R-134): the server reads the overrides too — a first link ov
   const confirmed = io([on('en', null, site('german', { locale: 'de' }), true)])
   assert.deepEqual(await go(confirmed.fake, 'german', { heldBy: null, language: true }), { ok: true })
   assert.deepEqual(confirmed.writes, ['link:-'], 'English kept')
+})
+
+test('switchWith (Story 7.25, DW-379): the read, the plan and the writes run under the CHOSEN site\'s lock, after the edit lock — not held within its wait, the running sentence and nothing read or written; held, as before', async () => {
+  const waited = io([on('en', 'linked', site('free'))], ['ok'], true, true, false)
+  assert.deepEqual(await go(waited.fake, 'free'), { refused: DEPLOY_WORDS.running })
+  assert.equal(waited.read(), 0, 'nothing read')
+  assert.deepEqual(waited.writes, [], 'nothing written')
+  // held: the read inside it, the link inside it
+  const held = io([on('en', 'linked', site('free'))])
+  assert.deepEqual(await go(held.fake, 'free'), { ok: true })
+  assert.deepEqual(held.locks, ['lock@0', 'unlock@1'], 'entered before the read, left after it')
+  assert.deepEqual(held.writes, ['link:-'])
+  // the edit lock first: a reader never waits on the site's
+  const reader = io([on('en', 'linked', site('free'))], ['ok'], true, false)
+  assert.deepEqual(await go(reader.fake, 'free'), { refused: LOCK_COPY.reading })
+  assert.deepEqual(reader.locks, [])
+  // the lock not taken at all is ours
+  const down = io([on('en', 'linked', site('free'))])
+  down.fake.lock = async () => {
+    throw new Error('connect')
+  }
+  assert.deepEqual(await go(down.fake, 'free'), { refused: DEPLOY_WORDS.infrastructure })
+  assert.deepEqual(down.writes, [])
+})
+
+test('switchSite binds the lock to the CHOSEN site — `withSiteLock(siteId, …)`, the action\'s own `siteId` — and never to the site it leaves', () => {
+  const action = readFileSync('app/(app)/app/(authed)/projects/[id]/(editor)/actions.ts', 'utf8')
+  const body = action.slice(action.indexOf('export async function switchSite('), action.indexOf('\n}\n', action.indexOf('export async function switchSite(')))
+  assert.match(body, /lock: \(run\) => withSiteLock\(siteId, run\),/)
+  assert.equal(body.match(/withSiteLock\(/g)?.length, 1)
 })

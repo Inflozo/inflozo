@@ -7,9 +7,9 @@ import { randomBytes } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { CompileRefusal } from '@inflozo/theme-compiler/refusal'
 import type { Finding, QualityVerdict, Verdict } from '@inflozo/theme-compiler/gate'
-import { DEPLOY_WORDS, endingOf, SNAPSHOT_WORDS, stepOf } from './lib/deploy.ts'
+import { ACCOUNT_COMPILES_PER_HOUR, DEPLOY_WORDS, endingOf, SITE_DEPLOYS_PER_HOUR, SNAPSHOT_WORDS, stepOf } from './lib/deploy.ts'
 import type { RoutesOutcome } from './lib/routes-upload.ts'
-import { abandon, activate, cancel, preflight, preflightFacts, ship, start, uploadOnlyRefused, view, type DeployIo, type DeployRow, type JobRow } from './server/deploy/run.ts'
+import { abandon, activate, cancel, compileBudget, preflight, preflightFacts, ship, siteLimit, start, uploadOnlyRefused, view, type DeployIo, type DeployRow, type JobRow } from './server/deploy/run.ts'
 import type { ProjectRead } from './server/deploy/project-input.ts'
 import type { Snapshot, SnapshotAnswer } from './server/snapshot.ts'
 import { zipTheme } from './server/deploy/zip.ts'
@@ -59,6 +59,10 @@ function world(over: {
   duringLive?: (jobs: Map<string, JobRow>) => void
   /** Story 7.22 — the prune's answers in turn (by default it prunes nothing and answers) */
   prune?: Array<Error | null>
+  /** Story 7.25 — the site's lock: held in turn per key (a promise chain, each enter and leave an event), never held within the
+   *  wait (with a hook run while it "waits"), open (no serializing at all — the control), or not taken (a throw). Settable later */
+  lock?: 'held' | 'never' | 'open' | 'throws'
+  duringWait?: (jobs: Map<string, JobRow>) => void
 } = {}) {
   let tick = Date.parse('2026-10-18T10:00:00Z')
   const jobs = new Map<string, JobRow>()
@@ -82,6 +86,9 @@ function world(over: {
   const prunes = [...(over.prune ?? [])]
   /** Story 7.22 — each put's options by its path (`replace` is the live copy's alone) */
   const putOpts = new Map<string, { replace?: true } | undefined>()
+  /** Story 7.25 — the lock's mode, and each key's tail: a holder enters once the one before it left */
+  const locking = { mode: over.lock ?? 'held' }
+  const chains = new Map<string, Promise<void>>()
   const baseRead = (): ProjectRead => ({
     input: { theme: { name: 'inflozo-notes', version: '1.0.0', description: 'Notes' }, language: 'en' } as ProjectRead['input'],
     reads: { project: 'p' },
@@ -124,7 +131,8 @@ function world(over: {
         jobs.set(jid, { ...j, ...patch, updated_at: new Date(tick).toISOString() })
         return true
       },
-      resting: async () => [...jobs.values()].filter((j) => j.stage === 'awaiting_ship').map((j) => ({ ...j })),
+      // as `deploy-io.ts` reads it: this project × site's checks resting at awaiting_ship, and (Story 7.25, DW-373) still moving
+      resting: async ({ projectId, siteId }) => [...jobs.values()].filter((j) => j.project_id === projectId && j.site_id === siteId && ['awaiting_ship', 'queued', 'compiling', 'checking'].includes(j.stage)).map((j) => ({ ...j })),
     },
     deploys: {
       insert: async (row) => {
@@ -218,6 +226,7 @@ function world(over: {
     link: async () => over.link ?? { now: { id: S, url: 'https://ghost6.inflozo.com' }, was: 'https://ghost6.inflozo.com' },
     call: async (args) => {
       calls.push(args)
+      events.push(`call:${args.item}`)
       const next = args.item === 'theme_upload' ? upload.shift() : activations.shift()
       if (next instanceof Error) throw next
       return next ?? okAnswer()
@@ -230,10 +239,32 @@ function world(over: {
     },
     routesFile: async () => 'routes:\n  /x/: x\n',
     english: (key) => (key === 'nav.more' ? 'More' : undefined),
+    lock: async (key, run) => {
+      if (locking.mode === 'throws') throw Object.assign(new Error('connect'), { code: 'ECONNREFUSED' })
+      if (locking.mode === 'never') {
+        events.push(`lock:never:${key}`)
+        over.duringWait?.(jobs)
+        return { held: false }
+      }
+      if (locking.mode === 'open') return { held: true, value: await run() }
+      const before = chains.get(key) ?? Promise.resolve()
+      let release = () => {}
+      const mine = new Promise<void>((r) => (release = r))
+      chains.set(key, before.then(() => mine))
+      await before
+      events.push(`lock:enter:${key}`)
+      try {
+        return { held: true, value: await run() }
+      } finally {
+        events.push(`lock:leave:${key}`)
+        release()
+      }
+    },
+    limits: { site: async () => ({ url: 'https://ghost6.inflozo.com', exempt: false }), accepted: async () => [], started: async () => [] },
     now: () => new Date((tick += 1000)),
     log: () => {},
   }
-  return { io, jobs, deploys, bucket, events, calls, capability, bound, captured, liveReads, putOpts, baseRead, advance: (ms: number) => (tick += ms) }
+  return { io, jobs, deploys, bucket, events, calls, capability, bound, captured, liveReads, putOpts, baseRead, locking, advance: (ms: number) => (tick += ms) }
 }
 
 const begin = async (w: ReturnType<typeof world>) => {
@@ -1467,4 +1498,216 @@ test('R-291 (Story 7.23a): ONE comparison — Ship it\'s drift check (`driftStep
   }
   for (const piece of ['io.liveTheme(', 'liveManifest(unzipTheme(', 'compareManifests(', 'LIVE_COPY_MAX_BYTES']) assert.ok(shared.includes(piece), `compareLive holds ${piece}`)
   assert.equal((run.match(/io\.liveTheme\(/g) ?? []).length, 1, 'one live read in the shell')
+})
+
+// ── Story 7.25 — the site's lock over Ship it and Re-activate, DW-373, and the two counts ─────────────────────────────────
+
+const P2 = '00000000-0000-4000-8000-0000000000a2'
+/** two projects of one Ghost, as `compileInputOf` reads each: the name `themeNameFor` picks over the OTHER project's binding (7.24's
+ *  held names), carried in the input and in the reads the hash covers, and each project's own binding */
+function twoProjects(w: ReturnType<typeof world>) {
+  const bindings = new Map<string, string>()
+  w.io.bind = async ({ projectId, themeName }) => {
+    w.bound.push(themeName)
+    bindings.set(projectId, themeName)
+    return 'ok'
+  }
+  w.io.read = async ({ projectId }) => {
+    const own = bindings.get(projectId) ?? null
+    const held = [...bindings].filter(([p]) => p !== projectId).map(([, n]) => n)
+    const name = own ?? (held.includes('inflozo-notes') ? 'inflozo-notes-2' : 'inflozo-notes')
+    const r = w.baseRead()
+    return { ...r, themeName: name, bound: own, reads: { ...r.reads, projectId, themeName: name }, input: { ...r.input, theme: { ...r.input.theme, name } } }
+  }
+  w.io.hash = async (reads) => JSON.stringify(reads)
+  return bindings
+}
+const checked = async (w: ReturnType<typeof world>, projectId: string) => {
+  const job = await start({ projectId, siteId: S, userId: U }, w.io)
+  await preflight({ jobId: job.id, userId: U }, w.io)
+  return w.jobs.get(job.id) as JobRow
+}
+const uploadedNames = (w: ReturnType<typeof world>) => w.calls.filter((c) => c.item === 'theme_upload').map((c) => ((c.body as FormData).get('file') as File).name)
+
+test('7.25: two projects ship to one Ghost at once — they SERIALIZE under the site\'s lock: the second\'s first Ghost call comes after the first\'s routes step, its held read inside sees the first\'s binding, it is re-made under -2 and shipped; no `taken`, nothing overwritten. The control: with no lock they interleave and both upload under one name', async () => {
+  const route = { kind: 'uploaded', file: 'routes:\n', sha256: 'x' } as RoutesOutcome
+  const w = world({ routes: [route, route] })
+  twoProjects(w)
+  const one = await checked(w, P)
+  const two = await checked(w, P2)
+  assert.deepEqual([w.deploys.get(one.deploy_id as string)?.theme_name, w.deploys.get(two.deploy_id as string)?.theme_name], ['inflozo-notes', 'inflozo-notes'], 'both checked the free name: nothing was bound yet')
+  await Promise.all([ship({ jobId: one.id, userId: U, mode: 'activate' }, w.io), ship({ jobId: two.id, userId: U, mode: 'activate' }, w.io)])
+  assert.deepEqual(w.events.filter((e) => e.startsWith('lock:')), [`lock:enter:${S}`, `lock:leave:${S}`, `lock:enter:${S}`, `lock:leave:${S}`])
+  const uploads = w.events.flatMap((e, i) => (e === 'call:theme_upload' ? [i] : []))
+  assert.equal(uploads.length, 2)
+  assert.ok((uploads[1] as number) > w.events.indexOf('routes'), 'the second upload after the first ship\'s routes step')
+  assert.ok((uploads[1] as number) > w.events.indexOf(`lock:leave:${S}`), '…and after it left the lock')
+  assert.deepEqual(uploadedNames(w), ['inflozo-notes.zip', 'inflozo-notes-2.zip'])
+  assert.equal(w.events.filter((e) => e === 'compile').length, 3, 'two Pre-flights and the second ship\'s re-make')
+  assert.equal(w.deploys.get(two.deploy_id as string)?.theme_name, 'inflozo-notes-2')
+  assert.deepEqual(w.bound, ['inflozo-notes', 'inflozo-notes-2'])
+  for (const j of [one, two]) {
+    assert.equal(w.jobs.get(j.id)?.stage, 'done')
+    assert.equal(w.jobs.get(j.id)?.error, null, 'no deploy_running, no taken')
+  }
+  // the control: no lock — both read before either bound, so both upload under the base, the second over the first
+  const v = world({ routes: [route, route], lock: 'open' })
+  twoProjects(v)
+  const a = await checked(v, P)
+  const b = await checked(v, P2)
+  await Promise.all([ship({ jobId: a.id, userId: U, mode: 'activate' }, v.io), ship({ jobId: b.id, userId: U, mode: 'activate' }, v.io)])
+  assert.deepEqual(uploadedNames(v), ['inflozo-notes.zip', 'inflozo-notes.zip'], 'unserialized, one theme overwrites the other')
+  assert.ok(v.events.indexOf('call:theme_upload', v.events.indexOf('call:theme_upload') + 1) < v.events.indexOf('routes'), 'and they interleave')
+})
+
+test('7.25: the lock NOT HELD within its wait — Ship it sends nothing to Ghost: the job is claimed off awaiting_ship to `failed` with `deploy_running`, the deploy `failed`; a row another invocation moved meanwhile (a double press) is left alone', async () => {
+  const w = world({ lock: 'never' })
+  const job = await begin(w)
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  assert.equal(w.calls.length, 0, 'nothing sent to Ghost')
+  const failed = w.jobs.get(job.id) as JobRow
+  assert.equal(failed.stage, 'failed')
+  assert.deepEqual(failed.error, { code: 'deploy_running', message: DEPLOY_WORDS.running })
+  assert.equal(w.deploys.get(job.deploy_id as string)?.status, 'failed')
+  assert.ok(w.events.includes(`lock:never:${S}`), 'keyed on the job\'s site')
+  // a double press: the first invocation moved the row while this one waited — its claim finds it moved, and writes nothing
+  const v = world({ lock: 'never', duringWait: (jobs) => {
+    for (const [id, j] of jobs) if (j.stage === 'awaiting_ship') jobs.set(id, { ...j, stage: 'uploading' })
+  } })
+  const vj = await begin(v)
+  await ship({ jobId: vj.id, userId: U, mode: 'activate' }, v.io)
+  assert.equal(v.jobs.get(vj.id)?.stage, 'uploading', 'the first invocation\'s ship untouched')
+  assert.equal(v.jobs.get(vj.id)?.error, null)
+  assert.equal(v.deploys.get(vj.deploy_id as string)?.status, 'checking', 'its deploy untouched')
+  // the lock not taken at all (no connection): ours, by the same claim, nothing sent
+  const x = world({ lock: 'throws' })
+  const xj = await begin(x)
+  await ship({ jobId: xj.id, userId: U, mode: 'activate' }, x.io)
+  assert.equal(x.calls.length, 0)
+  assert.equal((x.jobs.get(xj.id)?.error as { code?: string } | null)?.code, 'deploy_infrastructure')
+})
+
+test('7.25: Re-activate runs under the site\'s lock — the activation inside it; not held, the job is `failed` with `deploy_running` and the deploy stays `uploaded` (D2e\'s Re-activate still offered), nothing sent', async () => {
+  const w = world({ activate: [okAnswer()] })
+  const job = await begin(w)
+  await ship({ jobId: job.id, userId: U, mode: 'upload' }, w.io)
+  assert.equal(w.deploys.get(job.deploy_id as string)?.status, 'uploaded')
+  w.events.length = 0
+  await activate({ jobId: job.id, userId: U }, w.io)
+  assert.deepEqual(w.events.filter((e) => e.startsWith('lock:') || e.startsWith('call:')), [`lock:enter:${S}`, 'call:theme_activate', `lock:leave:${S}`])
+  assert.equal(w.deploys.get(job.deploy_id as string)?.status, 'live')
+  // not held
+  const v = world({})
+  const vj = await begin(v)
+  await ship({ jobId: vj.id, userId: U, mode: 'upload' }, v.io)
+  v.locking.mode = 'never'
+  const sent = v.calls.length
+  await activate({ jobId: vj.id, userId: U }, v.io)
+  assert.equal(v.calls.length, sent, 'no activation sent')
+  assert.equal(v.jobs.get(vj.id)?.stage, 'failed')
+  assert.equal((v.jobs.get(vj.id)?.error as { code?: string } | null)?.code, 'deploy_running')
+  assert.equal(v.deploys.get(vj.deploy_id as string)?.status, 'uploaded', 'the theme stays uploaded')
+})
+
+test('7.25: a failure inside the lock leaves it — the job failed as ours, the lock left, and the next holder of the site enters', async () => {
+  const w = world({})
+  const job = await begin(w)
+  w.io.artifacts.get = async () => {
+    throw Object.assign(new Error('storage'), { infra: true })
+  }
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  assert.equal(w.jobs.get(job.id)?.stage, 'failed')
+  assert.equal((w.jobs.get(job.id)?.error as { code?: string } | null)?.code, 'deploy_infrastructure')
+  assert.deepEqual(w.events.filter((e) => e.startsWith('lock:')), [`lock:enter:${S}`, `lock:leave:${S}`])
+  assert.deepEqual(await w.io.lock(S, async () => 'next'), { held: true, value: 'next' }, 'released')
+})
+
+test('7.25 (DW-373): a new Pre-flight FLAGS one of the same project × site still moving — it clears itself at its next edge (no deploys row, no object) — and abandons one resting at awaiting_ship, then inserts its own row', async () => {
+  let release = () => {}
+  const gate = new Promise<void>((r) => (release = r))
+  const w = world({})
+  let holdNext = true
+  w.io.gscan = async () => {
+    if (holdNext) {
+      holdNext = false
+      await gate
+    }
+    return verdict()
+  }
+  const first = await start({ projectId: P, siteId: S, userId: U }, w.io)
+  const running = preflight({ jobId: first.id, userId: U }, w.io)
+  while (w.jobs.get(first.id)?.stage !== 'checking') await new Promise((r) => setImmediate(r))
+  const firstDeploy = w.jobs.get(first.id)?.deploy_id as string
+  const second = await start({ projectId: P, siteId: S, userId: U }, w.io)
+  assert.equal(w.jobs.get(first.id)?.cancel_requested, true, 'flagged, as a Cancel flags it')
+  assert.equal(w.jobs.get(first.id)?.stage, 'checking', 'not handed back, not cleared under its feet')
+  release()
+  await running
+  assert.equal(w.jobs.get(first.id)?.stage, 'cancelled', 'it cleared itself at its next edge')
+  assert.equal(w.deploys.has(firstDeploy), false, 'no deploys row')
+  assert.equal(w.bucket.size, 0, 'no object')
+  await preflight({ jobId: second.id, userId: U }, w.io)
+  assert.equal(w.jobs.get(second.id)?.stage, 'awaiting_ship', 'the second runs')
+  // a check resting at awaiting_ship is abandoned as before; the new row comes after it
+  const third = await start({ projectId: P, siteId: S, userId: U }, w.io)
+  assert.equal(w.jobs.get(second.id)?.stage, 'cancelled')
+  assert.equal(w.bucket.size, 0, 'its object gone')
+  assert.equal(w.jobs.get(third.id)?.stage, 'queued')
+  // the control: another project's check is never touched
+  const other = await w.io.jobs.insert({ project_id: P2, user_id: U, site_id: S })
+  await w.io.jobs.update(other.id, U, { stage: 'checking' })
+  await start({ projectId: P, siteId: S, userId: U }, w.io)
+  assert.equal(w.jobs.get(other.id)?.cancel_requested, false)
+})
+
+// the counts, over the reads alone — `now` fixed
+const NOW = new Date('2026-11-27T12:00:00.000Z')
+const ago = (min: number) => new Date(NOW.getTime() - min * 60_000).toISOString()
+function counts(a: { accepted?: string[]; started?: string[]; exempt?: boolean; url?: string } = {}) {
+  const asked: string[] = []
+  const logs: [string, unknown][] = []
+  const io = {
+    now: () => NOW,
+    log: (message: string, fields: unknown) => void logs.push([message, fields]),
+    limits: {
+      site: async () => ({ url: a.url ?? 'https://ghost6.inflozo.com', exempt: a.exempt ?? false }),
+      accepted: async ({ since, userId, siteId }: { since: string; userId: string; siteId: string }) => (asked.push(`accepted:${siteId}:${userId}:${since}`), (a.accepted ?? []).filter((t) => t >= since)),
+      started: async ({ since, userId }: { since: string; userId: string }) => (asked.push(`started:${userId}:${since}`), (a.started ?? []).filter((t) => t >= since)),
+    },
+  }
+  return { io, asked, logs }
+}
+const times = (n: number, oldest: number) => Array.from({ length: n }, (_, i) => ago(oldest - i))
+
+test('7.25 — FR-J11 at Ship it (`siteLimit`): 9 accepted uploads in the hour ship; the 10th refuses with the minutes until the oldest leaves (48 min ago → 12 minutes) in the site\'s host; one outside the hour is not counted; an exempt record never refuses', async () => {
+  assert.equal(SITE_DEPLOYS_PER_HOUR, 10)
+  const nine = counts({ accepted: [...times(9, 48), ago(61)] })
+  assert.equal(await siteLimit({ siteId: S, userId: U }, nine.io), null)
+  assert.deepEqual(nine.asked, [`accepted:${S}:${U}:${ago(60)}`], 'the record\'s own uploads, the user\'s own, over the last hour')
+  const ten = counts({ accepted: times(10, 48) })
+  assert.deepEqual(await siteLimit({ siteId: S, userId: U }, ten.io), { code: 'deploy_rate_limited', message: DEPLOY_WORDS.siteLimit('ghost6.inflozo.com', 12) })
+  assert.match(DEPLOY_WORDS.siteLimit('ghost6.inflozo.com', 12), /You can ship to ghost6\.inflozo\.com again in 12 minutes\.$/)
+  const exempt = counts({ accepted: times(14, 30), exempt: true })
+  assert.equal(await siteLimit({ siteId: S, userId: U }, exempt.io), null)
+  assert.deepEqual(exempt.asked, [], 'an exempt record is not even counted')
+})
+
+test('7.25 — R-295\'s compile budget at Run checks (`compileBudget`): 59 jobs in the hour start; the 60th refuses with its minutes and a log line naming the account; the control logs nothing', async () => {
+  assert.equal(ACCOUNT_COMPILES_PER_HOUR, 60)
+  const under = counts({ started: times(59, 50) })
+  assert.equal(await compileBudget({ userId: U }, under.io), null)
+  assert.deepEqual(under.logs, [])
+  assert.deepEqual(under.asked, [`started:${U}:${ago(60)}`])
+  const over = counts({ started: times(60, 50) })
+  assert.deepEqual(await compileBudget({ userId: U }, over.io), { code: 'compile_budget', message: DEPLOY_WORDS.budget(10) })
+  assert.deepEqual(over.logs, [['deploy: compile budget reached', { user: U, minutes: 10 }]])
+})
+
+test('7.25: the way back is never counted — Re-activate, Cancel and the put-back ask no limit; the route asks `siteLimit` at Ship it and `compileBudget` at Run checks alone', () => {
+  const run = readFileSync('server/deploy/run.ts', 'utf8')
+  for (const door of ['export async function activate(', 'export async function cancel(']) {
+    const body = run.slice(run.indexOf(door), run.indexOf('\n}\n', run.indexOf(door)))
+    assert.doesNotMatch(body, /siteLimit|compileBudget|limits\./, door)
+  }
+  assert.doesNotMatch(readFileSync('server/deploy/put-back.ts', 'utf8'), /siteLimit|compileBudget|limits\./)
 })

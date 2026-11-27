@@ -10,6 +10,7 @@ import type { Members, Surfaces } from '@/lib/probe-rule'
 import { VISITORS, readViewed } from '@/lib/view-as'
 import { quietSession, supabaseAdmin } from '@/lib/supabase/server'
 import { holdsLock } from '@/server/edit-lock'
+import { withSiteLock } from '@/server/site-lock'
 import { readSettings } from '@/server/site-probe'
 import { addStaffToken } from '@/server/staff-token'
 import { ROUTES_IO } from '@/server/routes-io'
@@ -191,7 +192,8 @@ export async function recheckSite(projectId: string): Promise<SiteResult> {
  * the user's own (RLS) and connected — the foreign key checks only that a site exists (`server/site-settings.ts`), so this read
  * is the guard. THE LOCK FIRST, through the deploy route's helper (`holdsLock`): a session reading along changes nothing.
  * `confirmed` is the confirm as it was drawn (`Confirmed`), anything else none — the server asks again unless it covers what
- * is owed now.
+ * is owed now. STORY 7.25 (DW-379): its reads and writes run under the CHOSEN site's advisory lock (`withSiteLock`, keyed on that
+ * site's address — `switchWith` says why only that one), so it never moves a site while a deploy to it uploads or activates.
  */
 export async function switchSite(projectId: string, siteId: string, session: string, confirmed: unknown): Promise<SwitchAnswer> {
   const ours = { refused: DEPLOY_WORDS.infrastructure }
@@ -237,6 +239,7 @@ export async function switchSite(projectId: string, siteId: string, session: str
       console.error('projects/editor: the site could not be linked', { code: error?.code })
       return 'error'
     },
+    lock: (run) => withSiteLock(siteId, run),
   }, { projectId, siteId, confirmed: confirmedFrom(confirmed) })
 }
 

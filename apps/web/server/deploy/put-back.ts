@@ -1,6 +1,6 @@
 import { snapshotObjectKey } from '../../app/(app)/app/(authed)/account/deletion-rule.ts'
 import { hostOf } from '../../lib/connect-rule.ts'
-import { activateAnswer, deployError, themeNotHeld, uploadAnswer, versionNumber, type DeployCode, type DeployError } from '../../lib/deploy.ts'
+import { activateAnswer, deployError, themeNotHeld, uploadAnswer, versionNumber, type DeployCode, type DeployError, type Locked } from '../../lib/deploy.ts'
 import { causeShown, historyCopyPath, type ContentManifest, type DriftRecord } from '../../lib/drift.ts'
 import { actionOf, HISTORY_WORDS, isStoredVersion } from '../../lib/retention.ts'
 import { compareLive, sendActivate, sendUpload, STALLED_MS, twice, type Called, type DeployIo } from './run.ts'
@@ -18,7 +18,7 @@ import { compareLive, sendActivate, sendUpload, STALLED_MS, twice, type Called, 
  * `active` needs no activation; an upload under an inactive name is followed by one.
  *
  * WHAT IT NEVER TOUCHES (FR-J9, FR-L3, FR-J13): the working document, the edit lock, the plan and Inflozo's gscan gate. A stored
- * artefact already ran, so it needs none of them — rollback is exempt from the Pro exit gating, and from the lock. Nor
+ * artefact already ran, so it needs none of them — rollback is exempt from the Pro exit gating, and from the edit lock. Nor
  * `routes.yaml`: a route whose template the old version lacks renders its default template (`templates.js:191`, 6.58.0), and the
  * old routes would undo collections the customer still wants (FR-I4) — so nothing beyond upload and activate reaches Ghost
  * (AD-10's list).
@@ -28,9 +28,12 @@ import { compareLive, sendActivate, sendUpload, STALLED_MS, twice, type Called, 
  * `activated_at` with the site's other live rows demoted, an upload left not live is `uploaded` (D2d's row). Ghost refusing changes
  * nothing. No row is inserted, copied or deleted, and nothing is pruned — a put-back adds no object.
  *
- * NO JOB ROW AND NO LOCK OF ITS OWN. A put-back is one request: at most two uploads of 120 s and an activation of 15 s, inside the
- * route's 300 s. It refuses while a ship of the same project × site is moving; the races that leaves open, and the story that
- * closes them, are named at that refusal (`busy`, below).
+ * NO JOB ROW; THE SITE'S LOCK (Story 7.25, AD-19). A put-back is one request: at most two uploads of 120 s and an activation of 15 s,
+ * inside the route's 300 s. It runs its WHOLE body under the site's advisory lock (`io.lock`, `server/site-lock.ts`, keyed on the
+ * project's linked site, read once for the key — `locked`), so a ship to the same Ghost, a second put-back or a Restore original
+ * waits for it rather than interleaving, and its own reads run again inside, so a second press finds the first one's result (`live`
+ * already). Not held within `LOCK_WAIT_MS`: `busy`, nothing sent. It still refuses while a ship of the same project × site is
+ * MOVING (`busy`, `admit`): under the lock that can only be a ship killed mid-span, whose row `view()` fails once it stalls.
  *
  * THE CHECK BEFORE A ROLL BACK (R-291, the owner's Question 2: "Check first, in this story"). A Roll back replaces the theme on the
  * site, so its confirm first runs FR-J16's drift check, `checkBeforePutBack`: the same refusals in the same order (`admit`, shared),
@@ -47,7 +50,8 @@ import { compareLive, sendActivate, sendUpload, STALLED_MS, twice, type Called, 
  * then activates it. So nothing on the site is ever overwritten, and no check runs (Roll back's R-291 check compares files a restore
  * never touches). DW-389: Ghost's own Casper and Source are only ever activated — Ghost refuses `casper.zip` and `source.zip` as
  * uploads (`storage.js:53-56`) and never deletes them (`:167-170`). Its refusals are the put-back's, in the put-back's order
- * (`disconnected`, then `busy`), with nothing sent to Ghost; it reads no lock, no plan and no working document, and runs no gscan.
+ * (`disconnected`, then `busy`), with nothing sent to Ghost; it reads no edit lock, no plan and no working document, and runs no gscan.
+ * It holds the site's advisory lock over its whole body, as the put-back does (`locked`, Story 7.25).
  * THE RECORDS: live, every `live` row on the site (any project of the user's) is demoted to `uploaded` — so Inflozo's version shows
  * as 7.23a's D2d row with Re-activate, the undo — and `activated`, `activated_at` and `accepted_at` are left as they are. NO
  * `deploys` ROW IS WRITTEN: the 7.21 criterion's "records that upload as the newest accepted one" exists because Ghost replaces the
@@ -88,6 +92,8 @@ export type PutBackIo = Pick<DeployIo, 'call' | 'log' | 'liveTheme'> & {
   linked: (a: { projectId: string; userId: string }) => Promise<{ siteId: string; url: string; disconnected: boolean; declined: boolean } | null>
   /** whether a job of this project × site is uploading — `snapshotting`, `uploading` or `activating` — and was touched after `since` */
   moving: (a: { projectId: string; siteId: string; userId: string; since: string }) => Promise<boolean>
+  /** Story 7.25 — the site's advisory lock (`server/site-lock.ts`), as Ship it holds it */
+  lock: <T>(siteId: string, run: () => Promise<T>) => Promise<Locked<T>>
 }
 
 /** what Restore original reads of the site's saved original — `captured_at` tells a later capture from the row History drew: the
@@ -121,9 +127,8 @@ async function admit(io: PutBackIo, a: Asked): Promise<Refusal | Admitted> {
   if (linked.disconnected) return 'disconnected'
   const at = { projectId: a.projectId, siteId: row.site_id, userId: a.userId }
   const since = new Date(a.now.getTime() - STALLED_MS).toISOString()
-  // ponytail: refusing while a ship MOVES leaves two races open — a ship that starts DURING a put-back, and two put-backs at once
-  // (two tabs, or a reader, whom R-192 lets act) — and of two uploads of one name Ghost answers `EEXIST` (`deploy_running`) to
-  // one. Story 7.25's per-site advisory lock (AD-19) closes both, and this function joins it when it lands
+  // Story 7.25: the put-back runs under the site's lock (`locked`), so a ship that starts during it, and a second put-back, wait. A
+  // ship still MOVING here is one killed mid-span (it held the lock until its connection dropped): refused until `view()` fails it
   if (await twice(io, 'moving jobs', () => io.moving({ ...at, since }))) return 'busy'
   return { row, linked, at }
 }
@@ -134,7 +139,7 @@ async function admit(io: PutBackIo, a: Asked): Promise<Refusal | Admitted> {
  * frozen name. No baseline, or one with no manifest: null, and nothing is read from Ghost. A found drift within the live copy's size
  * keeps the zip it read at `historyCopyPath` (overwriting — one per project × site) BEFORE it answers, so the confirm's Download
  * serves exactly that zip. R-278: a missing token on a site whose Not now is recorded is said as the decline. It writes no row and
- * reads no lock, plan or gate; an infrastructure failure, twice, is ours (`deploy_infrastructure`).
+ * reads no edit lock, plan or gate; an infrastructure failure, twice, is ours (`deploy_infrastructure`).
  */
 export async function checkBeforePutBack(io: PutBackIo, a: Asked): Promise<CheckBefore> {
   try {
@@ -153,7 +158,27 @@ export async function checkBeforePutBack(io: PutBackIo, a: Asked): Promise<Check
   }
 }
 
+/** STORY 7.25 — THE WHOLE BODY UNDER THE SITE'S LOCK, keyed on the project's linked site — read ONCE for the key, and again by the
+ *  body inside (so the body's answers are unchanged). A project linked to no site runs the body unlocked: the body answers it as
+ *  before (`elsewhere`, `gone`). Not held within the wait: `busy`, nothing sent. A key read failing twice, or the lock not taken at
+ *  all, is ours, with nothing sent. The check before a Roll back takes none: it writes nothing to Ghost. */
+async function locked<T>(io: PutBackIo, a: { projectId: string; userId: string }, body: () => Promise<T>): Promise<T | 'busy' | { refused: DeployError }> {
+  try {
+    const siteId = (await twice(io, 'linked site', () => io.linked(a)))?.siteId ?? null
+    if (siteId === null) return await body()
+    const held = await io.lock(siteId, body)
+    return held.held ? held.value : 'busy'
+  } catch (e) {
+    io.log('put-back: the site\'s lock was not taken', { code: (e as { code?: string } | null)?.code })
+    return { refused: deployError('deploy_infrastructure', { host: '' }) }
+  }
+}
+
 export async function putBack(io: PutBackIo, a: Asked): Promise<PutBackOutcome> {
+  return locked(io, a, () => putBackHeld(io, a))
+}
+
+async function putBackHeld(io: PutBackIo, a: Asked): Promise<PutBackOutcome> {
   let host = ''
   /** the version Ghost has acted on — an upload accepted or an activation made — once it has: a record failing after that is not
    *  "nothing reached your site" (`DEPLOY_WORDS.infrastructure`) but History failing to note what did */
@@ -238,6 +263,10 @@ const GHOST_DEFAULTS: ReadonlySet<string> = new Set(['casper', 'source'])
  * every `live` row on the site demoted. No `deploys` row is ever written.
  */
 export async function restoreOriginal(io: PutBackIo, a: { userId: string; projectId: string; snapshotId: string; captured: string; now: Date }): Promise<RestoreOutcome> {
+  return locked(io, a, () => restoreHeld(io, a))
+}
+
+async function restoreHeld(io: PutBackIo, a: { userId: string; projectId: string; snapshotId: string; captured: string; now: Date }): Promise<RestoreOutcome> {
   let host = ''
   /** whether Ghost has acted — an activation made or an upload accepted — so a record failing after it is said as what it is */
   let acted = false
@@ -253,7 +282,7 @@ export async function restoreOriginal(io: PutBackIo, a: { userId: string; projec
     // 2. the put-back's refusals, in its order, with nothing sent to Ghost
     if (linked.disconnected) return 'disconnected'
     const since = new Date(a.now.getTime() - STALLED_MS).toISOString()
-    // ponytail: the put-back's `busy` ceiling (`admit`) — Story 7.25's per-site advisory lock closes it, and this joins it
+    // the put-back's `busy` (`admit`): under the site's lock (`locked`), only a ship killed mid-span
     if (await twice(io, 'moving jobs', () => io.moving({ projectId: a.projectId, siteId: linked.siteId, userId: a.userId, since }))) return 'busy'
     host = hostOf(linked.url)
     const ctx = { host, siteId: linked.siteId }

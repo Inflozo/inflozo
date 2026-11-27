@@ -8546,3 +8546,38 @@ tenant's lock is gone", where three null subqueries joined by `or` raised nothin
 - **Ghost refuses before it writes** (`storage.js` `setFromZip` — `checkSafe` `:85` precedes the rename `:100`, executed): the fatal theme answered HTTP 422 `ThemeValidationError` with errorDetails [GS005-TPL-ERR (fatal), GS120-NO-UNKNOWN-GLOBALS], read as `ghost_theme_refused` with Ghost's detail "Theme "inflozo-probe-rollback" is not compatible or contains errors."; the probe stayed active and its download stayed v1's. Hence the spec's "Ghost says no, nothing changes": no row changes, and the 422 is said, never retried.
 - **Re-activate is the activation alone** (D2d): with `casper` made live in between, `PUT themes/inflozo-probe-rollback/activate/` with no upload answered `HTTP 200; themes[0] inflozo-probe-rollback active true` and the files Ghost held under the name — v1's — went live again.
 - **What this does NOT say.** Nothing went through the product's `call()`, its database or its bucket, and no `deploys` row was read or written: walk step 121 is the put-back route end to end. `casper` was active again at the end.
+
+## 92. The per-site advisory lock on Postgres 17 and on the production pooler — a transaction-scoped `pg_advisory_xact_lock` on its own `max: 1` connection: `lock_timeout` bounds the wait with `55P03`, a killed holder frees its key, an idle transaction holds and commits through Supavisor, and the local idle ceiling ends an abandoned holder · production pooler · 2026-11-27
+
+**Why.** Story 7.25's `withSiteLock` (`apps/web/server/site-lock.ts`) rests on four hypotheses (standing rule 1); the spec's Design Notes stop the story if H2 and H3 both fail. **Command.** `node tools/probe/record-site-lock.mjs --pooler` — the app's own driver (postgres.js through `apps/web`), the product's numbers (`LOCK_WAIT_MS` 30000 ms, `STALLED_MS` 330000 ms) and statements, each connection as `lockSql()` opens it (`max: 1`, `prepare: false`, no `idle_timeout`; on the pooler the Supabase root `db.ts` pins). Every key a probe key naming no site; no table read or written. The pooler URL read in-process from tools/probe/.env and never printed.
+
+**Where.** A throwaway `postgres:17` container (Postgres 17.10 (Debian 17.10-1.pgdg13+1); the role's `statement_timeout` 0, `idle_in_transaction_session_timeout` 0), then the production transaction pooler `aws-0-eu-central-1.pooler.supabase.com:6543` (Postgres 17.6; the `postgres` role's `statement_timeout` **2min**, `idle_in_transaction_session_timeout` **0**).
+
+**The controls, each of which voids the run:** another key taken at once while one is held (H1 is the key, not the database); the key taken at once once its holder commits; the child holding its key before it is killed (a 2 s waiter gives up); the idle holder still holding near the end of its idle (H3); a holder with NO idle ceiling still holding after the same idle (H4).
+
+| Where | Row | Expected | Got | Held |
+|---|---|---|---|---|
+| local | H1 control — another key taken while site:probe-record-site… is held | held at once (< 2 s) | `held true, 1 ms` | yes |
+| local | H1 — a second holder of the same key, lock_timeout 30000 ms (LOCK_WAIT_MS) | 55P03 after ~30 s | `held false, code 55P03, 30008 ms` | yes |
+| local | H1 control — the key once its holder committed | held at once | `held true, 2 ms` | yes |
+| local | H2 control — the child really holds the key (a 2 s waiter) | 55P03 | `held false, code 55P03` | yes |
+| local | H2 — the holder SIGKILLed mid-hold (its connection dropped with no goodbye); a waiter with LOCK_WAIT_MS | the key freed, taken within the wait | `held true after 1 ms` | yes |
+| local | H3 control — still held after 140 s idle (a 2 s waiter) | 55P03 | `held false, code 55P03` | yes |
+| local | H3 — the transaction left idle 150 s with the lock, then COMMIT | commits, no 25P01 notice | `committed yes; notices [none]; role statement_timeout 0, idle_in_transaction_session_timeout 0` | yes |
+| local | H4 control — NO idle ceiling set, the holder idle 8 s (a 2 s waiter) | 55P03; the holder commits | `held false, code 55P03; ended no` | yes |
+| local | H4 — set_config('idle_in_transaction_session_timeout', '3000ms', true), the holder idle 8 s | the holder ended: its key taken at once, its transaction gone | `held true, 3 ms; ended its COMMIT on a new session (25P01)` | yes |
+| pooler | H1 control — another key taken while site:probe-record-site… is held | held at once (< 2 s) | `held true, 286 ms` | yes |
+| pooler | H1 — a second holder of the same key, lock_timeout 30000 ms (LOCK_WAIT_MS) | 55P03 after ~30 s | `held false, code 55P03, 30449 ms` | yes |
+| pooler | H1 control — the key once its holder committed | held at once | `held true, 288 ms` | yes |
+| pooler | H2 control — the child really holds the key (a 2 s waiter) | 55P03 | `held false, code 55P03` | yes |
+| pooler | H2 — the holder SIGKILLed mid-hold (its connection dropped with no goodbye); a waiter with LOCK_WAIT_MS | the key freed, taken within the wait | `held true after 302 ms` | yes |
+| pooler | H3 control — still held after 140 s idle (a 2 s waiter) | 55P03 | `held false, code 55P03` | yes |
+| pooler | H3 — the transaction left idle 150 s with the lock, then COMMIT | commits, no 25P01 notice | `committed yes; notices [none]; role statement_timeout 2min, idle_in_transaction_session_timeout 0` | yes |
+| pooler | H4 control — NO idle ceiling set, the holder idle 8 s (a 2 s waiter) | 55P03; the holder commits | `held false, code 55P03; ended no` | yes |
+| pooler | H4 — set_config('idle_in_transaction_session_timeout', '3000ms', true), the holder idle 8 s | the holder ended: its key taken at once, its transaction gone | `held true, 291 ms; ended its COMMIT on a new session (25P01)` | yes |
+
+- **H1 holds**: a waiter on a held key gives up with `55P03` after `lock_timeout` — the product's 30 s — and is NOT HELD in `withSiteLock`'s reading; the work never runs.
+- **H2 holds**: a holder killed with no goodbye on the wire frees its key (held true after 302 ms) — so a Ship it killed past AD-11's budget does not hold its site past it.
+- **H3 holds**: a transaction idle 150 s keeps its lock and commits through Supavisor's transaction mode, with no `25P01` notice — so no `select 1` keep-alive is owed.
+- **H4 holds**: `set_config('idle_in_transaction_session_timeout', …, true)` ends a holder idle past it, freeing its key — the belt under H2, set by `withSiteLock` to `STALLED_MS`.
+- **What this does NOT say.** No product route ran and no `sites` row keyed a lock here: Ship it, the put-back and the switch under one lock on production and T1 are walk step 125's.

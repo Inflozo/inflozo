@@ -11,6 +11,8 @@ import type { SupabaseClient } from '@supabase/supabase-js'
  * included (R-264). So: every binding, in any account, to any site record at the linked site's address — disconnected records
  * included, since their themes are still on the Ghost — except this project's own. What it cannot see (the review, 2026-11-27):
  * one Ghost connected under two addresses (`http` and `https`, a `*.ghost.io` address and a custom domain) is two Ghosts here.
+ * Story 7.25's per-site advisory lock (`server/site-lock.ts`) is keyed on the same address, and Ship it reads this under it — so
+ * two accounts shipping one free name serialize, and the second reads the first's binding and is re-made under the next name.
  *
  * NOT GHOST'S OWN LIST. The staff token lifts `GET /themes/` (VERIFY 9), but reading it would only change the answer for a theme
  * named `inflozo-{slug}` that no Inflozo binding claims — almost always this customer's own (a ZIP export uploaded by hand, or a

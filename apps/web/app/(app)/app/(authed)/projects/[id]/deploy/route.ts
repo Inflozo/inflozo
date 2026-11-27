@@ -4,7 +4,7 @@ import { isUuid } from '@/lib/editor'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 import { DEPLOY_IO } from '@/server/deploy/deploy-io'
 import { holdsLock } from '@/server/edit-lock'
-import { activate, cancel, preflight, ship, start, uploadOnlyRefused, view } from '@/server/deploy/run'
+import { activate, cancel, compileBudget, preflight, ship, siteLimit, start, uploadOnlyRefused, view } from '@/server/deploy/run'
 
 /**
  * STORY 7.18a — THE DEPLOY WIZARD'S ONE DOOR (the lock route's pattern: `force-dynamic`, `currentUser()`, `isUuid`, a
@@ -18,7 +18,14 @@ import { activate, cancel, preflight, ship, start, uploadOnlyRefused, view } fro
  *
  * THE LOCK. Pre-flight, Ship it and re-activate each need this tab's session to hold a FRESH `edit_locks` row (`STALE_MS`),
  * read with the user's own client — `edit_locks` has no service-role grant — and answer 423 otherwise. A session reading
- * along takes the lock over first (D8g), in the editor. AD-19's advisory lock over the upload is Story 7.25's.
+ * along takes the lock over first (D8g), in the editor. AD-19's per-site advisory lock is not this file's: `ship()` and
+ * `activate()` take it themselves, inside `after()` (`server/site-lock.ts`, Story 7.25), so the press answers at once and the wait
+ * shows as the pressed button's own busy state (R-98).
+ *
+ * THE TWO LIMITS (Story 7.25), each asked before any work is handed on and answered 429 with AD-24's envelope as JSON — its
+ * `message` is the sentence the wizard says in its refusal line: R-295's compile budget at Run checks (`compileBudget`, before
+ * `start`), FR-J11's per-site limit at Ship it (`siteLimit`, after the arm's own refusals). A count that cannot be read is a 502 and
+ * nothing is handed on. Re-activate and Cancel are never limited: they compile nothing and they are the way back.
  *
  * THE WORK IS `server/deploy/run.ts`'s, over `DEPLOY_IO`; this file only judges the request, the lock and the job's stage.
  */
@@ -62,6 +69,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (error) return no(502, 'The project could not be read')
     if (!data) return no(404, 'Not found')
     if (typeof data.linked_site_id !== 'string') return no(409, 'No site to ship to')
+    const budget = await compileBudget({ userId: user.id }, DEPLOY_IO).catch(() => undefined)
+    if (budget === undefined) return no(502, 'The compile budget could not be read')
+    if (budget !== null) return json(429, budget)
     let made
     try {
       made = await start({ projectId, siteId: data.linked_site_id, userId: user.id }, DEPLOY_IO)
@@ -86,6 +96,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // Story 7.21 — THE SERVER IS THE CONTROL: a Pre-flight that found drift (D3a) ships only on the customer's word, Overwrite and
     // ship anyway — nothing is uploaded otherwise. `ship()` asks again after a stale re-make
     if (row.stage_timings?.drift?.kind === 'found' && overwrite !== true) return no(409, 'Drift found')
+    // Story 7.25 — FR-J11: the site record's accepted uploads in the hour, unless exempt; the job keeps resting with its artefact
+    const limited = await siteLimit({ siteId: row.site_id, userId: user.id }, DEPLOY_IO).catch(() => undefined)
+    if (limited === undefined) return no(502, 'The deploy limit could not be read')
+    if (limited !== null) return json(429, limited)
     after(() => ship({ jobId: row.id, userId: user.id, mode: mode as Mode, withoutSnapshot: withoutSnapshot === true, overwrite: overwrite === true }, DEPLOY_IO))
     return json(202, { job: row.id })
   }

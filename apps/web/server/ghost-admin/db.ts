@@ -41,6 +41,16 @@ import { AdminError } from './admin-rule.ts'
  *
  * ponytail: the URL is the `postgres` user's — the platform's own serverless shape — and a role
  * holding only `vault` and `private` grants is owed at the next password rotation (DW-49).
+ *
+ * STORY 7.25 — A SECOND CONNECTION, ONE PER HOLD: `lockSql()`. The per-site advisory lock (`server/site-lock.ts`) is a
+ * transaction held open over a whole Ship it, and Ship it's own `call()`s decrypt and audit through `sql()` — so a lock held
+ * on `sql()`'s one connection would wait on its own upload (the `max: 1` rule above). Raising `max` instead would let
+ * concurrent holders starve the decrypts their own spans need. So each hold opens its own client — the same URL, the same
+ * pinned root, `prepare: false`, `max: 1` — and its caller ends it; it costs one TLS handshake per hold and starves nothing.
+ * NO `idle_timeout` on it: postgres.js ends a connection idle that long even inside an open transaction (`index.js`' `move`
+ * starts the timer whenever no query is queued), and the hold's connection is idle for the whole span by design. Its
+ * notices are handed to the caller (`onnotice`), so a `COMMIT` that lands on a reconnected session — Postgres' `25P01`
+ * warning, never an error — is seen as the lost lock it is.
  */
 
 /**
@@ -84,18 +94,37 @@ let client: postgres.Sql | undefined
  */
 export type Client = postgres.ISql
 
+function poolerUrl(): string {
+  const url = process.env.SUPABASE_DB_POOLER_URL
+  // The loud failure `lib/supabase/server.ts`'s `env()` promises: a missing variable must never
+  // resolve to something that looks like "this site has no credentials".
+  if (!url) {
+    throw new AdminError({
+      code: 'credential_store_unavailable',
+      message: 'SUPABASE_DB_POOLER_URL is not set',
+    })
+  }
+  return url
+}
+
+/** What a hold's connection is (`server/site-lock.ts`) — exported from here for `Client`'s reason: `postgres` has one importer. */
+export type LockClient = postgres.Sql
+export type LockNotice = postgres.Notice
+
+/** STORY 7.25 — a fresh connection for ONE advisory-lock hold (the header says why), ended by its caller. */
+export function lockSql(onnotice?: (notice: LockNotice) => void): LockClient {
+  return postgres(poolerUrl(), {
+    max: 1,
+    prepare: false,
+    ssl: { ca: SUPABASE_ROOT_CA, rejectUnauthorized: true },
+    connect_timeout: 5,
+    onnotice: onnotice ?? (() => {}),
+  })
+}
+
 export function sql(): postgres.Sql {
   if (!client) {
-    const url = process.env.SUPABASE_DB_POOLER_URL
-    // The loud failure `lib/supabase/server.ts`'s `env()` promises: a missing variable must never
-    // resolve to something that looks like "this site has no credentials".
-    if (!url) {
-      throw new AdminError({
-        code: 'credential_store_unavailable',
-        message: 'SUPABASE_DB_POOLER_URL is not set',
-      })
-    }
-    client = postgres(url, {
+    client = postgres(poolerUrl(), {
       max: 1,
       prepare: false,
       ssl: { ca: SUPABASE_ROOT_CA, rejectUnauthorized: true },

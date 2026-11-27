@@ -118,7 +118,9 @@ export const versionNumber = (version: string): number => (/^(\d+)\.0\.0$/.test(
 /** STORY 7.22 (DW-372) — THE NEXT VERSION: 1 + the highest number among this project × site's `uploaded`/`live` rows (the caller's
  *  read). Pruning keeps every row (`lib/retention.ts`), so the highest number survives it — counting rows stopped growing once old
  *  zips were pruned. A deploy failed after Ghost took it (a lost binding race) is not counted, so its number can recur, under
- *  another theme name (Design Notes; Story 7.25's per-site lock removes the race). Read by `project-input.ts` and `shipStateOf`. */
+ *  another theme name (Design Notes). Since Story 7.25 Inflozo cannot lose that race to itself: every ship to one Ghost holds the
+ *  site's advisory lock (`server/site-lock.ts`) over its whole span, so a second ship re-reads the binding the first wrote. Read by
+ *  `project-input.ts` and `shipStateOf`. */
 export const nextVersion = (rows: readonly { version: unknown }[]): number =>
   1 + rows.reduce<number>((top, r) => {
     const n = versionNumber(String(r.version))
@@ -136,6 +138,37 @@ export const themeNameOf = (slug: string): string => `inflozo-${slug}`
  *  other projects too (the review, 2026-11-27). */
 export const themeNameFor = (a: { slug: string; bound: string | null; held: readonly string[] }): string =>
   a.bound ?? uniqueSlug(themeNameOf(a.slug), a.held)
+
+// ── Story 7.25: the per-site lock's answer, and the two counts ─────────────────────────────────────────────────────
+
+/** STORY 7.25 — what the site's lock (`server/site-lock.ts`) answers: the work's value once the site's lock was held, or not held
+ *  within its wait (`LOCK_WAIT_MS`) — and then the work never ran. Here, so `run.ts`, `put-back.ts` and `site-switch.ts` name it
+ *  without reaching the driver. */
+export type Locked<T> = { held: true; value: T } | { held: false }
+
+/** FR-J11 — the uploads Ghost accepted that one site RECORD takes in an hour (`deploys.accepted_at`: Ship it's and Roll back's
+ *  alike), unless the record is exempt (`sites.deploy_rate_limit_exempt`, §4's test targets). Refused at Ship it only. */
+export const SITE_DEPLOYS_PER_HOUR = 10
+/** R-295 (owner, 2026-11-27, Question 1 option 1) — the compiles one ACCOUNT starts in an hour, on every plan: `deploy_jobs.started_at`,
+ *  any site or none (Story 7.26's export rides a job row with a null `site_id`). Billing hygiene, not capacity: at a full deploy's
+ *  measured $0.000427 (MEASUREMENTS §21) a runaway costs at most about $18.45 a month. This is the number's one place. */
+export const ACCOUNT_COMPILES_PER_HOUR = 60
+/** the window both counts read */
+export const HOUR_MS = 3_600_000
+
+/** STORY 7.25 — ONE RULE FOR BOTH COUNTS. Of `times`, the ones within the hour before `now` (a stamp a moment ahead of this clock —
+ *  the database's own `now()` — counts too); fewer than `cap`, null: go. Otherwise the minutes until enough have left the hour for
+ *  one more, rounded up, from 1 to 60. At exactly `cap` that is the oldest counted one leaving; past it (a Roll back is never
+ *  refused, so a site can stand above its limit) it is the one whose leaving brings the count under `cap`. */
+export function overLimit(times: readonly string[], cap: number, now: Date): number | null {
+  const t = now.getTime()
+  const counted = times.map((x) => Date.parse(x)).filter((x) => Number.isFinite(x) && x > t - HOUR_MS).sort((a, b) => a - b)
+  if (counted.length < cap) return null
+  const leaves = (counted[counted.length - cap] as number) + HOUR_MS
+  return Math.min(60, Math.max(1, Math.ceil((leaves - t) / 60_000)))
+}
+/** "1 minute", else "{n} minutes" */
+const inMinutes = (n: number): string => (n === 1 ? '1 minute' : `${n} minutes`)
 
 // ── the staleness hash ──────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -168,6 +201,8 @@ export type DeployCode =
   | 'site_changed' | 'site_unlinked' | 'rtl_unacknowledged'
   // Story 7.20a: the archive of the live theme did not finish (B12b), so nothing was uploaded — `SNAPSHOT_CODES`
   | SnapshotCode
+  // Story 7.25: FR-J11's per-site limit at Ship it, and R-295's per-account compile budget at Run checks — each a 429 from the route
+  | 'deploy_rate_limited' | 'compile_budget'
 
 /** AD-24's envelope. Story 7.20a: a capture's answer also names the request it failed on and Ghost's status (B12b's inset) */
 export type DeployError = { code: string; message: string; detail?: string; action?: string; href?: string; request?: string; status?: number }
@@ -214,6 +249,8 @@ export function uploadAnswer(answer: GhostAnswer): { ok: true; theme: string | n
   if (isPlanRefusal(answer)) return { failed: 'ghost_plan_refused' }
   if (isTooLarge(answer)) return { failed: 'theme_too_large' }
   if (answer.status >= 300 && answer.status < 400) return { failed: 'ghost_redirected' }
+  // since Story 7.25 every Inflozo upload to one Ghost holds its address's lock, so an EEXIST can only come from outside Inflozo —
+  // the same sentence all the same
   if (answer.status >= 500 && /EEXIST/.test(answer.text)) return { failed: 'deploy_running' }
   if (answer.status === 429 || answer.status >= 500) return { failed: 'ghost_unavailable' }
   const detail = ghostDetail(answer)
@@ -388,6 +425,9 @@ export const DEPLOY_WORDS = {
   keyRefusedBody: 'It was regenerated or removed in Ghost Admin. Paste the new key, then ship again.',
   reconnect: 'Reconnect site',
   running: 'Another deploy to this site is already running — try again in a moment.',
+  // Story 7.25 (R-170, R-283): the two limits, each said once where it refuses — the numbers are the constants'
+  siteLimit: (host: string, minutes: number) => `Inflozo ships to one site at most ${SITE_DEPLOYS_PER_HOUR} times an hour. You can ship to ${host} again in ${inMinutes(minutes)}.`,
+  budget: (minutes: number) => `Your account has built ${ACCOUNT_COMPILES_PER_HOUR} themes in the last hour, the most Inflozo builds in an hour. You can run checks again in ${inMinutes(minutes)}.`,
   ghostRefused: "Ghost's own theme check refused this theme, which our checks should have caught. It's our fault.",
   plan: "Your Ghost(Pro) plan doesn't accept custom themes — check or upgrade your plan (Publisher or higher).",
   plans: 'Which Ghost plans work? ↗',
@@ -566,7 +606,7 @@ export const STAGE_NAMES: Readonly<Record<'compiling' | 'checking' | 'snapshotti
 
 /** THE SENTENCE AND THE FIX FOR EACH CODE THIS MODULE OWNS — AD-24's envelope as the wizard stores it. `host` is the site's
  *  host as the wizard names it (`hostOf`), `version` its `ghost_version`, `siteId` for Reconnect. */
-export function deployError(code: DeployCode, ctx: { host: string; version?: string; siteId?: string; detail?: string; projectId?: string; to?: string; request?: string; status?: number | null }): DeployError {
+export function deployError(code: DeployCode, ctx: { host: string; version?: string; siteId?: string; detail?: string; projectId?: string; to?: string; request?: string; status?: number | null; minutes?: number }): DeployError {
   const { host } = ctx
   const with_ = (message: string, extra: Partial<DeployError> = {}): DeployError => ({ code, message, ...(ctx.detail === undefined ? {} : { detail: ctx.detail }), ...extra })
   switch (code) {
@@ -596,6 +636,11 @@ export function deployError(code: DeployCode, ctx: { host: string; version?: str
       return { code, message: DEPLOY_WORDS.siteChanged(ctx.to ?? '', host) }
     case 'site_unlinked':
       return { code, message: DEPLOY_WORDS.siteUnlinked(host) }
+    // Story 7.25 — the two limits, with the minutes until the next one is allowed
+    case 'deploy_rate_limited':
+      return { code, message: DEPLOY_WORDS.siteLimit(host, ctx.minutes ?? 60) }
+    case 'compile_budget':
+      return { code, message: DEPLOY_WORDS.budget(ctx.minutes ?? 60) }
     // Story 7.20a — B12b's three causes, each with the request it failed on and Ghost's status
     case 'snapshot_needs_token':
     case 'snapshot_token_refused':

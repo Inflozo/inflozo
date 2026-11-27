@@ -498,6 +498,13 @@
 // with no third theme. And since this story every step that named its theme `inflozo-{slug}` reads the product's name instead
 // (`productThemeName`: the stored binding, else the one rule over the bindings stored at the site's address) — a kept plant's
 // binding on T1 makes a rerun's throwaway `-2`. `STEP124_PLANT=<a>,<b>` is Deploy's plant.
+// Story 7.25 adds step 125, WRITING TO T1 and to production, so it runs only with `T1_WRITES=1` on the owner's in-session go:
+// THE PER-SITE ADVISORY LOCK AND THE TWO LIMITS (AD-19, FR-J11, R-295, DW-373). Three throwaway Free accounts X, Y and Z
+// (`editor-harness-lx-…`, `-ly-…`, `-lz-…`) each connect T1 with a project "Lock test", every ship Deploy only: (a) X and Y press
+// Ship it within a second on one free name — they serialize, the later re-made under `-2`, both done, nothing overwritten; (d)
+// DW-373 — a second Run checks flags the first, which ends cancelled leaving nothing; (b) Z's site limit — nine accepted uploads
+// planted, the tenth ships, the next refused in its sentence, then the exempt flag ships it; (c) Z's budget — jobs planted to 59,
+// the 60th starts, the next refused in its sentence (Vercel's log line noted for the main session). No plant.
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -17413,6 +17420,414 @@ async function main() {
         for (const ctx of ctxs124) await ctx.close().catch(() => {})
       }
       check('step 124 — the step\'s contexts recorded zero CSP violations', csp124.length === 0, JSON.stringify(csp124.slice(0, 3)))
+    }
+
+    /* ── step 125 — Story 7.25: THE PER-SITE ADVISORY LOCK AND THE TWO LIMITS (AD-19, FR-J11, R-295, DW-373), WRITING TO T1 ──
+       Runs only with `T1_WRITES=1`, on the owner's in-session go worded for the whole run: three Free throwaway accounts X, Y and Z
+       (`editor-harness-lx-…`, `-ly-…`, `-lz-…`) each connect T1 through the wizard at 1440 with a project "Lock test" (step 1's
+       fixture, slug `lock-test`) linked. EVERY SHIP IS DEPLOY ONLY, so T1 stays on its own theme throughout.
+       (a) THE CROSS-ACCOUNT RACE: X and Y both Run checks — each Destination naming `inflozo-lock-test`, nothing bound yet — and
+           Ship it is pressed in both within a second. Both jobs end `done` with no error (no `deploy_running`, no `taken`); the
+           bindings are `inflozo-lock-test` (the earlier) and `inflozo-lock-test-2` (the later); the later job's `uploading` began
+           after the earlier's last edge and its `compiling` ran a second time (the stale re-make inside the lock), its ending saying
+           R-294's moved line; T1 lists both, neither active, and the earlier's download equals its `content_manifest`.
+       (b) Z'S SITE LIMIT: 9 accepted uploads in the hour planted on Z's record with the service key (`deploys` rows, `uploaded`,
+           `accepted_at` within the hour, no object) — the control: Z's first Ship it ships (the 10th); then Run checks and Ship it
+           → `DEPLOY_WORDS.siteLimit` with its minutes (1–60) in the refusal line, the job still `awaiting_ship`; then
+           `deploy_rate_limit_exempt = true` on Z's record (the service key) → the same press ships.
+       (c) Z'S BUDGET: `deploy_jobs` rows planted up to 59 in the hour (the service key, `cancelled`, Z's site) — the control: Run
+           checks starts (the 60th); then Run checks again → `DEPLOY_WORDS.budget` with its minutes in the refusal line, and no job
+           inserted. Vercel's log line for that POST (`deploy: compile budget reached` naming Z's id) is noted with its time for the
+           main session to read (`npx vercel@latest logs`, the memory's way — this walk never puts the token on argv).
+       (d) DW-373 (X, bound, so four steps): Run checks, the wizard closed during Checking, then Run checks again: the first job ends
+           `cancelled` with no `deploys` row and no object, the second rests at `awaiting_ship`. Should the first have rested before
+           the second press (a fast check), the note says so — it is then abandoned as a resting one, the same ending.
+       FINALLY: every job at rest; T1 put back (its own theme active, every inflozo- theme the run uploaded deleted, routes.yaml byte
+       for byte) and read back; each account's objects removed, T1 disconnected through the product on its own session, the account
+       deleted; users and projects counted back. Ghost 5's half (T3, R-238) waits for DW-326's pass at Story 15.7. The start refuses
+       a T1 that holds an `inflozo-lock-test*` theme or any account's binding of that name at its address (a plant left in place).
+       Keys are read in-process by NAME and scrubbed; never printed. SELF-CONTAINED, as 121–124 are. */
+    if (process.env.T1_WRITES !== '1') {
+      note('step 125 — NOT RUN', 'it writes to T1 (four Deploy only uploads through the product) and to production (three throwaway accounts, planted deploys and deploy_jobs rows, an exempt flag): set T1_WRITES=1 on the owner\'s in-session go')
+    } else {
+      const imp125 = (f) => import(require('node:url').pathToFileURL(path.join(REPO, f)).href)
+      const [DEP125, DR125, CR125, PR125, AR125, RU125, ZIP125, GATE125] = await Promise.all([
+        imp125('apps/web/lib/deploy.ts'), imp125('apps/web/lib/drift.ts'), imp125('apps/web/lib/connect-rule.ts'), imp125('apps/web/lib/probe-rule.ts'),
+        imp125('apps/web/server/ghost-admin/admin-rule.ts'), imp125('apps/web/lib/routes-upload.ts'), imp125('apps/web/server/deploy/zip.ts'), imp125('apps/web/lib/backup-gate.ts'),
+      ])
+      const W125 = DEP125.DEPLOY_WORDS
+      const until125 = async (read, test, ms) => {
+        const by = Date.now() + ms
+        for (;;) {
+          const v = await read()
+          if (test(v) || Date.now() > by) return v
+          await new Promise((r) => setTimeout(r, 500))
+        }
+      }
+      const ENV125 = {}
+      const NAMES125 = ['GHOST6_URL', 'GHOST6_ADMIN_API_KEY', 'GHOST6_CONTENT_API_KEY', 'GHOST6_STAFF_ACCESS_TOKEN']
+      for (const line of fs.readFileSync(path.join(REPO, 'tools/probe/.env'), 'utf8').split('\n')) {
+        const m = /^([A-Z0-9_]+)=(.*)$/.exec(line)
+        if (m && NAMES125.includes(m[1]) && m[2].trim()) ENV125[m[1]] = m[2].trim()
+      }
+      const missing125 = NAMES125.filter((k) => !ENV125[k])
+      if (missing125.length) throw new Error(`step 125: ${missing125.join(', ')} not in tools/probe/.env`)
+      const SECRETS125 = [ENV125.GHOST6_ADMIN_API_KEY, ENV125.GHOST6_STAFF_ACCESS_TOKEN].flatMap((k) => [k, k.split(':')[1] ?? '']).concat([ENV125.GHOST6_CONTENT_API_KEY, SECRET ?? '']).filter((x) => x.length >= 8)
+      const scrub125 = (x) => SECRETS125.reduce((t, k) => t.split(k).join('<key>'), String(x))
+      const HOST125 = CR125.hostOf(ENV125.GHOST6_URL)
+      const URL125 = CR125.normaliseSiteUrl(ENV125.GHOST6_URL)
+      const BASE125 = 'inflozo-lock-test'
+      const TAKEN125 = `${BASE125}-2`
+      const ghost125 = async (credential, method, p, body) => {
+        const { url, init } = AR125.adminRequest({ credential, siteUrl: ENV125.GHOST6_URL, method, path: p, body, major: 6 })
+        const r = await fetch(url, { ...init, signal: AbortSignal.timeout(90_000) })
+        const bytes = Buffer.from(await r.arrayBuffer())
+        let parsed = null
+        try { parsed = JSON.parse(bytes.toString('utf8')) } catch {}
+        return { ok: r.ok, status: r.status, body: parsed, bytes }
+      }
+      const staff125 = (method, p, body) => ghost125(ENV125.GHOST6_STAFF_ACCESS_TOKEN, method, p, body)
+      const themes125 = async () => {
+        const r = await staff125('GET', 'themes/').catch(() => null)
+        return r?.ok && Array.isArray(r.body?.themes) ? r.body.themes.map((t) => ({ name: t.name, active: t.active === true })) : null
+      }
+      const named125 = (ts) => (ts ?? []).filter((t) => t.name === BASE125 || t.name.startsWith(`${BASE125}-`)).map((t) => `${t.name}${t.active ? '*' : ''}`).sort()
+      const routesFile125 = async () => {
+        const r = await staff125('GET', RU125.ROUTES_PATH).catch(() => null)
+        return r?.ok ? r.bytes : null
+      }
+      const liveDiff125 = async (name, manifest) => {
+        const r = await staff125('GET', `themes/${encodeURIComponent(name)}/download/`).catch(() => null)
+        return r?.ok && manifest ? DR125.compareManifests(manifest, await DR125.liveManifest(ZIP125.unzipTheme(new Uint8Array(r.bytes)))) : null
+      }
+      const none125 = (d) => d !== null && d.changed.length + d.added.length + d.removed.length === 0
+      const heldAtT1_125 = async () => {
+        const records = (await call('/rest/v1', `/sites?url=eq.${encodeURIComponent(URL125)}&select=id`)).body
+        if (!Array.isArray(records)) return null
+        if (records.length === 0) return []
+        const held = (await call('/rest/v1', `/project_site_bindings?site_id=in.(${records.map((r) => r.id).join(',')})&or=(theme_name.eq.${BASE125},theme_name.like.${BASE125}-*)&select=theme_name`)).body
+        return Array.isArray(held) ? held.map((b) => b.theme_name).sort() : null
+      }
+      const storage125 = { apikey: SECRET, Authorization: `Bearer ${SECRET}` }
+      const listed125 = (bucket, prefix) => fetch(`${SB}/storage/v1/object/list/${bucket}`, { method: 'POST', headers: { ...storage125, 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix, limit: 100, offset: 0 }) })
+        .then((r) => r.json()).then((l) => (Array.isArray(l) ? l.filter((o) => typeof o?.name === 'string' && o.id !== null) : [])).catch(() => [])
+      const removeObject125 = (bucket, key) => fetch(`${SB}/storage/v1/object/${bucket}/${key}`, { method: 'DELETE', headers: storage125 }).then((r) => r.status).catch(() => 0)
+
+      const usersBefore125 = (await users())?.length ?? null
+      const projectsBefore125 = await projectCount()
+      const accounts125 = []
+      let prev125 = null
+      let start125 = []
+      let routesBefore125 = null
+      const ctxs125 = []
+      const csp125 = []
+
+      const JOB125 = 'id,stage,error,deploy_id,stage_timings,started_at,updated_at'
+      const job125 = async (project) => (await call('/rest/v1', `/deploy_jobs?project_id=eq.${project}&select=${JOB125}&order=started_at.desc&limit=1`)).body?.[0] ?? null
+      const jobById125 = async (id) => (await call('/rest/v1', `/deploy_jobs?id=eq.${id}&select=${JOB125}`)).body?.[0] ?? null
+      const deploy125 = async (id) => (id == null ? null : (await call('/rest/v1', `/deploys?id=eq.${id}&select=id,version,theme_name,status,activated,artifact_path,content_manifest`)).body?.[0] ?? null)
+      const binding125 = async (acc) => (await call('/rest/v1', `/project_site_bindings?project_id=eq.${acc.project}&site_id=eq.${acc.site}&select=theme_name`)).body?.[0]?.theme_name ?? null
+      const siteRow125 = async (acc) => (await call('/rest/v1', `/sites?id=eq.${acc.site}&select=id,disconnected_at,credentials_present,deploy_rate_limit_exempt`)).body?.[0] ?? null
+      const jobsSince125 = async (acc, since) => (await call('/rest/v1', `/deploy_jobs?user_id=eq.${acc.id}&started_at=gte.${encodeURIComponent(since)}&select=id`)).body ?? []
+      const atRest125 = (j) => j === null || !['queued', 'compiling', 'checking', 'snapshotting', 'uploading', 'activating'].includes(j.stage)
+      const wiz125 = (p) => p.evaluate(() => {
+        const d = document.querySelector('dialog[data-deploy-wizard]')
+        if (!d) return null
+        const q = (s) => d.querySelector(s)
+        const rows = q('[data-check-rows]')
+        return {
+          at: d.getAttribute('data-deploy-wizard'),
+          name: q('[data-theme-name]')?.textContent ?? null,
+          mode: q('input[name="deploy-mode"]:checked')?.value ?? null,
+          refused: q('#deploy-refused')?.textContent ?? null,
+          reading: q('#deploy-drift-reading') !== null,
+          passes: rows ? [...rows.children].filter((c) => !c.hasAttribute('data-finding')).length : 0,
+        }
+      }).catch(() => null)
+      const context125 = async (email) => {
+        const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
+        ctxs125.push(ctx)
+        await recorder(ctx, csp125)
+        const pg = steady(await ctx.newPage())
+        pg.on('pageerror', (e) => note('pageerror 125', scrub125(String(e))))
+        await pg.goto(await magic(email), { waitUntil: 'load' })
+        return pg
+      }
+      /** a NEW account (recorded for the finally first), its page signed in, T1 connected through the wizard and "Lock test" seeded
+       *  and linked to it, its slug read back `lock-test` */
+      const account125 = async (email) => {
+        const made = await admin('/admin/users', { method: 'POST', body: JSON.stringify({ email, email_confirm: true }) })
+        const id = made.status === 200 ? made.body.id ?? null : null
+        if (!UUID.test(id ?? '')) throw new Error(`step 125: the account ${email} was not made`)
+        const acc = { email, id, site: null, project: null, pg: null }
+        accounts125.push(acc)
+        const pg = await context125(email)
+        acc.pg = pg
+        await pg.goto(at('/sites/connect?step=keys'), { waitUntil: 'load' })
+        await pg.locator('#s2b-api-url').fill(ENV125.GHOST6_URL)
+        await pg.locator('#s2b-admin-key').fill(ENV125.GHOST6_ADMIN_API_KEY)
+        await pg.locator('#s2b-content-key').fill(ENV125.GHOST6_CONTENT_API_KEY)
+        await pg.locator('form:has(#s2b-api-url) button[type="submit"]').click()
+        await pg.waitForURL((u) => !u.pathname.endsWith('/sites/connect'), { timeout: 60000 })
+        const use = pg.getByRole('button', { name: PR125.BRAND_COPY.use, exact: true })
+        if (await use.waitFor({ state: 'visible', timeout: 20000 }).then(() => true, () => false)) await use.click()
+        const linked = await until125(async () => (await call('/rest/v1', `/projects?user_id=eq.${id}&select=id,linked_site_id`)).body ?? [], (ps) => ps.some((p) => p.linked_site_id !== null), 45000)
+        acc.site = linked.find((p) => p.linked_site_id !== null)?.linked_site_id ?? null
+        if (acc.site === null) throw new Error(`step 125: T1 did not connect for ${email}`)
+        for (const p of linked) await call('/rest/v1', `/projects?id=eq.${p.id}`, { method: 'DELETE' })
+        const seeded = await seed({ email, name: 'Lock test' })
+        if (!seeded?.created) throw new Error(`step 125: "Lock test" was not seeded for ${email}`)
+        acc.project = seeded.id
+        await call('/rest/v1', `/projects?id=eq.${acc.project}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: acc.site }) })
+        const row = (await call('/rest/v1', `/projects?id=eq.${acc.project}&select=slug,linked_site_id`)).body?.[0] ?? null
+        if (row?.linked_site_id !== acc.site || row.slug !== 'lock-test') throw new Error(`step 125: "Lock test" was not linked with the slug lock-test (${row?.slug ?? 'unread'})`)
+        return acc
+      }
+      const handBack125 = (acc) => acc.pg?.evaluate(async (url) => {
+        const id = sessionStorage.getItem('inflozo-lock-session')
+        if (!id) return
+        await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ intent: 'release', session: id }) })
+      }, `${PREFIX}/projects/${acc.project}/lock`).catch(() => {})
+      const closed125 = async (pg) => {
+        if (!(await pg.locator('dialog[data-deploy-wizard]').count().catch(() => 0))) return
+        await pg.keyboard.press('Escape').catch(() => {})
+        await pg.waitForFunction(() => !document.querySelector('dialog[data-deploy-wizard]'), null, { timeout: 15000 }).catch(() => {})
+      }
+      /** the editor opened (once) and ▾ → Deploy only pressed: Destination, Deploy only chosen, as drawn */
+      const destination125 = async (acc, reload = true) => {
+        const pg = acc.pg
+        if (reload) {
+          await pg.goto(at(`/projects/${acc.project}`), { waitUntil: 'load' })
+          await pg.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 }).catch(() => {})
+        }
+        await pg.locator('#editor-ship + button').click()
+        await pg.locator('#editor-ship-menu li', { hasText: W125.uploadOnly }).locator('button, a').first().click()
+        return until125(() => wiz125(pg), (w) => w?.at === 'destination' && w.name !== null, 20000)
+      }
+      /** from Destination to a check resting at awaiting_ship: the first ship's Safety net (Add token) and Backup answered as a
+       *  customer answers them, else Run checks; Ship it pressable */
+      const checked125 = async (acc, first) => {
+        const pg = acc.pg
+        const was = (await job125(acc.project))?.id ?? null
+        if (first) {
+          await pg.locator('#deploy-next').click()
+          await until125(() => wiz125(pg), (w) => w?.at === 'safety', 15000)
+          await pg.locator('#deploy-token').fill(ENV125.GHOST6_STAFF_ACCESS_TOKEN)
+          await pg.locator('#deploy-add-token').click()
+          await until125(() => wiz125(pg), (w) => w?.at === 'backup', 60000)
+          for (const { id } of GATE125.GATE_ROWS) await pg.locator(`#deploy-gate-${id}`).check()
+          await pg.locator('#deploy-gate-confirm').check()
+          await pg.locator('#deploy-backup-run').click()
+        } else {
+          await pg.locator('#deploy-run').click()
+        }
+        const pre = await until125(() => job125(acc.project), (j) => j !== null && j.id !== was && ['awaiting_ship', 'failed', 'cancelled'].includes(j.stage), 180000)
+        if (pre?.stage !== 'awaiting_ship') throw new Error(`step 125: Pre-flight ended ${pre?.stage ?? 'unread'} for ${acc.email}`)
+        await until125(() => wiz125(pg), (w) => w?.at === 'check' && !w.reading && w.passes > 0, 30000)
+        await until125(() => pg.locator('#deploy-ship').getAttribute('aria-disabled').catch(() => 'true'), (v) => v !== 'true', 60000)
+        return pre
+      }
+      /** Ship it pressed: true once its POST left (DW-404's silent press is recorded, never pressed again) */
+      const press125 = async (acc) => {
+        const sent = acc.pg.waitForRequest((r) => r.method() === 'POST' && /\/deploy$/.test(new URL(r.url()).pathname), { timeout: 20000 }).then(() => true, () => false)
+        await acc.pg.locator('#deploy-ship').click()
+        if (!(await sent)) {
+          await acc.pg.screenshot({ path: path.join(OUT, `step-125-ship-silent-${Date.now()}.png`) }).catch(() => {})
+          note('step 125 — DW-404, a Ship it press sent nothing in 20 s', 'see the screenshot')
+          return false
+        }
+        return true
+      }
+      const ended125 = (id) => until125(() => jobById125(id), (j) => j !== null && ['done', 'failed', 'cancelled'].includes(j.stage), 330000)
+      /** a ship from Destination to its end (Deploy only): the job, its deploy row */
+      const shipOnly125 = async (acc, first) => {
+        await destination125(acc)
+        const pre = await checked125(acc, first)
+        await press125(acc)
+        const end = await ended125(pre.id)
+        await until125(() => acc.pg.evaluate(() => document.getElementById('deploy-title')?.textContent ?? null).catch(() => null), (t) => t === W125.uploadOnlyTitle, 30000)
+        await closed125(acc.pg)
+        return { end, row: await deploy125(end?.deploy_id) }
+      }
+      const minutesOf = (said, words) => Array.from({ length: 60 }, (_, i) => i + 1).find((n) => words(n) === said) ?? null
+
+      try {
+        start125 = (await themes125()) ?? []
+        prev125 = start125.find((t) => t.active)?.name ?? null
+        routesBefore125 = await routesFile125()
+        const held0 = await heldAtT1_125()
+        check(`step 125 — T1's live theme read with the staff token at the start (${prev125 ?? 'unread'}), not an Inflozo theme, routes.yaml read, and no ${BASE125}* theme on T1 nor any account's binding of that name at its address`,
+          prev125 !== null && !/^inflozo-/.test(prev125) && routesBefore125 !== null && named125(start125).length === 0 && Array.isArray(held0) && held0.length === 0,
+          JSON.stringify({ themes: start125.map((t) => `${t.name}${t.active ? '*' : ''}`), held: held0 }))
+        if (prev125 === null || /^inflozo-/.test(prev125) || routesBefore125 === null) throw new Error('step 125: T1 is not on its own theme — ask the owner before restoring it')
+        if (named125(start125).length !== 0 || !Array.isArray(held0) || held0.length !== 0) throw new Error(`step 125: ${BASE125} is already on T1 or held at its address — ask the owner`)
+
+        // ── 125a — X and Y, two accounts on one Ghost, one free name, Ship it pressed in both within a second ──
+        const X = await account125(`editor-harness-lx-${stamp}@inflozo.com`)
+        const Y = await account125(`editor-harness-ly-${stamp}@inflozo.com`)
+        const destX = await destination125(X)
+        const destY = await destination125(Y)
+        const preX = await checked125(X, true)
+        const preY = await checked125(Y, true)
+        const namesAtCheck = [(await deploy125(preX.deploy_id))?.theme_name ?? null, (await deploy125(preY.deploy_id))?.theme_name ?? null]
+        check(`step 125a — X's and Y's Destinations both name ${BASE125}, and both Pre-flights compiled it (nothing bound yet), each resting at awaiting_ship`,
+          destX?.name === BASE125 && destY?.name === BASE125 && namesAtCheck.every((n) => n === BASE125), JSON.stringify({ x: destX?.name, y: destY?.name, compiled: namesAtCheck }))
+        const pressedAt = new Date().toISOString()
+        const [sentX, sentY] = await Promise.all([press125(X), press125(Y)])
+        const [endX, endY] = await Promise.all([ended125(preX.id), ended125(preY.id)])
+        const [movedX, movedY] = await Promise.all([X, Y].map(async (acc) => {
+          await until125(() => acc.pg.evaluate(() => document.getElementById('deploy-title')?.textContent ?? null).catch(() => null), (t) => t === W125.uploadOnlyTitle, 30000)
+          return acc.pg.locator('dialog[data-deploy-wizard] [data-theme-moved]').count().catch(() => null)
+        }))
+        await closed125(X.pg)
+        await closed125(Y.pg)
+        const upAt = (j) => j?.stage_timings?.uploading?.at ?? ''
+        const [early, late] = upAt(endX) <= upAt(endY) ? [{ acc: X, end: endX, moved: movedX }, { acc: Y, end: endY, moved: movedY }] : [{ acc: Y, end: endY, moved: movedY }, { acc: X, end: endX, moved: movedX }]
+        const [rowEarly, rowLate] = [await deploy125(early.end?.deploy_id), await deploy125(late.end?.deploy_id)]
+        const [boundEarly, boundLate] = [await binding125(early.acc), await binding125(late.acc)]
+        const themesA = await themes125()
+        const diffEarly = await liveDiff125(BASE125, rowEarly?.content_manifest)
+        check(`step 125a — both presses sent within a second, both jobs done with no error (no deploy_running, no taken): the earlier bound ${BASE125}, the later ${TAKEN125}; the later's uploading began after the earlier's last edge and its compiling ran again after the press (the stale re-make inside the lock), its ending saying R-294's moved line`,
+          sentX && sentY && endX?.stage === 'done' && endY?.stage === 'done' && endX.error === null && endY.error === null &&
+          boundEarly === BASE125 && boundLate === TAKEN125 && rowEarly?.theme_name === BASE125 && rowLate?.theme_name === TAKEN125 &&
+          upAt(late.end) >= (early.end?.updated_at ?? '9') && (late.end?.stage_timings?.compiling?.at ?? '') > pressedAt && late.moved === 1 && early.moved === 0,
+          JSON.stringify({ early: { who: early.acc === X ? 'X' : 'Y', bound: boundEarly, compiling: early.end?.stage_timings?.compiling?.at, uploading: upAt(early.end), last: early.end?.updated_at, moved: early.moved },
+            late: { bound: boundLate, compiling: late.end?.stage_timings?.compiling?.at, uploading: upAt(late.end), moved: late.moved, error: late.end?.error }, pressedAt }))
+        check(`step 125a — T1 (GET themes/, the staff token) lists both ${BASE125} and ${TAKEN125}, neither active (${prev125} live) — nothing overwritten — and the earlier's ${BASE125} downloaded equals its content_manifest`,
+          JSON.stringify(named125(themesA)) === JSON.stringify([BASE125, TAKEN125]) && themesA?.find((t) => t.active)?.name === prev125 && none125(diffEarly),
+          JSON.stringify({ t1: named125(themesA), diffEarly }))
+
+        // ── 125d — DW-373 on X (bound: four steps): a second Run checks while the first still checks ──
+        {
+          await handBack125(Y)
+          await Y.pg.goto('about:blank')
+          await destination125(X)
+          const was = (await job125(X.project))?.id ?? null
+          await X.pg.locator('#deploy-run').click()
+          const first = await until125(() => job125(X.project), (j) => j !== null && j.id !== was && ['compiling', 'checking', 'awaiting_ship', 'failed'].includes(j.stage), 60000)
+          await closed125(X.pg)
+          await destination125(X, false)
+          const firstStage = (await jobById125(first.id))?.stage ?? 'unread'
+          await X.pg.locator('#deploy-run').click()
+          const second = await until125(() => job125(X.project), (j) => j !== null && j.id !== first.id && ['awaiting_ship', 'failed', 'cancelled'].includes(j.stage), 180000)
+          const firstEnd = await until125(() => jobById125(first.id), (j) => j !== null && !['queued', 'compiling', 'checking'].includes(j.stage), 60000)
+          const firstDeploy = first.deploy_id ?? firstEnd?.deploy_id ?? null
+          const deployLeft = firstDeploy === null ? [] : (await call('/rest/v1', `/deploys?id=eq.${firstDeploy}&select=id`)).body ?? []
+          const objects = (await listed125('deploy-artifacts', X.project)).map((o) => o.name).filter((n) => firstDeploy !== null && n.startsWith(firstDeploy))
+          if (firstStage === 'awaiting_ship') note('step 125d — the first check had already rested when Run checks was pressed again', 'it was abandoned as a resting one — the same ending, not DW-373\'s flag')
+          check(`step 125d — DW-373: Run checks, the wizard closed during Checking (the first at ${firstStage}), Run checks again: the first ends cancelled with no deploys row and no object, the second rests at awaiting_ship`,
+            firstEnd?.stage === 'cancelled' && deployLeft.length === 0 && objects.length === 0 && second?.stage === 'awaiting_ship',
+            JSON.stringify({ firstStage, firstEnd: firstEnd?.stage, deployLeft: deployLeft.length, objects: objects.length, second: second?.stage }))
+          await closed125(X.pg)
+          await handBack125(X)
+          await X.pg.goto('about:blank')
+        }
+
+        // ── 125b — Z's site limit: nine accepted uploads planted, the tenth ships (the control), the eleventh refused, then exempt ──
+        const Z = await account125(`editor-harness-lz-${stamp}@inflozo.com`)
+        const hourAgo = Date.now() - 3_600_000
+        const planted = Array.from({ length: DEP125.SITE_DEPLOYS_PER_HOUR - 1 }, (_, i) => ({
+          project_id: Z.project, user_id: Z.id, site_id: Z.site, version: `${i + 1}.0.0`, theme_name: 'inflozo-lock-test-planted', status: 'uploaded',
+          accepted_at: new Date(hourAgo + (20 + i) * 60_000).toISOString(),
+        }))
+        const plant = await call('/rest/v1', '/deploys', { method: 'POST', body: JSON.stringify(planted) })
+        const tenth = await shipOnly125(Z, true)
+        check(`step 125b — ${planted.length} accepted uploads planted on Z's record in the hour (the service key, HTTP ${plant.status}); the control: Z's Ship it is the ${DEP125.SITE_DEPLOYS_PER_HOUR}th and ships (Deploy only, done, uploaded)`,
+          plant.status === 201 && tenth.end?.stage === 'done' && tenth.row?.status === 'uploaded', JSON.stringify({ stage: tenth.end?.stage, error: tenth.end?.error, row: tenth.row && { ...tenth.row, content_manifest: undefined } }))
+        await destination125(Z)
+        const preZ = await checked125(Z, false)
+        await press125(Z)
+        const limitSaid = (await until125(() => wiz125(Z.pg), (w) => typeof w?.refused === 'string' && w.refused !== '', 20000))?.refused ?? null
+        const limitMinutes = minutesOf(limitSaid, (n) => W125.siteLimit(HOST125, n))
+        const restingZ = await jobById125(preZ.id)
+        check(`step 125b — at ${DEP125.SITE_DEPLOYS_PER_HOUR} in the hour Ship it is refused in its refusal line: "${W125.siteLimit(HOST125, 0).replace(' 0 minutes', ' {minutes}')}" (minutes 1–60), nothing shipped, the job still awaiting_ship`,
+          limitMinutes !== null && restingZ?.stage === 'awaiting_ship', JSON.stringify({ said: limitSaid, minutes: limitMinutes, stage: restingZ?.stage }))
+        const exempt = await call('/rest/v1', `/sites?id=eq.${Z.site}`, { method: 'PATCH', body: JSON.stringify({ deploy_rate_limit_exempt: true }) })
+        await press125(Z)
+        const exemptEnd = await ended125(preZ.id)
+        await until125(() => Z.pg.evaluate(() => document.getElementById('deploy-title')?.textContent ?? null).catch(() => null), (t) => t === W125.uploadOnlyTitle, 30000)
+        await closed125(Z.pg)
+        check(`step 125b — deploy_rate_limit_exempt set on Z's record (the service key, HTTP ${exempt.status}): the same press ships`,
+          [200, 204].includes(exempt.status) && (await siteRow125(Z))?.deploy_rate_limit_exempt === true && exemptEnd?.stage === 'done' && exemptEnd.error === null,
+          JSON.stringify({ stage: exemptEnd?.stage, error: exemptEnd?.error }))
+
+        // ── 125c — Z's budget: jobs planted up to 59 in the hour, the 60th starts (the control), the 61st refused ──
+        const since = new Date(Date.now() - 3_600_000 + 60_000).toISOString()
+        const have = (await jobsSince125(Z, since)).length
+        const fill = Math.max(0, DEP125.ACCOUNT_COMPILES_PER_HOUR - 1 - have)
+        const plantJobs = fill === 0 ? { status: 201 } : await call('/rest/v1', '/deploy_jobs', { method: 'POST', body: JSON.stringify(Array.from({ length: fill }, () => ({ project_id: Z.project, user_id: Z.id, site_id: Z.site, stage: 'cancelled' }))) })
+        const fiftyNine = (await jobsSince125(Z, since)).length
+        await destination125(Z)
+        const sixtieth = await checked125(Z, false)
+        check(`step 125c — Z's jobs planted up to ${DEP125.ACCOUNT_COMPILES_PER_HOUR - 1} in the hour (${have} real, ${fill} planted, HTTP ${plantJobs.status}); the control: Run checks starts the ${DEP125.ACCOUNT_COMPILES_PER_HOUR}th and rests at awaiting_ship`,
+          fiftyNine === DEP125.ACCOUNT_COMPILES_PER_HOUR - 1 && sixtieth?.stage === 'awaiting_ship', JSON.stringify({ fiftyNine, stage: sixtieth?.stage }))
+        await closed125(Z.pg)
+        await destination125(Z, false)
+        const budgetAt = new Date().toISOString()
+        await Z.pg.locator('#deploy-run').click()
+        const budgetSaid = (await until125(() => wiz125(Z.pg), (w) => typeof w?.refused === 'string' && w.refused !== '', 20000))?.refused ?? null
+        const budgetMinutes = minutesOf(budgetSaid, (n) => W125.budget(n))
+        const sixty = (await jobsSince125(Z, since)).length
+        check(`step 125c — at ${DEP125.ACCOUNT_COMPILES_PER_HOUR} in the hour Run checks is refused in its refusal line: the budget's sentence with its minutes (1–60), and no job inserted`,
+          budgetMinutes !== null && sixty === DEP125.ACCOUNT_COMPILES_PER_HOUR, JSON.stringify({ said: budgetSaid, minutes: budgetMinutes, jobs: sixty }))
+        note('step 125c — Vercel\'s log line, for the main session', `"deploy: compile budget reached" with user ${Z.id}, from the POST at ${budgetAt} (npx vercel@latest logs, the memory's way)`)
+        await closed125(Z.pg)
+      } catch (e) {
+        check('step 125 — the step ran to its end', false, scrub125(String(e?.message ?? e).split('\n')[0]))
+      } finally {
+        for (const acc of accounts125) if (acc.project !== null) await handBack125(acc)
+        for (const acc of accounts125) if (acc.project !== null) await until125(() => job125(acc.project), atRest125, 330000).catch(() => {})
+        if (prev125 !== null) {
+          try {
+            const now = await themes125()
+            if (now !== null && now.find((t) => t.active)?.name !== prev125) await staff125('PUT', `themes/${encodeURIComponent(prev125)}/activate/`)
+            const startNames = new Set(start125.map((t) => t.name))
+            for (const t of (await themes125()) ?? []) if (/^inflozo-/.test(t.name) && !startNames.has(t.name)) await staff125('DELETE', `themes/${encodeURIComponent(t.name)}/`)
+            const routesNow = await routesFile125()
+            if (routesBefore125 !== null && routesNow !== null && Buffer.compare(routesBefore125, routesNow) !== 0) await staff125('POST', RU125.ROUTES_PATH, RU125.routesForm(routesBefore125.toString('utf8')))
+            const after = await themes125()
+            const routesAfter = await routesFile125()
+            check(`step 125 — finally: T1 put back with the staff token — ${prev125} active, every inflozo- theme the run uploaded deleted, routes.yaml byte for byte as at the start, read back`,
+              after !== null && after.find((t) => t.active)?.name === prev125 && after.every((t) => !/^inflozo-/.test(t.name) || startNames.has(t.name)) &&
+              routesAfter !== null && routesBefore125 !== null && Buffer.compare(routesAfter, routesBefore125) === 0,
+              JSON.stringify({ themes: (after ?? []).map((t) => `${t.name}${t.active ? '*' : ''}`), routes: `${routesBefore125?.length ?? 'unread'} → ${routesAfter?.length ?? 'unread'} bytes` }))
+          } catch (e) {
+            check('step 125 — finally: T1 put back', false, scrub125(String(e?.message ?? e).split('\n')[0]))
+          }
+        }
+        const gone = []
+        for (const acc of accounts125) {
+          if (acc.site !== null) for (const o of await listed125('site-snapshots', `${acc.id}/${acc.site}`)) await removeObject125('site-snapshots', `${acc.id}/${acc.site}/${o.name}`)
+          const prefixes = acc.project === null ? [] : [acc.project, `${acc.project}/live`]
+          for (const prefix of prefixes) for (const o of await listed125('deploy-artifacts', prefix)) await removeObject125('deploy-artifacts', `${prefix}/${o.name}`)
+          const row = acc.site === null ? null : await siteRow125(acc).catch(() => null)
+          if (row !== null && row.disconnected_at === null) {
+            const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
+            try {
+              const pd = steady(await ctx.newPage())
+              await pd.goto(await magic(acc.email), { waitUntil: 'load' })
+              await pd.goto(at(`/sites/disconnect?site=${acc.site}`), { waitUntil: 'load' })
+              await pd.locator('form').getByRole('button', { name: CR125.DISCONNECT.menu, exact: true }).first().click()
+              await until125(() => siteRow125(acc), (r) => r?.disconnected_at != null, 30000)
+            } catch {} finally {
+              await ctx.close().catch(() => {})
+            }
+          }
+          const left = [...(acc.site === null ? [] : await listed125('site-snapshots', `${acc.id}/${acc.site}`)), ...(await Promise.all(prefixes.map((p) => listed125('deploy-artifacts', p)))).flat()]
+          const disconnected = acc.site === null || (await siteRow125(acc).catch(() => null))?.disconnected_at != null
+          const del = await admin(`/admin/users/${acc.id}`, { method: 'DELETE', body: '{}' })
+          gone.push({ left: left.length, disconnected, del: del.status })
+        }
+        const usersAfter = (await users())?.length ?? null
+        const projectsAfter = await projectCount()
+        if (accounts125.length) {
+          check(`step 125 — finally: no object left under each account's prefixes, T1 disconnected on each, the ${accounts125.length} account(s) deleted (sites, projects, bindings, jobs and deploys with them — the planted rows too), users and projects counted back`,
+            gone.every((g) => g.left === 0 && g.disconnected && g.del === 200) && usersBefore125 !== null && usersAfter === usersBefore125 && projectsBefore125 !== null && projectsAfter === projectsBefore125,
+            `${JSON.stringify(gone)}, users ${usersBefore125} → ${usersAfter}, projects ${projectsBefore125} → ${projectsAfter}`)
+        }
+        for (const ctx of ctxs125) await ctx.close().catch(() => {})
+      }
+      check('step 125 — the step\'s contexts recorded zero CSP violations', csp125.length === 0, JSON.stringify(csp125.slice(0, 3)))
     }
 
     // ── step 9 — the skeleton streams first ──

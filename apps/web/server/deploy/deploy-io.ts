@@ -11,6 +11,7 @@ import { pruneProject } from '@/server/retention'
 import { RETENTION_IO } from '@/server/retention-io'
 import { captureSnapshot, downloadPath } from '@/server/snapshot'
 import { SNAPSHOT_IO } from '@/server/snapshot-io'
+import { withSiteLock } from '@/server/site-lock'
 import { compileInputOf } from './project-input.ts'
 import type { DeployIo, DeployRow, JobRow } from './run.ts'
 import { zipTheme } from './zip.ts'
@@ -25,6 +26,9 @@ import { zipTheme } from './zip.ts'
  *   - THE CHOKEPOINT: `call()` with the Admin key for `theme_upload` (a multipart `FormData`, DW-51's transport — the second
  *     multipart write after the routes upload) and `theme_activate`; the routes step is Story 7.17's, with its own io. Story
  *     7.21 adds one READ with the Staff Access Token: the drift check's `GET themes/{bound}/download/` (`liveTheme`).
+ *   - STORY 7.25 — THE SITE'S LOCK: `lock` is `server/site-lock.ts`' `withSiteLock`, its own pooler connection per hold. The two
+ *     counts read `deploys.accepted_at`, `sites.deploy_rate_limit_exempt` (server-only, `rls.sql`) and `deploy_jobs.started_at`,
+ *     each scoped by `user_id`.
  * The gates and JSDOM run here, in the one function AD-11 sizes; `gscan4` and `gscan6` are server externals
  * (`next.config.ts`) and their trees reach the route's trace (`tools/check-traces.mjs`). jsdom is BUNDLED, never an external:
  * Vercel refuses the require-of-ESM jsdom 30 is built on (the owner's test, 2026-10-19; `next.config.ts` says how).
@@ -70,8 +74,9 @@ export const DEPLOY_IO: DeployIo = {
       const rows = ok(await supabaseAdmin().from('deploy_jobs').update({ ...patch, updated_at: stamp() }).eq('id', id).eq('user_id', userId).eq('stage', from).select('id'), 'job claim')
       return Array.isArray(rows) && rows.length === 1
     },
+    // Story 7.25 (DW-373): the checks still moving through Pre-flight beside the resting ones — `start()` flags those
     async resting({ projectId, siteId, userId }) {
-      return (ok(await supabaseAdmin().from('deploy_jobs').select(JOB_COLUMNS).eq('project_id', projectId).eq('site_id', siteId).eq('user_id', userId).eq('stage', 'awaiting_ship'), 'resting jobs') ?? []) as JobRow[]
+      return (ok(await supabaseAdmin().from('deploy_jobs').select(JOB_COLUMNS).eq('project_id', projectId).eq('site_id', siteId).eq('user_id', userId).in('stage', ['awaiting_ship', 'queued', 'compiling', 'checking']), 'resting jobs') ?? []) as JobRow[]
     },
   },
   deploys: {
@@ -192,6 +197,21 @@ export const DEPLOY_IO: DeployIo = {
     return row?.routes_last_offered ?? null
   },
   english: (key) => (Object.hasOwn(CATALOG.keys, key) ? CATALOG.keys[key]?.en : undefined),
+  lock: (siteId, run) => withSiteLock(siteId, run),
+  limits: {
+    async site({ siteId, userId }) {
+      const row = ok(await supabaseAdmin().from('sites').select('url, deploy_rate_limit_exempt').eq('id', siteId).eq('user_id', userId).maybeSingle(), 'site limit') as { url: string; deploy_rate_limit_exempt: boolean } | null
+      return row === null ? null : { url: row.url, exempt: row.deploy_rate_limit_exempt === true }
+    },
+    async accepted({ siteId, userId, since }) {
+      const rows = ok(await supabaseAdmin().from('deploys').select('accepted_at').eq('site_id', siteId).eq('user_id', userId).gte('accepted_at', since), 'accepted uploads') as { accepted_at: string }[] | null
+      return (rows ?? []).map((r) => r.accepted_at)
+    },
+    async started({ userId, since }) {
+      const rows = ok(await supabaseAdmin().from('deploy_jobs').select('started_at').eq('user_id', userId).gte('started_at', since), 'started jobs') as { started_at: string }[] | null
+      return (rows ?? []).map((r) => r.started_at)
+    },
+  },
   now: () => new Date(),
   log: (message, fields) => console.error(message, fields),
 }

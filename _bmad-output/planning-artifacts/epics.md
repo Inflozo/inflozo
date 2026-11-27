@@ -4792,6 +4792,10 @@ section, the **install steps**, the **Style Pack and font pairing in use**, and 
 (`followSigned`, `lib/signed-download.ts`), and the Sites page's original-theme Download joins it — a 404, a 502 or the sign-in
 said beside the button, never in place of the page; the Backup step's Theme row says its failure in the same mounted
 `role="status"` line and colour as the other Downloads.
+**And** *(Story 7.25's Dev, 2026-11-27 — R-295)* the export runs on a `deploy_jobs` row with `site_id` null — the same compile
+pipeline, one job row per export — and asks `compileBudget` (`apps/web/server/deploy/run.ts`) first, so an account's exports and
+its Run checks share R-295's one budget (`ACCOUNT_COMPILES_PER_HOUR`, `apps/web/lib/deploy.ts`); `exports` rows are never what
+the budget counts. A refused export says `DEPLOY_WORDS.budget`'s first sentence, with when it can export again.
 
 ### Story 7.27: Library updates and the consent step
 

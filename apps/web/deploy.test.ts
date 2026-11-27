@@ -11,6 +11,7 @@ import {
   activateAnswer, afterSafety, BACKUP_WORDS, backupOwed, CANCELLABLE, canonical, CHECK_FAILED, checkRows, DEPLOY_WORDS, deployError, endingOf, fileLabel, GHOST_PLANS_HELP, inputsHash,
   isSnapshotError, movedFrom, MOVING, placeOf, refusalWords, SAFETY_PICTURE, SAFETY_WORDS, safetyOffered, SNAPSHOT_CODES, SNAPSHOT_WORDS, snapshotError, STAGE_NAMES, stepNumber, stepOf, STEPS,
   stepsFor, themeNameFor, themeNameOf, thrownCode, UNSTOPPABLE, uploadAnswer, versionLabel, versionNumber, versionOf, type ShipState,
+  ACCOUNT_COMPILES_PER_HOUR, HOUR_MS, overLimit, SITE_DEPLOYS_PER_HOUR,
 } from './lib/deploy.ts'
 import { KEYS } from './lib/connect-rule.ts'
 import { keysPath } from './lib/connect-rule.ts'
@@ -615,4 +616,71 @@ test('7.22 (NFR-4): an artefact\'s put never overwrites — `upsert` only for th
   assert.match(run, /io\.artifacts\.put\(liveCopyPath\(job\.project_id, job\.site_id\), answer\.bytes, \{ replace: true \}\)/, 'the live copy alone overwrites')
   assert.match(run, /io\.artifacts\.put\(path, zip\)\)/, 'the artefact asks no overwrite')
   assert.match(LIVE_ROUTE, /drift\.kept === false/, 'an earlier check\'s copy is never served for a check that kept none')
+})
+
+// ── Story 7.25 — the two counts' one rule, their words, and the route's two doors ──
+
+test('7.25 — `overLimit`: none, and cap − 1, go (null); at cap, the minutes until the oldest counted one leaves the hour; one outside the hour is not counted; the minutes round UP, never below 1 nor above 60; past cap, the one whose leaving brings the count under it', () => {
+  const now = new Date('2026-11-27T12:00:00.000Z')
+  const ago = (ms: number) => new Date(now.getTime() - ms).toISOString()
+  const min = 60_000
+  assert.equal(overLimit([], 10, now), null)
+  assert.equal(overLimit(Array.from({ length: 9 }, (_, i) => ago(i * min)), 10, now), null, 'cap − 1')
+  assert.equal(overLimit(Array.from({ length: 10 }, (_, i) => ago((48 - i) * min)), 10, now), 12, 'the oldest 48 min ago: 12 minutes')
+  assert.equal(overLimit([...Array.from({ length: 9 }, (_, i) => ago(i * min)), ago(HOUR_MS + 1)], 10, now), null, 'one just outside the hour is not counted')
+  assert.equal(overLimit(Array.from({ length: 10 }, (_, i) => ago(48 * min + 1 - i)), 10, now), 12, 'rounded up: 11 min 59.999 s is 12')
+  assert.equal(overLimit(Array.from({ length: 10 }, () => ago(HOUR_MS - 1000)), 10, now), 1, 'a second to go is 1 minute, never 0')
+  assert.equal(overLimit(Array.from({ length: 10 }, () => new Date(now.getTime() + 5000).toISOString()), 10, now), 60, 'a stamp a moment ahead of this clock counts, at most 60')
+  // past the cap (Roll backs are never refused): 12 in the hour, the 3rd oldest's leaving brings it to 9
+  assert.equal(overLimit([ago(50 * min), ago(40 * min), ago(30 * min), ...Array.from({ length: 9 }, () => ago(min))], 10, now), 30)
+  assert.equal(overLimit(['not a time', ...Array.from({ length: 9 }, () => ago(min))], 10, now), null, 'an unreadable stamp is not counted')
+})
+
+test('7.25 — the two sentences, from the constants: 10 a site, 60 an account (R-295), "1 minute" else "{n} minutes", the host named; each is its code\'s envelope', () => {
+  assert.equal(SITE_DEPLOYS_PER_HOUR, 10)
+  assert.equal(ACCOUNT_COMPILES_PER_HOUR, 60)
+  assert.equal(DEPLOY_WORDS.siteLimit('ghost6.inflozo.com', 12), 'Inflozo ships to one site at most 10 times an hour. You can ship to ghost6.inflozo.com again in 12 minutes.')
+  assert.equal(DEPLOY_WORDS.siteLimit('a.example', 1), 'Inflozo ships to one site at most 10 times an hour. You can ship to a.example again in 1 minute.')
+  assert.equal(DEPLOY_WORDS.budget(10), 'Your account has built 60 themes in the last hour, the most Inflozo builds in an hour. You can run checks again in 10 minutes.')
+  assert.equal(DEPLOY_WORDS.budget(1), 'Your account has built 60 themes in the last hour, the most Inflozo builds in an hour. You can run checks again in 1 minute.')
+  const lib = readFileSync('lib/deploy.ts', 'utf8')
+  const words = lib.slice(lib.indexOf('  siteLimit: (host'), lib.indexOf('\n', lib.indexOf('  budget: (minutes')))
+  assert.match(words, /\$\{SITE_DEPLOYS_PER_HOUR\}/)
+  assert.match(words, /\$\{ACCOUNT_COMPILES_PER_HOUR\}/)
+  assert.doesNotMatch(words, /\b10 times|\b60 themes/, 'the numbers are the constants\' alone')
+  assert.deepEqual(deployError('deploy_rate_limited', { host: 'ghost6.inflozo.com', minutes: 12 }), { code: 'deploy_rate_limited', message: DEPLOY_WORDS.siteLimit('ghost6.inflozo.com', 12) })
+  assert.deepEqual(deployError('compile_budget', { host: '', minutes: 7 }), { code: 'compile_budget', message: DEPLOY_WORDS.budget(7) })
+})
+
+test('7.25 — the one door: Run checks asks `compileBudget` before `start(` and Ship it asks `siteLimit` before `after(() => ship(` — after its own refusals — each a 429 with the envelope as JSON and a 502 when the count cannot be read; Re-activate and Cancel ask neither', () => {
+  const preflightArm = sliceOf(DEPLOY_ROUTE, "if (act === 'preflight') {", '\n  }\n')
+  const budget = preflightArm.indexOf('await compileBudget({ userId: user.id }, DEPLOY_IO)')
+  assert.ok(budget > -1, 'the budget asked')
+  assert.ok(budget < preflightArm.indexOf('start('), 'before the row is inserted')
+  assert.match(preflightArm, /if \(budget === undefined\) return no\(502, /)
+  assert.match(preflightArm, /if \(budget !== null\) return json\(429, budget\)/)
+  const shipArm = sliceOf(DEPLOY_ROUTE, "if (act === 'ship') {", '\n  }\n')
+  const limit = shipArm.indexOf('await siteLimit({ siteId: row.site_id, userId: user.id }, DEPLOY_IO)')
+  assert.ok(limit > -1, 'the limit asked')
+  assert.ok(limit > shipArm.indexOf("return no(409, 'Drift found')"), 'after the arm\'s own refusals')
+  assert.ok(limit < shipArm.indexOf('after(() => ship('), 'before the ship is handed on')
+  assert.match(shipArm, /if \(limited === undefined\) return no\(502, /)
+  assert.match(shipArm, /if \(limited !== null\) return json\(429, limited\)/)
+  const rest = DEPLOY_ROUTE.slice(DEPLOY_ROUTE.indexOf("if (act === 'cancel')"), DEPLOY_ROUTE.indexOf('export async function GET'))
+  const reactivate = rest.slice(rest.indexOf('// re-activate'))
+  assert.doesNotMatch(reactivate, /siteLimit|compileBudget/, 'Re-activate is never limited')
+  assert.doesNotMatch(DEPLOY_ROUTE.slice(DEPLOY_ROUTE.indexOf("if (act === 'cancel')"), DEPLOY_ROUTE.indexOf("if (act === 'ship')")), /siteLimit|compileBudget/, 'nor Cancel')
+})
+
+test('7.25 — the wizard keeps a 429\'s message and says it where a refusal is said: `post` reads the envelope, `runChecks` and `press` put it in their refusal line', () => {
+  const wizard = readFileSync('components/editor/deploy-wizard.tsx', 'utf8')
+  const post = wizard.slice(wizard.indexOf('const post = async'), wizard.indexOf('const back = () =>'))
+  assert.match(post, /if \(answer\.status === 429\) \{/)
+  assert.match(post, /\.message/)
+  const runChecks = wizard.slice(wizard.indexOf('const runChecks = async'), wizard.indexOf('setPressed(null)\n    setView(null)', wizard.indexOf('const runChecks = async')))
+  assert.match(runChecks, /\(answer\.message \?\? W\.infrastructure\)/)
+  assert.match(runChecks, /setRefused\(why\)/)
+  const press = wizard.slice(wizard.indexOf('const press = async'), wizard.indexOf('const unstoppable ='))
+  assert.match(press, /\(answer\.message \?\? W\.infrastructure\)/)
+  assert.match(press, /setRefused\(why\)/)
 })

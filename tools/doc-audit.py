@@ -571,6 +571,18 @@ DOCS = [
   "ghost_theme_refused with Ghost's detail, the download still v1 and the probe still active; casper made live, then the "
   "probe's activation alone making v1 live again; in a finally the start's theme re-activated, the probe deleted and both "
   "read back; §91 written only when every row held. Any argument but --t1 prints the header and exits 2."),
+ ('tools/probe/record-site-lock.mjs', 'tool', 'Site lock recorder',
+  "Story 7.25's recorder (standing rule 1, R-82, AD-19, MEASUREMENTS §92): the four hypotheses apps/web/server/site-lock.ts' "
+  "withSiteLock rests on, executed with the app's own driver (postgres.js through apps/web), the product's LOCK_WAIT_MS and "
+  "STALLED_MS (imported, Node 24) and its own statements on a max: 1, prepare: false connection with no idle_timeout, on a "
+  "probe key naming no site — no table read or written. H1: a second holder of one key gives up with 55P03 after "
+  "lock_timeout while another key is taken at once and the key is free once its holder commits (the controls); H2: a "
+  "holder SIGKILLed mid-hold frees its key (the control: a 2 s waiter refused before the kill); H3: a transaction idle "
+  "150 s keeps its lock and commits with no 25P01 notice, the role's statement_timeout and "
+  "idle_in_transaction_session_timeout recorded; H4: a local idle ceiling ends an abandoned holder (the control: none set, "
+  "it still holds). --local runs on a throwaway postgres:17 container and writes nothing; --pooler (the owner's go, the "
+  "main session only) runs the local half and then the production pooler, the URL read from tools/probe/.env in-process "
+  "and never printed, and writes §92 only when every row held. Any other argument prints the header and exits 2."),
  ('tools/probe/run-verify-snapshot-orphans.py', 'tool', 'Snapshot orphan purge harness',
   "Story 7.20b's harness (standing rule 1, R-82, FR-C6, R-285): AD-33's E7 cron, purge-snapshots, called on the deployed "
   "route and read back off the wire, in run-verify-account-purge.py's shape and with its helpers (redirects disabled, a 401 "

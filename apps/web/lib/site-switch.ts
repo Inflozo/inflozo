@@ -18,7 +18,7 @@
 
 import { DEFAULT_LANGUAGE, languageAtLink } from '@inflozo/library/languages'
 import { SITES_EMPTY } from './connect-rule.ts'
-import { DEPLOY_WORDS } from './deploy.ts'
+import { DEPLOY_WORDS, type Locked } from './deploy.ts'
 import { LOCK_COPY } from './lock.ts'
 import { TRANSLATION_WORDS } from './translations.ts'
 
@@ -119,16 +119,33 @@ export type SwitchIo = {
   unlink: () => Promise<boolean>
   /** link this project, with `language` set at a first link; `taken` is Postgres' 23505 (another project linked it meanwhile) */
   link: (language: string | null) => Promise<'ok' | 'taken' | 'error'>
+  /** STORY 7.25 (DW-379) — the CHOSEN site's advisory lock (`server/site-lock.ts`, keyed on its address), so a switch
+   *  never moves a site while a deploy to it is uploading or activating */
+  lock: <T>(run: () => Promise<T>) => Promise<Locked<T>>
 }
 
 /** THE SERVER'S HALF OF A SWITCH (`switchSite`): the lock first; the plan re-run over the rows as they stand; a confirm owed
  *  and not covered by what the customer confirmed answered with the plan, and nothing written; a held site unlinked from its
  *  project, THEN linked here — DW-69's partial unique index refuses two projects on one site; a 23505 on the link read again
  *  and answered again, a fresh confirm when what is owed now is not what was confirmed. ponytail: two statements, not one transaction — a link that fails for another reason after the
- *  unlink leaves the site with no project, which the next switch repairs; an RPC would make it one. */
+ *  unlink leaves the site with no project, which the next switch repairs; an RPC would make it one.
+ *  STORY 7.25 (DW-379): after the edit lock, the read, the plan and the writes run under the CHOSEN site's advisory lock — not held
+ *  within its wait, the running sentence (`DEPLOY_WORDS.running`) and nothing written. The site the project LEAVES is not locked: a
+ *  ship already uploading there finishes there, the project's site when it was sent (DW-374's own line). A ship that waited behind
+ *  this switch reads the new link inside its own hold and refuses `site_changed`. */
 export async function switchWith(io: SwitchIo, a: { projectId: string; siteId: string; confirmed: Confirmed }): Promise<SwitchAnswer> {
   const ours = { refused: DEPLOY_WORDS.infrastructure }
   if (!(await io.holds())) return { refused: LOCK_COPY.reading }
+  try {
+    const held = await io.lock(() => switchHeld(io, a))
+    return held.held ? held.value : { refused: DEPLOY_WORDS.running }
+  } catch {
+    return ours
+  }
+}
+
+async function switchHeld(io: SwitchIo, a: { projectId: string; siteId: string; confirmed: Confirmed }): Promise<SwitchAnswer> {
+  const ours = { refused: DEPLOY_WORDS.infrastructure }
   for (let attempt = 0; attempt < 2; attempt++) {
     const rows = await io.read()
     if (rows === null) return ours

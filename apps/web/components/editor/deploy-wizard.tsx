@@ -384,7 +384,8 @@ function Confetti() {
 
 /* ─────────────────────────────────────────────── the wizard ─────────────────────────────────────────────── */
 
-type Answer = { ok: true; job: string } | { ok: false; status: number }
+/** a refused press keeps its status — and, for a 429 (Story 7.25's two limits), the envelope's sentence */
+type Answer = { ok: true; job: string } | { ok: false; status: number; message?: string }
 /** R-260's row: still reading, read (the posts no page lists), or the site's posts could not be read */
 type PostsCheck = { kind: 'reading' } | { kind: 'read'; unlisted: readonly { title: string }[]; capped: boolean } | { kind: 'unread' } | null
 /** Story 7.20a: `without` is B12b's Deploy without a snapshot — a Ship it, busy on its own button. Story 7.21: `overwrite` is D3a's
@@ -577,6 +578,11 @@ export function DeployWizard({
   const post = async (call: DeployRequest): Promise<Answer> => {
     try {
       const answer = await fetch(route, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(call), signal: AbortSignal.timeout(15_000) })
+      if (answer.status === 429) {
+        // Story 7.25 — a limit: AD-24's envelope, its `message` the sentence this press says (when the minutes are)
+        const message = ((await answer.json().catch(() => null)) as { message?: unknown } | null)?.message
+        return { ok: false, status: 429, ...(typeof message === 'string' && message !== '' ? { message } : {}) }
+      }
       if (!answer.ok) return { ok: false, status: answer.status }
       const { job: id } = (await answer.json()) as { job?: unknown }
       return typeof id === 'string' ? { ok: true, job: id } : { ok: false, status: 0 }
@@ -623,9 +629,12 @@ export function DeployWizard({
   const error = view?.job.error ?? null
   /** STORY 7.20a — a capture that did not finish rests the job back at `awaiting_ship` with its answer (B12b), at Ship */
   const captureFailed = stage === 'awaiting_ship' && isSnapshotError(error)
+  /** STORY 7.25 — another deploy to this Ghost held its lock past the wait: Ship it (or Re-activate) sent nothing and ends on S8d′
+   *  with the running sentence, though no shipping stage was entered */
+  const lockWaited = stage === 'failed' && error !== null && !isFinding(error) && error.code === 'deploy_running'
   const at: Step =
     stage === null ? (local === 'destination' ? 'destination' : local === 'backup' ? 'backup' : 'safety')
-    : captureFailed ? 'ship'
+    : captureFailed || lockWaited ? 'ship'
     : stepOf(stage, timings)
   const ending_ = view === null ? null : endingOf(view.job.stage, view.deploy, timings)
   /** the version this job ships, else the next one */
@@ -663,9 +672,10 @@ export function DeployWizard({
   })()
   // a Re-activate DW-374 refused (the deploy still `uploaded`, the project's site changed) failed at activating, which it never
   // entered: nothing was sent
-  const reactivateRefused = stage === 'failed' && error !== null && !isFinding(error) && (error.code === 'site_changed' || error.code === 'site_unlinked') && view?.deploy?.status === 'uploaded'
+  // Story 7.25: …and one the site's lock refused (`deploy_running`, the deploy still `uploaded`)
+  const reactivateRefused = stage === 'failed' && error !== null && !isFinding(error) && (error.code === 'site_changed' || error.code === 'site_unlinked' || error.code === 'deploy_running') && view?.deploy?.status === 'uploaded'
   const failedAt: 'compiling' | 'checking' | 'snapshotting' | 'uploading' | 'activating' =
-    timings.activating !== undefined || reactivateRefused ? 'activating' : timings.uploading !== undefined ? 'uploading'
+    timings.activating !== undefined || reactivateRefused ? 'activating' : timings.uploading !== undefined || lockWaited ? 'uploading'
     : timings.snapshotting?.at !== undefined ? 'snapshotting' : timings.checking !== undefined ? 'checking' : 'compiling'
 
   /* ONE POLITE REGION: each stage as it starts, and the outcome once (its heading). DW-378 — EVERY STAGE `stage_timings` SHOWS
@@ -716,7 +726,7 @@ export function DeployWizard({
     if (!alive.current) return false
     if (answer === null || !answer.ok) {
       // Pre-flight's own flush tells the truth (DW-304): the editor's sentence for what it could not send, word for word
-      const why = answer === null ? (unsent ?? W.editsUnsent) : answer.status === 423 ? LOCK_COPY.reading : answer.status === 409 ? W.noSite : W.infrastructure
+      const why = answer === null ? (unsent ?? W.editsUnsent) : answer.status === 423 ? LOCK_COPY.reading : answer.status === 409 ? W.noSite : (answer.message ?? W.infrastructure)
       setPressed(null)
       setRefused(why)
       say(why)
@@ -881,7 +891,7 @@ export function DeployWizard({
       // refused a Deploy only because its record says this project's theme is live (R-264 (a)) — the caption's own sentence,
       // the server's record taken over this page's older one
       if (answer.status !== 409) {
-        const why = answer.status === 423 ? LOCK_COPY.reading : answer.status === 422 ? (uploadOnlyBlock(ship === undefined ? undefined : { ...ship, liveHere: true }) ?? W.infrastructure) : W.infrastructure
+        const why = answer.status === 423 ? LOCK_COPY.reading : answer.status === 422 ? (uploadOnlyBlock(ship === undefined ? undefined : { ...ship, liveHere: true }) ?? W.infrastructure) : (answer.message ?? W.infrastructure)
         setRefused(why)
         say(why)
       }

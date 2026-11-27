@@ -4,8 +4,8 @@ import { DEFAULT_LANGUAGE, isRtl } from '@inflozo/library/languages'
 import type { Finding, QualityVerdict, Verdict } from '@inflozo/theme-compiler/gate'
 import type { RoutesOutcome } from '../../lib/routes-upload.ts'
 import {
-  activateAnswer, CANCELLABLE, deployError, DEPLOY_WORDS, isMoving, isSnapshotError, refusalWords, ROUTES_REASONS, snapshotError, thrownCode, uploadAnswer, versionNumber,
-  type DeployCode, type DeployError, type DeployStatus, type DeployView, type Mode, type PreflightFacts, type RoutesEnding, type SnapshotTiming, type Stage, type Timings,
+  ACCOUNT_COMPILES_PER_HOUR, activateAnswer, CANCELLABLE, deployError, DEPLOY_WORDS, HOUR_MS, isMoving, isSnapshotError, overLimit, refusalWords, ROUTES_REASONS, SITE_DEPLOYS_PER_HOUR, snapshotError, thrownCode, uploadAnswer, versionNumber,
+  type DeployCode, type DeployError, type DeployStatus, type DeployView, type Locked, type Mode, type PreflightFacts, type RoutesEnding, type SnapshotTiming, type Stage, type Timings,
 } from '../../lib/deploy.ts'
 import { hostOf } from '../../lib/connect-rule.ts'
 import { compareManifests, contentManifest, labelOf, LIVE_COPY_MAX_BYTES, liveCopyPath, liveManifest, type ContentManifest, type DriftCause, type DriftFile, type DriftRecord, type ManifestEntry } from '../../lib/drift.ts'
@@ -29,6 +29,11 @@ import { unzipTheme } from './zip.ts'
  * THE RETRY RULE (AD-20): an infrastructure failure — storage, the database, a thrown chokepoint error that is not Ghost's
  * own answer — is retried once, then the job fails `deploy_infrastructure`. A gate result, a compile refusal and every
  * answer Ghost gives are RESULTS, never retried.
+ *
+ * STORY 7.25 — THE SITE'S LOCK (AD-19, `server/site-lock.ts` through `io.lock`, keyed on the site's address): Ship it and
+ * Re-activate run everything after their first read inside it, so two writers to one Ghost serialize and each decision's read —
+ * the link, the free name, the live project — is taken under it (`underLock`). Pre-flight takes none. The two counts are doors
+ * the route asks before it hands work on: `siteLimit` at Ship it, `compileBudget` at Run checks.
  */
 
 export type JobRow = {
@@ -92,7 +97,8 @@ export type DeployIo = {
     /** the same write, only while the row still stands at `from` — true when this call moved it. One Ship it (or one
      *  re-activate) per row: a second press's invocation finds the row already moved and does nothing. */
     claim: (id: string, userId: string, from: Stage, patch: Partial<JobRow>) => Promise<boolean>
-    /** this project's jobs to this site resting at `awaiting_ship` — the ones a new Pre-flight abandons */
+    /** this project's jobs to this site resting at `awaiting_ship` — the ones a new Pre-flight abandons — and, since Story 7.25
+     *  (DW-373), the ones still at `queued`, `compiling` or `checking`, which it flags as a Cancel does */
     resting: (a: { projectId: string; siteId: string; userId: string }) => Promise<JobRow[]>
   }
   deploys: {
@@ -153,6 +159,21 @@ export type DeployIo = {
   routesFile: (a: { siteId: string; userId: string }) => Promise<string | null>
   /** the catalog's English for a key — Translations' label, for "The translation of …" */
   english: (key: string) => string | undefined
+  /** STORY 7.25 — the site's advisory lock (`server/site-lock.ts`): `run` inside it once held, or `{ held: false }`
+   *  when another writer to the same Ghost held it past `LOCK_WAIT_MS` (and `run` never ran) */
+  lock: <T>(siteId: string, run: () => Promise<T>) => Promise<Locked<T>>
+  /** STORY 7.25 — the two counts' reads, each scoped by `user_id` (the clause that stands in for the RLS the service role bypasses).
+   *  ponytail: no index serves either — `deploys (site_id, accepted_at)` and `deploy_jobs (user_id, started_at)` are the upgrade
+   *  once a count is measured slow; each reads one account's rows of one hour */
+  limits: {
+    /** the site record's address and FR-J11's exemption (`sites.deploy_rate_limit_exempt`, server-only), or null when gone */
+    site: (a: { siteId: string; userId: string }) => Promise<{ url: string; exempt: boolean } | null>
+    /** `deploys.accepted_at` of the record's uploads Ghost accepted since `since` — Ship it's and Roll back's alike */
+    accepted: (a: { siteId: string; userId: string; since: string }) => Promise<string[]>
+    /** `deploy_jobs.started_at` of the account's jobs started since `since`, any site or none — every Pre-flight is a row and none is
+     *  ever deleted, and Story 7.26's export rides one */
+    started: (a: { userId: string; since: string }) => Promise<string[]>
+  }
   now: () => Date
   log: (message: string, fields: Record<string, string | number | undefined>) => void
 }
@@ -567,9 +588,19 @@ export async function compareLive(
 export const abandon = (io: AbandonIo, job: JobRow): Promise<void> => clear(io, job, null)
 
 /** A NEW PRE-FLIGHT'S ROW, before any work (AD-20: the row exists from `queued`). Any older check of this project to this
- *  site resting at `awaiting_ship` is ABANDONED first — cancelled, its deploy and object deleted. */
+ *  site resting at `awaiting_ship` is ABANDONED first — cancelled, its deploy and object deleted. STORY 7.25 (DW-373): one still
+ *  moving through Pre-flight is FLAGGED through `cancel()`, so it stops at its next edge and leaves nothing, exactly as after a
+ *  Cancel — never handed back, since its results would be for inputs the customer has just changed. One that reached
+ *  `awaiting_ship` between the read and the flag is abandoned as a resting one. A flagged job still counts in the budget: it
+ *  compiled. */
 export async function start(a: { projectId: string; siteId: string; userId: string }, io: DeployIo): Promise<JobRow> {
-  for (const old of await twice(io, 'resting read', () => io.jobs.resting(a))) await clear(io, old, null)
+  for (const old of await twice(io, 'resting read', () => io.jobs.resting(a))) {
+    if (old.stage === 'awaiting_ship') await clear(io, old, null)
+    else if (!(await cancel({ jobId: old.id, userId: old.user_id }, io))) {
+      const now = await twice(io, 'job read', () => io.jobs.read(old.id, old.user_id))
+      if (now?.stage === 'awaiting_ship') await clear(io, now, null)
+    }
+  }
   return twice(io, 'job insert', () => io.jobs.insert({ project_id: a.projectId, user_id: a.userId, site_id: a.siteId }))
 }
 
@@ -623,7 +654,19 @@ async function failInfra(io: DeployIo, job: JobRow, c: Clock, e: unknown): Promi
  *  check runs again, a found drift without it rests the job at `awaiting_ship` with no error (D3a, from the new record). A
  *  hand edit made between Run checks and Ship it is missed when nothing is stale (the spec's ponytail: a second download on every
  *  ship to close a minutes-wide window). */
+/*  STORY 7.25 — UNDER THE SITE'S LOCK (`underLock`): the row read for the key, then everything — the row read again, the cancel
+ *  check, R-264 (a), the deploy read, DW-374's link re-read, the project read with 7.24's held names, the stale re-make, the
+ *  capture, the upload, the bind, the activation and the routes step — unchanged and in order inside it. So a second ship to the
+ *  same Ghost (a second project, a second account) reads the first one's binding and re-makes under the next free name, a switch
+ *  that came first is seen by the link re-read, and a Roll back waits. */
 export async function ship(a: { jobId: string; userId: string; mode: Mode; withoutSnapshot?: boolean; overwrite?: boolean }, io: DeployIo): Promise<void> {
+  const job = await firstRead(io, a)
+  if (job === null || job.stage !== 'awaiting_ship' || job.deploy_id === null) return
+  await underLock(io, job, () => shipHeld(a, io), true)
+}
+
+/** Ship it's work, inside the lock: the row read again (a double press's first invocation may have moved it while this one waited) */
+async function shipHeld(a: { jobId: string; userId: string; mode: Mode; withoutSnapshot?: boolean; overwrite?: boolean }, io: DeployIo): Promise<void> {
   const job = await firstRead(io, a)
   if (job === null || job.stage !== 'awaiting_ship' || job.deploy_id === null) return
   const at = { projectId: job.project_id, siteId: job.site_id, userId: job.user_id }
@@ -723,6 +766,59 @@ export async function ship(a: { jobId: string; userId: string; mode: Mode; witho
   }
 }
 
+/** STORY 7.25 — A DOOR'S WORK UNDER ITS SITE'S LOCK (`io.lock`, keyed on the job's site). Not held within `LOCK_WAIT_MS` — or the
+ *  lock not taken at all (no connection: ours) — the row is CLAIMED off the stage it was read at to `failed`, and only when this call
+ *  moved it is anything more written: Ship it's deploy `failed` (`failDeploy`); Re-activate's stays `uploaded`. A row another
+ *  invocation moved meanwhile (a double press) is left alone. Nothing is sent to Ghost, and the wait is never retried. The work
+ *  never throws (each door's own `failInfra` answers), so a throw here is the lock's own. */
+async function underLock(io: DeployIo, job: JobRow, work: () => Promise<void>, failDeploy: boolean): Promise<void> {
+  let error: DeployError
+  try {
+    if ((await io.lock(job.site_id, work)).held) return
+    io.log('deploy: the site\'s lock was not held in time', { job: job.id })
+    error = deployError('deploy_running', { host: '' })
+  } catch (e) {
+    io.log('deploy: the site\'s lock could not be taken', { job: job.id, code: (e as { code?: string } | null)?.code })
+    error = deployError('deploy_infrastructure', { host: '' })
+  }
+  try {
+    const moved = await twice(io, 'lock refusal', () => io.jobs.claim(job.id, job.user_id, job.stage, { stage: 'failed', error }))
+    if (moved && failDeploy) await twice(io, 'deploy failed', () => io.deploys.update(job.deploy_id as string, job.user_id, { status: 'failed' }))
+  } catch {
+    io.log('deploy: the lock\'s refusal could not be written', { job: job.id })
+  }
+}
+
+/** the hour both counts read, as `since` */
+const hourBefore = (now: Date): string => new Date(now.getTime() - HOUR_MS).toISOString()
+
+/** STORY 7.25 — FR-J11 AT SHIP IT: the site record's uploads Ghost accepted in the last hour (`deploys.accepted_at` — Roll backs
+ *  included), at `SITE_DEPLOYS_PER_HOUR` refused with the minutes until the next; an exempt record (`deploy_rate_limit_exempt`,
+ *  §4's targets) never. Null: Ship it may go. Refused at the route, before any work, so the job keeps resting at `awaiting_ship`
+ *  with its checked artefact and Ship it works again once the minutes pass. Per site RECORD, never per address: the exemption and
+ *  every scope are per record, and a per-address count would let one account spend another's limit. A read that fails throws
+ *  (the route's 502). Re-activate, History's put-back, Restore original and Cancel never ask: they compile nothing, and they are
+ *  the way back. */
+export async function siteLimit(a: { siteId: string; userId: string }, io: Pick<DeployIo, 'limits' | 'now'>): Promise<DeployError | null> {
+  const site = await io.limits.site(a)
+  if (site?.exempt === true) return null
+  const now = io.now()
+  const minutes = overLimit(await io.limits.accepted({ ...a, since: hourBefore(now) }), SITE_DEPLOYS_PER_HOUR, now)
+  return minutes === null ? null : deployError('deploy_rate_limited', { host: hostOf(site?.url ?? ''), minutes })
+}
+
+/** STORY 7.25 — R-295'S COMPILE BUDGET AT RUN CHECKS: the account's jobs started in the last hour (`deploy_jobs.started_at`, any site
+ *  or none), at `ACCOUNT_COMPILES_PER_HOUR` refused with the minutes until the next — and a log line naming the account, so a runaway
+ *  is visible. Null: the Pre-flight may start. Billing hygiene, never capacity, and one budget on every plan. A read that fails
+ *  throws (the route's 502). Story 7.26's export asks it first, on its own job row. */
+export async function compileBudget(a: { userId: string }, io: Pick<DeployIo, 'limits' | 'now' | 'log'>): Promise<DeployError | null> {
+  const now = io.now()
+  const minutes = overLimit(await io.limits.started({ ...a, since: hourBefore(now) }), ACCOUNT_COMPILES_PER_HOUR, now)
+  if (minutes === null) return null
+  io.log('deploy: compile budget reached', { user: a.userId, minutes })
+  return deployError('compile_budget', { host: '', minutes })
+}
+
 /** DW-374 (R-269) — THE PROJECT'S LINK, READ NOW: null while it is still the job's site, else the refusal naming the site the
  *  project now ships to and the one it left (or the one alone, when it is linked to none). Ship it and Re-activate both ask it,
  *  so a theme only ever goes to — or goes live on — the project's current site. */
@@ -733,8 +829,16 @@ async function linkRefusal(io: DeployIo, job: JobRow): Promise<DeployError | nul
   return link.now === null ? deployError('site_unlinked', { host: was }) : deployError('site_changed', { host: was, to: hostOf(link.now.url) })
 }
 
-/** RE-ACTIVATE (D2e's and D2f's button): the uploaded deploy of a job that ended `done` (or failed at activating), activated. */
+/** RE-ACTIVATE (D2e's and D2f's button): the uploaded deploy of a job that ended `done` (or failed at activating), activated.
+ *  STORY 7.25: everything after its first read under the site's lock, as Ship it's; not held, the job is `failed` with
+ *  `deploy_running` and the deploy stays `uploaded` (D2e's Re-activate still offered). */
 export async function activate(a: { jobId: string; userId: string }, io: DeployIo): Promise<void> {
+  const job = await firstRead(io, a)
+  if (job === null || job.deploy_id === null || (job.stage !== 'done' && job.stage !== 'failed')) return
+  await underLock(io, job, () => activateHeld(a, io), false)
+}
+
+async function activateHeld(a: { jobId: string; userId: string }, io: DeployIo): Promise<void> {
   const job = await firstRead(io, a)
   if (job === null || job.deploy_id === null || (job.stage !== 'done' && job.stage !== 'failed')) return
   const c = clock(io, job)

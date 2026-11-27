@@ -1,6 +1,7 @@
 import { ARTIFACT_BUCKET } from '@/lib/deploy'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import { call } from '@/server/ghost-admin'
+import { withSiteLock } from '@/server/site-lock'
 import { SNAPSHOT_BUCKET } from '../../app/(app)/app/(authed)/account/deletion-rule.ts'
 import type { OriginalRow, PutBackIo, PutBackRow } from './put-back.ts'
 import type { DeployRow } from './run.ts'
@@ -20,6 +21,7 @@ import type { DeployRow } from './run.ts'
  * original (`site_snapshots`, select-only to the tenant and server-written, scoped by `user_id` and `site_id`) and its zip out of
  * the `site-snapshots` bucket (no Storage policy at all, AD-32 — Story 2.5's download's reason), by the key the row names. Its
  * Ghost writes are the same two, activate and upload, so `ADMIN_WRITES` is unchanged.
+ * STORY 7.25 — `lock` is `server/site-lock.ts`' `withSiteLock`, Ship it's own: the put-back and the restore hold the site's lock.
  */
 
 const BUCKET = ARTIFACT_BUCKET
@@ -97,6 +99,7 @@ export const PUT_BACK_IO: PutBackIo = {
       return new Uint8Array(await blob.arrayBuffer())
     },
   },
+  lock: (siteId, run) => withSiteLock(siteId, run),
   call: (args) => call({ ...args, kind: 'admin' }),
   liveTheme: ({ siteId, name, route }) => call({ siteId, path: downloadPath(name), route, kind: 'staff', read: 'theme_download' }),
   log: (message, fields) => console.error(message, fields),

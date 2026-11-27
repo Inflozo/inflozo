@@ -2,9 +2,10 @@
 title: 'Story 7.25 — Rate limits, the compile budget and the advisory lock'
 type: 'feature'
 created: '2026-11-27'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: none
 review_loop_iteration: 0
+baseline_commit: '6d2a6c7bd95b19721587ffd753dcca1634a27f59'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-24-theme-naming-frozen-per-site.md']
 ---
 
@@ -269,55 +270,55 @@ in-session go for the production and T1 writes (Ask First).
 **Execution:**
 
 *The lock:*
-- [ ] `apps/web/server/ghost-admin/db.ts` -- `lockSql()`: a fresh `postgres` client with `sql()`'s URL, pinned root, `prepare: false`
+- [x] `apps/web/server/ghost-admin/db.ts` -- `lockSql()`: a fresh `postgres` client with `sql()`'s URL, pinned root, `prepare: false`
   and `max: 1`, one per hold, ended by its caller. The header says why it is a second connection.
-- [ ] `apps/web/server/site-lock.ts` (new) -- `withSiteLock`, `LOCK_WAIT_MS`, exactly as in Always. Its header carries:
+- [x] `apps/web/server/site-lock.ts` (new) -- `withSiteLock`, `LOCK_WAIT_MS`, exactly as in Always. Its header carries:
   - the key (the address, held-names' reason);
   - the span rule;
   - H1–H4 (§92).
-- [ ] `apps/web/lib/deploy.ts` -- `Locked<T>`.
-- [ ] `apps/web/server-wiring.test.ts` -- `server/site-lock.ts` joins the chokepoint importer list, with its reason: it holds one
+- [x] `apps/web/lib/deploy.ts` -- `Locked<T>`.
+- [x] `apps/web/server-wiring.test.ts` -- `server/site-lock.ts` joins the chokepoint importer list, with its reason: it holds one
   advisory lock on a dedicated connection and decrypts nothing. `db.ts` stays postgres's only importer.
 
 *Who takes it:*
-- [ ] `apps/web/server/deploy/run.ts`:
+- [x] `apps/web/server/deploy/run.ts`:
   - `DeployIo.lock`;
   - `ship` and `activate` wrapped as in the table, with the timeout's claim;
   - `start` flags moving checks (DW-373).
-- [ ] `apps/web/server/deploy/deploy-io.ts`:
+- [x] `apps/web/server/deploy/deploy-io.ts`:
   - `lock` bound to `withSiteLock`;
   - `jobs.resting` returns `queued`/`compiling`/`checking` beside `awaiting_ship`;
   - the count reads: `deploys` accepted since, `sites` exempt and `deploy_jobs` started since, all `user_id`-scoped.
-- [ ] `apps/web/server/deploy/put-back.ts` and `put-back-io.ts`:
+- [x] `apps/web/server/deploy/put-back.ts` and `put-back-io.ts`:
   - `PutBackIo.lock`;
   - `putBack` and `restoreOriginal` keyed on the linked site and wrapped whole; timeout → `busy`;
   - the header `:31-33` and the ponytails `:121-127` and `:256` rewritten.
-- [ ] `apps/web/lib/site-switch.ts` -- `SwitchIo.lock`; `switchWith` locks its loop after `holds()`; timeout → the running sentence.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/actions.ts` -- `switchSite` binds `lock` to the chosen site.
-- [ ] `apps/web/app/(app)/app/harness/editor/actions.ts` -- `x-inflozo-harness-switch: busy` answers the running sentence.
+- [x] `apps/web/lib/site-switch.ts` -- `SwitchIo.lock`; `switchWith` locks its loop after `holds()`; timeout → the running sentence.
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/actions.ts` -- `switchSite` binds `lock` to the chosen site.
+- [x] `apps/web/app/(app)/app/harness/editor/actions.ts` -- `x-inflozo-harness-switch: busy` answers the running sentence.
   Document it in the harness header.
 
 *The counts:*
-- [ ] `apps/web/lib/deploy.ts`:
+- [x] `apps/web/lib/deploy.ts`:
   - the two constants and `overLimit`;
   - `deploy_rate_limited` and `compile_budget` in `DeployCode` and `deployError`;
   - `DEPLOY_WORDS.siteLimit` and `budget`;
   - `nextVersion`'s comment updated.
-- [ ] `apps/web/server/deploy/run.ts` -- `siteLimit` and `compileBudget` (doors over `io`, like `uploadOnlyRefused`).
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/deploy/route.ts`:
+- [x] `apps/web/server/deploy/run.ts` -- `siteLimit` and `compileBudget` (doors over `io`, like `uploadOnlyRefused`).
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/deploy/route.ts`:
   - `compileBudget` before `start`, and `siteLimit` before `after(() => ship(`;
   - 429 as JSON, 502 on a failed count;
   - the header `:21` rewritten.
-- [ ] `apps/web/components/editor/deploy-wizard.tsx` -- `post` keeps a 429's `message`; `runChecks` and `press` say it.
+- [x] `apps/web/components/editor/deploy-wizard.tsx` -- `post` keeps a 429's `message`; `runChecks` and `press` say it.
 
 *Tests* (each new assertion seen red under a planted reversion):
-- [ ] `apps/web/site-lock.test.ts` (new), over a fake client:
+- [x] `apps/web/site-lock.test.ts` (new), over a fake client:
   - the statement order and the key text;
   - `55P03` and `57014` → not held, with `run` never called;
   - a throw from `run` rethrown;
   - a commit failure after `run` → its value returned, and the log line;
   - `end()` on every path.
-- [ ] `apps/web/deploy-run.test.ts`, with a fake lock (a promise chain per key that records enter and leave, plus a never-held
+- [x] `apps/web/deploy-run.test.ts`, with a fake lock (a promise chain per key that records enter and leave, plus a never-held
   one):
   - two ships of two projects on one site: the second's first Ghost call comes after the first's routes step; its held read sees
     the first's binding; it is re-made under `-2`; no `taken`;
@@ -328,49 +329,49 @@ in-session go for the production and T1 writes (Ask First).
   - `start`: a `checking` job is flagged, an `awaiting_ship` one is cleared, then the insert;
   - `siteLimit`: exempt; 9; 10 with its minutes;
   - `compileBudget`: 59; 60, with its log line.
-- [ ] `apps/web/put-back.test.ts`:
+- [x] `apps/web/put-back.test.ts`:
   - the put-back and the restore enter the lock, keyed on the linked site, before their reads;
   - never held → `busy`, zero Ghost calls, nothing written;
   - `moving` held as today.
-- [ ] `apps/web/site-switch.test.ts` -- never held → the running sentence, nothing written; held → as today.
-- [ ] `apps/web/deploy.test.ts`:
+- [x] `apps/web/site-switch.test.ts` -- never held → the running sentence, nothing written; held → as today.
+- [x] `apps/web/deploy.test.ts`:
   - `overLimit`: none; cap − 1; cap, with the minutes from the oldest; one outside the hour ignored; rounding up; a floor of 1;
   - the words derive from the constants;
   - the route source: the preflight arm asks `compileBudget` before `start(`, the ship arm asks `siteLimit` before `after(() =>
     ship(`, and both answer `json(429`.
-- [ ] `tools/keyboard/journey.spec.mjs` -- 7.25, keyboard only:
+- [x] `tools/keyboard/journey.spec.mjs` -- 7.25, keyboard only:
   - (a) Run checks answered 429 with the budget envelope: the sentence in the refusal line, announced, and Run checks reachable
     again;
   - (b) Ship it answered 429 with the site-limit envelope: the sentence, and the check still ready to ship;
   - (c) `x-inflozo-harness-switch: busy`: the running sentence in the picker.
-- [ ] `tools/probe/record-site-lock.mjs` (new), recording MEASUREMENTS §92, with a catalogue row in `tools/doc-audit.py`:
+- [x] `tools/probe/record-site-lock.mjs` (new), recording MEASUREMENTS §92, with a catalogue row in `tools/doc-audit.py`:
   - **What it runs:** H1–H4 (Design Notes), on a probe key that names no site, and nothing else. It reads and writes no table.
   - **Where:** first against a throwaway `postgres:17` container, then against the production pooler.
   - **How it reads the pooler URL:** from `tools/probe/.env` in-process, never through argv.
   - **The driver:** `postgres` through `apps/web`'s install.
-- [ ] `tools/probe/run-verify-editor.cjs` -- step 125 (the Verification's), under `T1_WRITES=1`, written at Dev and never run
+- [x] `tools/probe/run-verify-editor.cjs` -- step 125 (the Verification's), under `T1_WRITES=1`, written at Dev and never run
   there.
 
 *Propagation* (standing rules 3 and 7; end with `grep -rn "Story 7.25's\|lock of its own\|7.25's per-site" apps/web tools`):
-- [ ] PRD FR-J11 (`prd.md:430`), a dated note covering:
+- [x] PRD FR-J11 (`prd.md:430`), a dated note covering:
   - what each count reads;
   - that the way back is never refused;
   - the lock's key and span.
-- [ ] `ARCHITECTURE-SPINE.md`:
+- [x] `ARCHITECTURE-SPINE.md`:
   - AD-19, a dated rule: the address key, the dedicated connection, the wait, the idle ceiling, and the span over Ship it's whole
     invocation, with its reason;
   - the sentences "AD-19's lock covers uploading and activating only" at `:191` and `:258`, dated;
   - AD-24's `EEXIST` line, dated: it is now unreachable from Inflozo across accounts too.
-- [ ] `VERIFY-AT-BUILD.md` 35 and 39, a dated "built by Story 7.25" each.
-- [ ] `EXPERIENCE.md` -- the Deploy Wizard row `:190`, a dated note covering:
+- [x] `VERIFY-AT-BUILD.md` 35 and 39, a dated "built by Story 7.25" each.
+- [x] `EXPERIENCE.md` -- the Deploy Wizard row `:190`, a dated note covering:
   - the two sentences and where they appear;
   - that the wait is the press's busy state;
   - the timeout's S8d′ sentence;
   - the picker's refusal.
-- [ ] `epics.md` Story 7.26's card, a dated line: its export runs on a `deploy_jobs` row with `site_id` null and asks
+- [x] `epics.md` Story 7.26's card, a dated line: its export runs on a `deploy_jobs` row with `site_id` null and asks
   `compileBudget` first. Its refusal reuses `budget`'s first sentence.
-- [ ] `deferred-work.md` -- DW-373 and DW-379 done (Story 7.25), with resolution lines.
-- [ ] MEASUREMENTS §92, from the recorder.
+- [x] `deferred-work.md` -- DW-373 and DW-379 done (Story 7.25), with resolution lines.
+- [x] MEASUREMENTS §92, from the recorder. *(Written by the main session's `--pooler` run on the owner's in-session go, 2026-11-27 — every row held behind its controls.)*
 
 **Acceptance Criteria:**
 - **Matches the frame (R-74: none drawn).** Given journeys 7.25 (a)–(c), when each refusal is said, then it appears in 7.18a's
@@ -398,6 +399,31 @@ in-session go for the production and T1 writes (Ask First).
   `put-back-io.ts`, the editor's `actions.ts` and tests.
 
 ## Spec Change Log
+
+Story 7.25's Dev (2026-11-27) — routine calls, none of them a frozen decision moved:
+- **Ship it and Re-activate read their row TWICE:** once outside the lock for its key (the job's site), and again as the first
+  thing inside it, so the old body runs unchanged on the row as it stands after the wait. Without the second read, a double
+  press whose second invocation waited out the first would run DW-374's link check on a stale row, and a switch let in between
+  would fail a deploy that had already gone live.
+- **`overLimit` past the cap:** "the oldest counted one" is exact at `cap`; above it (a Roll back is never refused, so a site
+  can stand above its limit) the minutes are until the stamp whose leaving brings the count under `cap`, so the sentence never
+  names a time the customer would be refused again. Minutes are 1–60, and a stamp a moment ahead of the server's clock (the
+  database's `now()`) is counted.
+- **`lockSql()` has no `idle_timeout`:** postgres.js ends a connection idle that long even inside an open transaction
+  (`index.js`' `move`), and the hold's connection is idle for the whole span. **And it hands its notices to the caller:** a
+  dropped connection is reconnected by postgres.js for the `COMMIT`, which then lands on a session with no transaction — Postgres'
+  `25P01` warning, not an error — so `withSiteLock` reads that warning as the lost lock it is (logged, the value kept).
+- **A lock that cannot be taken at all** (no connection): Ship it and Re-activate make the same claim as a timeout, with
+  `deploy_infrastructure`; the put-back, the restore and the switch answer ours. Nothing is sent to Ghost in either.
+- **The wizard lands a `deploy_running` failure on S8d′** though no shipping stage was entered: "Uploading to Ghost failed" for
+  Ship it, "Activating failed" for a Re-activate whose deploy is still `uploaded` (as DW-374's refusal already does) — the
+  frozen "ends on S8d′", with no new words.
+- **DW-373:** a check that reached `awaiting_ship` between `start()`'s read and its flag is abandoned as a resting one — the
+  same ending.
+- **Walk step 125 (c)** notes Vercel's log line for the budget POST with its time and the user's id for the main session to read
+  (`npx vercel@latest logs`, the memory's way); the walk never puts the Vercel token on argv.
+- **The recorder's H4** reads the abandoned holder's end by its own `COMMIT` — refused, or landing on a fresh session with
+  `25P01` — rather than "its next statement refused", because postgres.js reconnects under an idle client.
 
 ## Design Notes
 
@@ -514,3 +540,79 @@ sha):
 
   **Ghost 5's half** (T3, R-238) is postponed to DW-326's pass at Story 15.7.
 - **Vercel:** the deployment is READY from the Dev head, and CI's `check`, `rls` and `deploy` are green.
+
+**Executed — Dev (2026-11-27, Node 24):**
+- `pnpm check` -- green, on the final tree in the main session: lint, typecheck and every package's tests (`apps/web` 1203 of
+  1203, the run's own count). Planted reversions, each seen red then restored: the implementation subagent's list (an unlocked
+  ship, activate, put-back, restore and switch; the claim's result ignored; DW-373 off; the exemption ignored; no budget log;
+  `Math.floor`; the oldest always; literal words; `57014` not a timeout; a commit error rethrown; no `end()`; the key on the id;
+  `25P01` ignored; `site-lock.ts` off the importer list), and the main session's own: `ship` without `underLock` → 3 of
+  `deploy-run.test.ts` red.
+- `bash supabase/tests/run-rls-gate.sh` -- green and unchanged, "deploy_rate_limit_exempt is server-only" among it (the
+  subagent's run; no migration).
+- **The product's own `withSiteLock` on a real Postgres** (a scratch script importing `apps/web/server/site-lock.ts`, a throwaway
+  `postgres:17` with a minimal `public.sites`, every check beside its control): a hold keys on the record's ADDRESS and not its
+  id; two records of one address serialize (B entered 2 ms after A left); another address does not wait (entered while A held);
+  a record that is gone keys on its id; a key held elsewhere answers `{ held: false }` after 30031 ms with `run` never called,
+  and is held at once once released; no "lock was lost" line on a clean commit. All held. This is where the statement's
+  `coalesce` subquery and its `$1` (sent untyped by postgres.js, so Postgres reads it as `uuid` then `text`) were executed.
+- Keyboard journeys, `bash tools/keyboard/run-keyboard-gate.sh --grep "7\.25|7\.18a|7\.18b|7\.23a|7\.23b|7\.24"` -- 91 passed, 1
+  failed: journeys 7.25 (a)–(c) green, with 7.18a's, 7.18b's, 7.23a's, 7.23b's and 7.24's. The one failure was `floor.spec.mjs`
+  7.18a "Ship it by pointer", the run's FIRST test, its canvas not painted within 5 s on a cold dev server at load average ~40
+  (another session's work). Alone with `--repeat-each 3` it failed run 1 and passed runs 2 and 3, the same line both times, before
+  any wizard interaction. It is cold start, not this story: CI's whole `pnpm keyboard` runs other floor tests before it.
+- `python3 tools/doc-audit.py --check`, twice -- green (the main session, before the commit).
+- `grep -rn "Story 7.25's\|lock of its own\|7.25's per-site" apps/web tools` -- in source, only lines that describe what is
+  built ("Ghost has no lock of its own" is Ghost's). `grep -rln "withSiteLock" apps/web` (source) -- `site-lock.ts`,
+  `deploy-io.ts`, `put-back-io.ts`, the editor's `actions.ts` and three tests.
+
+**Real infrastructure — Dev (R-82):**
+- **Supabase, the production transaction pooler** (`SUPABASE_DB_POOLER_URL`, read in-process from tools/probe/.env and never
+  printed), on the owner's in-session go (AskUserQuestion, "1. Go"): `node tools/probe/record-site-lock.mjs --pooler`, after its
+  local `postgres:17` half. A probe key naming no site; no table read or written.
+  - **Run 1 VOID.** The pooler's H1–H3 and H4's control held; H4 itself read `held true, 2103 ms` against "taken at once (< 2 s)",
+    the clock counting a fresh TLS connection to the pooler (~2 s). The behaviour held — the key taken, the abandoned holder's
+    COMMIT landing on a new session with `25P01` — but a control that cannot pass is not a result (standing rule 2), so nothing
+    was written. Fixed: the waiter's clock starts once its connection is up (`wait()`'s comment says why).
+  - **Run 2, on a second in-session go ("1. Go"): every row held, behind its controls; §92 written.** On Supavisor (Postgres
+    17.6; the `postgres` role's `statement_timeout` 2min, `idle_in_transaction_session_timeout` 0): H1 — another key taken in
+    286 ms, the held key given up with `55P03` after 30449 ms, taken in 288 ms once committed; H2 — the child really held it
+    (`55P03`), and SIGKILLed it freed the key in 302 ms; H3 — still held after 140 s idle (`55P03`), and committed at 150 s with no
+    `25P01`; H4 — no ceiling: still held after 8 s idle, and committed; a 3 s ceiling: the key taken in 291 ms, the holder's COMMIT
+    on a new session (`25P01`). So no `select 1` keep-alive is owed (H3 held), and H2 and H4 each bound a dead holder.
+  - The role's 2-minute `statement_timeout` is overridden inside each hold by the hold's own `set_config('statement_timeout', …)`,
+    which bounds only the lock connection's own statements; the work runs on other connections.
+- **Not run at Dev, by the spec:** walk step 125 on production and T1 (written, `node --check` clean, `T1_WRITES=1`; the
+  Review's, on its own in-session go), and the Vercel deployment and CI of the Dev head (read at Review — R-81's push is this
+  phase's last act). T3 (Ghost 5) is retired (R-238); its half waits for DW-326 at Story 15.7.
+
+**The I/O matrix, row by row → the check that ran:**
+- One ship → every existing ship test in `deploy-run.test.ts`, now through the fake lock (held); `withSiteLock` uncontended
+  enters at once on Postgres (the scratch run).
+- Two ships, one Ghost, two accounts → "7.25: two projects ship to one Ghost at once — they SERIALIZE …" (with its no-lock
+  control); two records of one address serialize on Postgres (the scratch run); walk 125 (a) at Review.
+- Wait runs out → "7.25: the lock NOT HELD within its wait — Ship it sends nothing …"; `site-lock.test.ts` "55P03 or 57014 … NOT
+  HELD"; `{ held: false }` after 30031 ms on Postgres; §92 H1 on the pooler.
+- Double press, holder slow → the same test's "a row another invocation moved meanwhile … is left alone".
+- Re-activate waits it out → "7.25: Re-activate runs under the site's lock … the deploy stays `uploaded`".
+- Roll back during a ship → "7.25: the put-back and Restore original each ENTER THE SITE'S LOCK before their reads — keyed on the
+  project's linked site" and "… NOT HELD … `busy`", over the same address key Ship it takes (one `withSiteLock`, keyed by
+  `sites.url`, serializing two records of one address on Postgres).
+- Two Roll backs at once → "7.25: two Roll backs at once serialize — the second re-reads inside and finds its version live
+  already".
+- Switch during a ship → `site-switch.test.ts` "switchWith (Story 7.25, DW-379) … not held … the running sentence and nothing
+  read or written" and "switchSite binds the lock to the CHOSEN site"; the existing DW-374 `site_changed` tests, now inside the
+  lock; journey 7.25 (c).
+- Holder dies mid-span → §92 H2 and H4 (container and pooler); the existing `view()` stalled-job test.
+- Connection lost after the work → `site-lock.test.ts` "finished work never becomes a failure … (25P01) …"; §92 H4 shows that
+  `25P01` shape on a real reconnect.
+- Site limit under / reached / exempt → "7.25 — FR-J11 at Ship it (`siteLimit`) …" and `deploy.test.ts`' `overLimit` test;
+  journey 7.25 (b) says the sentence in the wizard with the check still ready to ship.
+- Roll back at the limit → "7.25: the way back is never counted — Re-activate, Cancel and the put-back ask no limit …"; the
+  put-back's `accepted_at` stamp is 7.23a's existing tests.
+- Budget under / reached → "7.25 — R-295's compile budget at Run checks (`compileBudget`) …" with its log line; the route test
+  "Run checks asks `compileBudget` before `start(`" (no job inserted); journey 7.25 (a).
+- Count read fails → the route test "… a 502 when the count cannot be read".
+- Second Pre-flight while compiling → "7.25 (DW-373): a new Pre-flight FLAGS one … still moving …".
+- Site record gone → `site-lock.test.ts` "… the lock keyed on the site's ADDRESS (the id when the record is gone)"; a gone record
+  keyed on its id on Postgres (the scratch run).

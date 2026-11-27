@@ -12506,3 +12506,90 @@ test('7.24 · (f) R-294: a theme that landed under another name than D1a\'s box 
   await shipThrough('activate', live(BASE_724))
   await expect(wizard(page).locator('[data-theme-moved]')).toHaveCount(0)
 })
+
+/* ── STORY 7.25 — THE TWO LIMITS AND THE SITE'S LOCK, SAID WHERE 7.18a SAYS A REFUSAL (R-74: no frame, nothing drawn) ──
+   The route's 429 carries AD-24's envelope as JSON; the wizard keeps its `message` and says it in Run checks' and Ship it's own
+   refusal line (`#deploy-refused`), politely, as it says a 423 or a 422. A switch the chosen site's lock refused says the running
+   sentence in the picker's line (`#deploy-switch-refused`). The real counts, the real lock and Ghost are walk step 125's. */
+
+/** the deploy route answering a POST of `intent` with a 429 and the envelope — every other request left to `plantDeploy` — and
+ *  every body it refused kept; `off()` lets the next press through */
+async function limited(page, intent, envelope) {
+  const refused = []
+  let on = true
+  await page.route((url) => DEPLOY_PATH.test(url.pathname), (route) => {
+    const req = route.request()
+    if (!on || req.method() !== 'POST' || req.postDataJSON()?.intent !== intent) return route.fallback()
+    refused.push(req.postDataJSON())
+    return route.fulfill({ status: 429, contentType: 'application/json', headers: { 'Cache-Control': 'no-store' }, body: JSON.stringify(envelope) })
+  })
+  return { refused, off: () => void (on = false) }
+}
+
+test('7.25 · (a) Run checks over the compile budget (429): the budget\'s sentence in Run checks\' refusal line, said politely, nothing started — and Run checks reachable again, its next press checking', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  const sent = await plantDeploy(page, { preflight: PREFLIGHT })
+  const words = DW.budget(12)
+  const limit = await limited(page, 'preflight', { code: 'compile_budget', message: words })
+  await open(page)
+  await openWizard(page)
+  await runChecksRefused(page, words)
+  await expect.poll(() => deploySaid(page), { message: 'said politely' }).toBe(words)
+  expect(limit.refused.map((b) => b.intent)).toEqual(['preflight'])
+  expect(sent, 'no job was started').toEqual([])
+  const run = page.locator('#deploy-run')
+  await expect(run).not.toHaveAttribute('aria-disabled', 'true')
+  await expect(run).not.toHaveAttribute('aria-busy', 'true')
+  // reachable again: the minutes pass, and the same press checks
+  limit.off()
+  await runChecks(page)
+  expect(sent.map((b) => b.intent)).toEqual(['preflight'])
+  await expect(page.locator('#deploy-refused')).toHaveCount(0)
+})
+
+test('7.25 · (b) Ship it over the site\'s limit (429): the limit\'s sentence in Ship it\'s refusal line, said politely, nothing shipped — the check still ready to ship', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  const sent = await plantDeploy(page, { preflight: PREFLIGHT })
+  await open(page)
+  await openWizard(page)
+  await runChecks(page)
+  const ship = page.locator('#deploy-ship')
+  await expect(ship).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+  const words = DW.siteLimit('ghost6.inflozo.com', 12)
+  const limit = await limited(page, 'ship', { code: 'deploy_rate_limited', message: words })
+  await ship.focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#deploy-refused')).toHaveText(words, { timeout: 15_000 })
+  await expect.poll(() => deploySaid(page), { message: 'said politely' }).toBe(words)
+  expect(limit.refused.map((b) => [b.intent, b.mode])).toEqual([['ship', 'activate']])
+  expect(sent.map((b) => b.intent), 'only the Pre-flight reached the route').toEqual(['preflight'])
+  // the check is still resting, ready to ship again once the minutes pass
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'check')
+  await expect(ship).not.toHaveAttribute('aria-disabled', 'true')
+  await expect(ship).not.toHaveAttribute('aria-busy', 'true')
+})
+
+test('7.25 · (c) a switch the chosen site\'s lock refused (DW-379): the running sentence in the picker\'s refusal line, said politely, nothing linked — the picker still open', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'unlinked', 'x-inflozo-harness-switch': 'busy' })
+  await open(page)
+  await openWizard(page)
+  await wizard(page).locator('#deploy-choose').focus()
+  await page.keyboard.press('Enter')
+  await expect(sitePicker(page)).toBeVisible()
+  await page.locator('#deploy-pick-use').focus()
+  await page.keyboard.press('Enter')
+  await expect(sitePicker(page).locator('#deploy-switch-refused')).toHaveText(DW.running, { timeout: 15_000 })
+  await expect.poll(() => deploySaid(page), { message: 'said politely' }).toBe(DW.running)
+  await expect(sitePicker(page)).toBeVisible()
+  await expect(page.locator('#deploy-pick-use')).not.toHaveAttribute('aria-busy', 'true')
+  // the control: the same switch with the lock free lands
+  await page.keyboard.press('Escape')
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'unlinked' })
+  await open(page)
+  await openWizard(page)
+  await wizard(page).locator('#deploy-choose').focus()
+  await page.keyboard.press('Enter')
+  await page.locator('#deploy-pick-use').focus()
+  await page.keyboard.press('Enter')
+  await expect(sitePicker(page)).toHaveCount(0, { timeout: 15_000 })
+})

@@ -40,6 +40,7 @@ const RETENTION_IO = join('server', 'retention-io.ts')
 const PUT_BACK = join('server', 'deploy', 'put-back.ts')
 const PUT_BACK_IO = join('server', 'deploy', 'put-back-io.ts')
 const HELD_NAMES_IO = join('server', 'deploy', 'held-names-io.ts')
+const SITE_LOCK = join('server', 'site-lock.ts')
 const MIGRATIONS = '../../supabase/migrations'
 
 /** Every `.ts`/`.tsx` under `apps/web`, minus the build output and the tests themselves. */
@@ -569,7 +570,12 @@ test('the Admin chokepoint is imported by the routes named here and by nothing e
   //     `liveTheme`), so `ADMIN_WRITES` is still unchanged. Story 7.23b's Restore original sends the same two writes again —
   //     activate the saved original by its name, and upload its saved zip only when Ghost no longer holds it — so `ADMIN_WRITES` is
   //     still unchanged.
-  const allowed = [CONNECT_ACTIONS, SITE_PROBE, SITE_HEALTH, KEYS_SCREEN, ROUTES_IO, DEPLOY_IO, STAFF_TOKEN, SNAPSHOT_IO, PUT_BACK_IO]
+  //   - THE PER-SITE LOCK, Story 7.25's (AD-19): `withSiteLock` holds ONE advisory lock on a connection of its own — `db.ts`'
+  //     `lockSql()`, a fresh client per hold, because `sql()`'s single connection is the one every `call()` decrypts through and a
+  //     transaction held there would wait on its own upload. It decrypts nothing, reads no credential and calls no Ghost: its one
+  //     statement beyond the transaction's own is the lock keyed on `sites.url`. `db.ts` stays the only importer of `postgres`
+  //     (the test above) and the only reader of the pooler URL; Ship it, the put-back and the switch reach it through their io.
+  const allowed = [CONNECT_ACTIONS, SITE_PROBE, SITE_HEALTH, KEYS_SCREEN, ROUTES_IO, DEPLOY_IO, STAFF_TOKEN, SNAPSHOT_IO, PUT_BACK_IO, SITE_LOCK]
   assert.equal(reachesChokepoint(PUT_BACK), false, `${PUT_BACK} imports the chokepoint; its call() is handed in`)
   assert.equal(reachesChokepoint(PUT_BACK_IO), true, 'control: put-back-io.ts imports the chokepoint')
   assert.equal(reachesChokepoint(SNAPSHOT), false, `${SNAPSHOT} imports the chokepoint; its call() is handed in`)
@@ -580,6 +586,11 @@ test('the Admin chokepoint is imported by the routes named here and by nothing e
   assert.equal(reachesChokepoint(ROUTES_IO), true, 'control: routes-io.ts imports the chokepoint')
   assert.equal(reachesChokepoint(DEPLOY_RUN), false, `${DEPLOY_RUN} imports the chokepoint; its call() is handed in`)
   assert.equal(reachesChokepoint(DEPLOY_IO), true, 'control: deploy-io.ts imports the chokepoint')
+  // Story 7.25: the lock's one connection, and nothing of the credential path — the switch's action reaches it, never the chokepoint
+  assert.equal(reachesChokepoint(SITE_LOCK), true, 'control: site-lock.ts imports db.ts')
+  const lockImports = [...readFileSync(SITE_LOCK, 'utf8').matchAll(/import \{([^}]*)\} from '\.\/ghost-admin\/db\.ts'/g)].map((m) => m[1]?.trim())
+  assert.deepEqual(lockImports, ['lockSql, type LockClient, type LockNotice'], 'site-lock.ts takes the lock\'s connection from db.ts and nothing else')
+  assert.equal(reachesChokepoint(EDITOR_ACTIONS), false, 'the switch reaches the lock through site-lock.ts alone')
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))
     .filter((p) => reachesChokepoint(p))

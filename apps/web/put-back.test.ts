@@ -53,6 +53,8 @@ function world(over: {
   demoteFails?: number
   /** Story 7.23b's review: the row stands but the store has no object under its key */
   objectGone?: boolean
+  /** Story 7.25: the site's lock not held within its wait (or not taken at all); by default held at once */
+  lock?: 'held' | 'never' | 'throws'
 } = {}) {
   const rows = new Map((over.rows ?? [row(1), row(2), row(3, { status: 'live' })]).map((r) => [r.id, { ...r }]))
   const bucket = new Map<string, Uint8Array>([...rows.values()].flatMap((r) => (r.artifact_path ? [[r.artifact_path, new TextEncoder().encode(`zip of ${r.id}`)] as const] : [])))
@@ -147,6 +149,15 @@ function world(over: {
       return next ?? ok()
     },
     log: (message, fields) => void logs.push([message, fields]),
+    // Story 7.25: the lock's key is a read of its own, recorded in `reads` beside the body's own reads
+    lock: async (siteId, run) => {
+      reads.push(`lock:${siteId}`)
+      if (over.lock === 'throws') throw Object.assign(new Error('connect'), { code: 'ECONNREFUSED' })
+      if (over.lock === 'never') return { held: false }
+      const value = await run()
+      reads.push('unlock')
+      return { held: true, value }
+    },
   }
   const put = (deployId: string): Promise<PutBackOutcome> => putBack(io, { userId: U, projectId: P, deployId, now: NOW })
   const check = (deployId: string): Promise<CheckBefore> => checkBeforePutBack(io, { userId: U, projectId: P, deployId, now: NOW })
@@ -781,4 +792,68 @@ test('R-291: the check\'s ONLY write is its own live copy — `historyCopyPath`,
   assert.doesNotMatch(back, /liveCopyPath/, 'never Ship it\'s key')
   assert.match(back, /await compareLive\(io, \{/)
   assert.doesNotMatch(back, /liveManifest|compareManifests|unzipTheme/, 'no comparison of its own')
+})
+
+// ── Story 7.25 — the site's lock over the put-back and Restore original ──
+
+test('7.25: the put-back and Restore original each ENTER THE SITE\'S LOCK before their reads — keyed on the project\'s linked site, read once for the key — and leave it after; the body\'s own reads run again inside, so its answers are unchanged', async () => {
+  const back = world({ upload: [ok(true)] })
+  assert.equal(await back.put('v2'), 'live')
+  assert.deepEqual(back.reads.slice(0, 3), ['linked', `lock:${S}`, 'row'], 'the key read, the lock, then the body from its first read')
+  assert.equal(back.reads.at(-1), 'unlock', 'every read and write inside')
+  assert.equal(back.reads.filter((r) => r === 'linked').length, 2, 'the link read again inside')
+  const restore = world()
+  assert.equal(await restore.restore(), 'live')
+  assert.deepEqual(restore.reads.slice(0, 3), ['linked', `lock:${S}`, 'linked'])
+  assert.equal(restore.reads.at(-1), 'unlock')
+  // a project linked to no site runs the body unlocked, which answers it as before
+  const unlinked = world({ linked: null })
+  assert.equal(await unlinked.put('v2'), 'elsewhere')
+  assert.equal(await unlinked.restore(), 'gone')
+  assert.ok(!unlinked.reads.some((r) => r.startsWith('lock:')), 'no site, no lock')
+  // the check before a Roll back takes none: it writes nothing to Ghost
+  const check = world({ rows: [row(1), row(2, { content_manifest: {} as ContentManifest }), row(3, { status: 'live' })] })
+  await check.check('v1')
+  assert.ok(!check.reads.some((r) => r.startsWith('lock:')), 'the check holds no lock')
+})
+
+test('7.25: the site\'s lock NOT HELD within its wait — the put-back and Restore original answer `busy`, with nothing sent to Ghost and nothing written; the lock not taken at all is ours, nothing sent', async () => {
+  for (const [name, act] of [['put-back', (w: ReturnType<typeof world>) => w.put('v2')], ['restore', (w: ReturnType<typeof world>) => w.restore()]] as const) {
+    const w = world({ lock: 'never' })
+    const before = snapshotOf(w)
+    assert.equal(await act(w), 'busy', name)
+    assert.equal(w.calls.length, 0, `${name}: nothing sent`)
+    assert.deepEqual(w.updates, [], `${name}: nothing written`)
+    assert.equal(snapshotOf(w), before)
+    assert.ok(!w.reads.includes('row') && !w.reads.includes('original'), `${name}: the body never ran`)
+    const down = world({ lock: 'throws' })
+    assert.deepEqual(await act(down), { refused: deployError('deploy_infrastructure', { host: '' }) }, `${name}: ours`)
+    assert.equal(down.calls.length, 0)
+  }
+})
+
+test('7.25: `moving` is held as before — inside the lock a ship still moving (one killed mid-span) still refuses `busy`, nothing sent', async () => {
+  const w = world({ moving: true })
+  assert.equal(await w.put('v2'), 'busy')
+  assert.equal(await w.restore(), 'busy')
+  assert.ok(w.reads.includes(`lock:${S}`), 'refused from inside the lock')
+  assert.equal(w.calls.length, 0)
+})
+
+test('7.25: two Roll backs at once serialize — the second re-reads inside and finds its version live already', async () => {
+  const w = world({ upload: [ok(true), ok(true)] })
+  let tail: Promise<unknown> = Promise.resolve()
+  w.io.lock = async (siteId, run) => {
+    const before = tail
+    let release = () => {}
+    tail = new Promise<void>((r) => (release = r))
+    await before
+    try {
+      return { held: true, value: await run() }
+    } finally {
+      release()
+    }
+  }
+  assert.deepEqual(await Promise.all([w.put('v2'), w.put('v2')]), ['live', 'live-already'])
+  assert.equal(w.calls.filter((c) => c.item === 'theme_upload').length, 1, 'one upload')
 })
