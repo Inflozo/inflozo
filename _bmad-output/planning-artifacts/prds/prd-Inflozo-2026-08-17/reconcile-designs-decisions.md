@@ -6339,6 +6339,26 @@ meanwhile.""*
   - ✅ the code (`lib/deploy.ts`' `movedFrom` and `DEPLOY_WORDS.themeMoved`, `deploy-wizard.tsx`'s two endings) — Story 7.24's
     Review.
 
+**R-295 — one account runs at most 60 theme builds an hour, on every plan.** Story 7.25's Create, Question 1, ruled **option 1**
+(owner, 2026-11-27): *"60 an hour, on every plan — one build a minute for a whole hour; at most about $18.45 a month per account.
+(RECOMMENDED)"*
+
+- **Why it was a question.** FR-J11 asks for a per-account compile budget "sized to be invisible to every honest user" and names
+  no number. The number trades a runaway's cost against a busy designer meeting it.
+- **The rule.** Run checks is refused once the account has started 60 compiles in the last hour, on any site; from Story 7.26 an
+  export counts the same. The count reads `deploy_jobs.started_at` by account. The refusal says when the account can run checks
+  again, and leaves a log line naming the account. At the measured $0.000427 a deploy (MEASUREMENTS §21), a runaway costs at most
+  about $18.45 a month per account. The way back (Roll back, Re-activate, Restore original) builds nothing and is never counted.
+- **Declined.** Option 2, 100 an hour (about $30.74 a month); option 3, 30 on Free and 100 on Pro (every Run checks reads the
+  plan first); option 4, 30 an hour (about $9.22 a month, which a busy designer could meet).
+- Targets:
+  - ✅ this entry;
+  - ✅ Story 7.25's spec (Question 1's Ruled line, the In plain English, the Intent's line, the constants, Never, the Dev gate);
+  - ✅ `prd.md` FR-J11 (a dated note);
+  - ✅ `epics.md` Story 7.25's card;
+  - ✅ `epic-7-context.md`;
+  - ☐ the code (`lib/deploy.ts`' `ACCOUNT_COMPILES_PER_HOUR`) — Story 7.25's Dev.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

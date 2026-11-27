@@ -20,7 +20,7 @@ sentence when they can go again, for example: "Inflozo ships to one site at most
 ghost6.inflozo.com again in 12 minutes."
 
 There is no owner's test: nothing new is drawn, and the epic's card says none. Walk step 125 proves the story on production and T1.
-One question is open for the owner: the 60 (Question 1).
+The owner ruled the 60 on 2026-11-27 (Question 1, R-295); no question is open.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -73,7 +73,8 @@ One question is open for the owner: the 60 (Question 1).
   - Story 7.26's card gains the line that its export runs on such a row and asks this budget first.
 - **And** the per-account compile budget is **billing hygiene, not capacity**, sized against a measured number — one deploy costs
   $0.000427 — and sized to be invisible to every honest user
-  - Question 1. Option 1 is 60 an hour, which caps a runaway at about $18.45 a month per account at a full deploy's cost.
+  - Question 1, ruled option 1 (owner, 2026-11-27, R-295): 60 an hour on every plan, which caps a runaway at about $18.45 a
+    month per account at a full deploy's cost.
   - A refusal leaves a log line naming the account, so a runaway is visible.
 - **And** **deploy + activate holds a per-site Postgres advisory lock**, so two projects targeting the same site **serialize
   rather than interleave** — theme activation is globally stateful and **a rate limit is not a mutex**
@@ -127,8 +128,8 @@ One question is open for the owner: the 60 (Question 1).
   Pre-flight, the check before a Roll back and every read take no lock.
   - A linked site of none runs the body unlocked; the body answers it as today.
 - **The counts: pure rules in `lib/deploy.ts`.**
-  - **The constants:** `SITE_DEPLOYS_PER_HOUR = 10` and `ACCOUNT_COMPILES_PER_HOUR = 60`. The 60 is Question 1's ruled value, and
-    this is its one place.
+  - **The constants:** `SITE_DEPLOYS_PER_HOUR = 10` and `ACCOUNT_COMPILES_PER_HOUR = 60`. The 60 is Question 1's ruled value
+    (R-295), and this is its one place.
   - **`overLimit(times, cap, now)`:**
     - it reads the timestamps within the last hour;
     - fewer than `cap` → null;
@@ -158,8 +159,6 @@ One question is open for the owner: the 60 (Question 1).
   mid-span.
 
 **Ask First:**
-- **Question 1 before Dev.** The ruled value goes into `ACCOUNT_COMPILES_PER_HOUR`, and into the AC and test numbers that
-  derive from it.
 - **Every production and T1 write needs the owner's in-session go**, asked in R-83's shape, run in the main session, never by a
   subagent, and worded for the run's whole set. That covers:
   - the lock recorder on the production pooler (MEASUREMENTS §92);
@@ -172,7 +171,7 @@ One question is open for the owner: the 60 (Question 1).
 - **A session-level `pg_advisory_lock`.** The transaction pooler keeps no session.
 - **A wait longer than `LOCK_WAIT_MS`**, or a retry of a lock that timed out.
 - **A lock taken by Pre-flight, by the check before a Roll back, or by any read.**
-- **A per-plan budget,** unless Question 1 rules option 3.
+- **A per-plan budget.** R-295 rules one budget on every plan.
 - **New UI:** no frame, no stage and no "waiting" line.
 - **Counting `exports` rows.** Story 7.26's export runs on a `deploy_jobs` row.
 - **Locking the site a switch leaves** (Design Notes).
@@ -264,7 +263,8 @@ One question is open for the owner: the 60 (Question 1).
 
 ## Tasks & Acceptance
 
-**Dev gate:** Question 1 is ruled. Nothing else waits on the owner but the in-session gos.
+**Dev gate:** none left with the owner. Question 1 was ruled option 1 (R-295), which this plan builds. Dev still asks his
+in-session go for the production and T1 writes (Ask First).
 
 **Execution:**
 
@@ -460,6 +460,8 @@ manual step can time. Walk step 125 proves each one on production and T1.
 
 ## Questions for the owner
 
+Question 1 was ruled option 1 by the owner on 2026-11-27 (R-295). None is open. `ACCOUNT_COMPILES_PER_HOUR` holds it.
+
 ### Question 1 — How many theme builds may one account run in an hour?
 
 Every **Run checks** builds the customer's theme on our servers, and from Story 7.26 so will every theme ZIP export. Each build
@@ -477,7 +479,8 @@ of a whole deploy; a build alone costs about a third of it.
 3. 30 an hour on Free and 100 on Pro — follows the plan; every Run checks also reads the account's plan first.
 4. 30 an hour, on every plan — at most about $9.22 a month; a busy designer iterating quickly could meet it.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-11-27) — R-295.** *"1"*, which is *"60 an hour, on every plan — one build a minute for a whole
+hour; at most about $18.45 a month per account."*
 
 ## Verification
 

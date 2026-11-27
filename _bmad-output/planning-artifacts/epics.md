@@ -4756,6 +4756,8 @@ and today refuses `busy` the same way.
 bindings at the same address). Two accounts shipping to one Ghost hold two records, so a lock on `site_id` does not serialize
 them, and both can resolve the same free `inflozo-{slug}` in the same minutes, the second upload replacing the first's theme
 (`unique (site_id, theme_name)` is per record). Key the lock on the site's address, or say why not.
+**And** *(Story 7.25's Create, 2026-11-27 — R-295)* the per-account compile budget is **60 compiles an hour, on every
+plan**.
 
 **FRs:** FR-J11. · **Owner test:** none.
 
