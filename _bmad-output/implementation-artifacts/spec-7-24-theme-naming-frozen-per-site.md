@@ -634,3 +634,11 @@ step 124's start guard can run).
 removed); `--grep "7\.24"` 12 passed, journey 7.24 (f) red with the line removed from D2f's ending and, separately, from Live's;
 `pnpm check` green. Walk step 124's three ships now also hold that no R-294 line is drawn when the name the box showed is the one
 that landed (the real-infra control for the new line), for the run on the ruling's deployed head below.
+- **The ruling's deploy:** CI run 45961847930 green on `e6774be1` (`check` with the full `pnpm keyboard`, `rls`, `deploy`), the
+  Render matrix green; Vercel READY as `dpl_HFdZmBsBUKazFDZNeG5EZnaufiFx`. **Walk step 124, run 3 of the go's three, from a clean
+  worktree at `e6774be1`: 49 PASS, 1 FAIL** — every claim held again, now with no R-294 line on any of the three endings (each
+  landed under the name its box showed: the line's real-infra control). The one FAIL is the `finally`'s own cleanup sub-check:
+  X's disconnect through the product (a fresh sign-in, then Disconnect) had not landed within 30 s when the account was deleted —
+  the deletion took the site record with it. Read back afterwards: T1 on `casper` with only `racer`, `source` and the owner's
+  `inflozo-ghost6`; production at T1's address 14 site records (one disconnected) as before the run, no `inflozo-name-test*`
+  binding, 27 users and no `editor-harness` throwaway left.
