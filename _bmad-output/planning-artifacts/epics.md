@@ -9483,6 +9483,8 @@ Manager is granted to Free unconditionally
 badge, and **there is never an upgrade sheet on clicking the badge** (UX-DR19)
 **And** the sheet matches B13a as corrected.
 
+**And** *(given an owner by Story 7.26's Create, 2026-11-27)* the export's door is the POST of `projects/[id]/export/route.ts` (`startExport`), beside Run checks' in `projects/[id]/deploy/route.ts`: the sheet blocks both before any job row is made, so "export gating mirrors deploy gating exactly" stays true.
+
 **FRs:** FR-L3 (the exit gates). · **Frame:** `B Missing Surfaces.dc.html` B13a. · **Owner test:** yes.
 
 ### Story 12.4: Downgrade, and block-until-resolved
@@ -9517,6 +9519,8 @@ nightly by `api/cron/prune-artifacts`) keeps every pin and the newest `max(1, ca
 cap — so on a downgraded account it would prune past Free's 3 today. This story decides what "kept" means for a project over
 the cap (no prune at all while over it, or every version kept and the newest replacing nothing) and changes the one rule in
 `lib/retention.ts`' `prunable`, with its own test; the database's `pin_version` cap stays the plan's N−1
+
+**And** *(given an owner by Story 7.26's Create, 2026-11-27)* D4e's **Export theme zip** reaches Story 7.26's export, whose route answers 423 unless the session holds a fresh edit lock (D8g's take-over from a session reading along). A read-only project over the cap must still export, so this story's Create settles which holds: its session still takes the edit lock (editing greyed by the plan, not by the lock), or the export door accepts a plan-locked project without one.
 
 **FRs:** FR-L3 (the downgrade rules). · **Frame:** `D4 Dashboard Sheets and Blocks.dc.html` D4c · D4d · D4e. ·
 **Owner test:** yes.
