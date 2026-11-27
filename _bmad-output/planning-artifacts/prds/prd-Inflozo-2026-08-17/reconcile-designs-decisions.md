@@ -6357,7 +6357,27 @@ meanwhile.""*
   - ✅ `prd.md` FR-J11 (a dated note);
   - ✅ `epics.md` Story 7.25's card;
   - ✅ `epic-7-context.md`;
-  - ☐ the code (`lib/deploy.ts`' `ACCOUNT_COMPILES_PER_HOUR`) — Story 7.25's Dev.
+  - ✅ the code (`lib/deploy.ts`' `ACCOUNT_COMPILES_PER_HOUR`) — Story 7.25's Dev (built; walk 125 run 2 refused the 61st build
+    on production with the log line, 2026-11-27).
+
+**R-296 — a Ship it that waited past the site's lock gives up, and the customer runs checks again.** Story 7.25's Review,
+Question 2, ruled **option 1** (owner, 2026-11-27): *"Keep it as built — the failure screen, then Run checks again. Nothing new to
+build; it happens only when two deploys reach one site at the same moment and the first runs past 30 seconds. (RECOMMENDED)"*
+
+- **Why it was a question.** Since Story 7.25 deploys to one Ghost take turns under a per-site lock, waited for at most 30 s. A Ship
+  it whose wait runs out sends nothing; the frozen plan fails its job (`deploy_running`, S8d′) and the checked artefact with it, so
+  trying again means Run checks again — one more of the hour's 60 builds (R-295). The Review's Blind Hunter asked whether it should
+  keep the check ready instead, as the hourly site limit does.
+- **The rule.** As built: the wizard ends on S8d′ — "Uploading to Ghost failed" and "Another deploy to this site is already
+  running — try again in a moment." — and the customer goes back and runs checks again. Re-activate's wait ends the same way, its
+  theme still uploaded and its Re-activate still offered.
+- **Declined.** Option 2, keep the check resting at Ship it with the running sentence in its refusal line, so a second press ships
+  without a new build.
+- Targets:
+  - ✅ this entry;
+  - ✅ Story 7.25's spec (Question 2's Ruled line, the Review Findings, In plain English);
+  - ✅ `epic-7-context.md`;
+  - ✅ the code — nothing changes (`run.ts`' `underLock`, `deploy-wizard.tsx`' `lockWaited`, as built and walked).
 
 ## B · Approved decisions superseded by this session
 

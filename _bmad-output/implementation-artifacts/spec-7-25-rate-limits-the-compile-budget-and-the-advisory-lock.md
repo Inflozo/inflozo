@@ -21,8 +21,8 @@ sentence when they can go again, for example: "Inflozo ships to one site at most
 ghost6.inflozo.com again in 12 minutes."
 
 There is no owner's test: nothing new is drawn, and the epic's card says none. Walk step 125 proves the story on production and T1.
-The owner ruled the 60 on 2026-11-27 (Question 1, R-295). Question 2 (the Review's) is open: what a Ship it that waited too long
-should leave behind.
+The owner ruled the 60 on 2026-11-27 (Question 1, R-295), and at the Review that a Ship it which waited too long ends on the
+failure screen and runs checks again (Question 2, R-296). No question is open.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -404,7 +404,7 @@ in-session go for the production and T1 writes (Ask First).
 *Story 7.25's Review (2026-11-27): five layers — Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
 verifier (its read-only half a subagent; every production and T1 call in the main session, on the owner's in-session goes) — then
 walk step 125 on the Dev head and the lock recorder at 290 s on the production pooler (Verification). One question for the owner
-(Question 2), three items deferred, twelve findings dismissed. Each patch is Spec Change Log "Review".*
+(Question 2, ruled R-296: as built), three items deferred, twelve findings dismissed. Each patch is Spec Change Log "Review".*
 
 - [x] [Review][Patch] **A SILENT idle hold has lost its lock through the pooler** — §92's H3 rerun at 290 s on the owner's go: the
   key taken by a waiter at 280 s, the holder's COMMIT on a new session (`25P01`); the same hold on Postgres 17 kept it, and a second
@@ -435,9 +435,9 @@ walk step 125 on the Dev head and the lock recorder at 290 s on the production p
   counts: it compiled"; "Roll backs included" (one row per version, its latest acceptance); "job rows are never deleted"; `db.ts`'
   "starves nothing"; the History route's "no lock" (it means the edit lock); the recorder's secret list taking an empty part
   [`put-back.ts`, `run.ts`, `db.ts`, `history/route.ts`, `prd.md` FR-J11, `record-site-lock.mjs`]
-- [ ] [Review][Decision] A Ship it whose wait ran out throws its checked artefact away: it ends on S8d′ ("Uploading to Ghost failed",
+- [x] [Review][Decision] A Ship it whose wait ran out throws its checked artefact away: it ends on S8d′ ("Uploading to Ghost failed",
   though nothing was sent) and the customer runs checks again — one more of the hour's 60 builds. As the frozen table built it.
-  Question 2, open.
+  Question 2, ruled option 1 (R-296): kept as built.
 - [x] [Review][Defer] Every hold pins one pooler backend for its span, every waiter one for its wait; nothing caps concurrent holds
   (production: `max_connections` 60) [`server/site-lock.ts`] — deferred, a capacity ceiling with no load near it (DW-408)
 - [x] [Review][Defer] A project's job rows are deleted with it, so deleting projects frees budget [`deploy_jobs.project_id … on
@@ -573,7 +573,7 @@ manual step can time. Walk step 125 proves each one on production and T1.
 ## Questions for the owner
 
 Question 1 was ruled option 1 by the owner on 2026-11-27 (R-295). `ACCOUNT_COMPILES_PER_HOUR` holds it. Question 2 was raised at
-the Review (2026-11-27) and is open; nothing waits on it — the story ships as built, and option 2 would be built in this story.
+the Review (2026-11-27) and ruled option 1 the same day (R-296): kept as built. None is open.
 
 ### Question 1 — How many theme builds may one account run in an hour?
 
@@ -613,7 +613,8 @@ second simply waited and shipped.)
    a moment." under Ship it (as the hourly limit already does), and pressing Ship it again just works, without a new build. A small
    new state in the wizard, its tests and a walk check, built in this story.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-11-27) — R-296.** *"1"*, which is *"Keep it as built — the failure screen, then Run checks again."*
+Nothing changes in the code.
 
 ## Verification
 
