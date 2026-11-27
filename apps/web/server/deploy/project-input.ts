@@ -5,12 +5,13 @@ import { resolveStrings, type SectionRegistryEntry } from '@inflozo/library'
 import { parseDoc, type ProjectDoc } from '@inflozo/section-runtime'
 import { listsOf, parseRoutesConfig, routedOf, routesYaml, validateRoutes, type RouteProblem, type RoutesConfig } from '@inflozo/section-runtime/routes'
 import type { CompileInput, CompileSetting } from '@inflozo/theme-compiler'
-import { nextVersion, themeNameOf, versionNumber, versionOf } from '../../lib/deploy.ts'
+import { nextVersion, themeNameFor, versionNumber, versionOf } from '../../lib/deploy.ts'
 import { canvasOfPageTwoKey, fileOf, fileOfKey, isRouteKey, routeCanvasOf, templateKeyOf } from '../../lib/editor.ts'
 import { docRefusal, pilot, pilotIds } from '../../lib/pilots.ts'
 import { templatesOf } from '../../lib/routes.ts'
 import { cardChunks, chunkUniverse, ORBIT_WEEKLY_DIR, PACKAGES } from '../../lib/style-guide.ts'
 import { enginePackOf } from '../../lib/style-pack.ts'
+import { heldNamesIn } from './held-names.ts'
 
 /**
  * STORY 7.18a — THE SHELL THE COMPILE HAS NEVER HAD (AD-1, AD-14): every value `compileTheme` takes, read here, so the
@@ -123,6 +124,10 @@ export async function compileInputOf(a: { projectId: string; siteId: string; use
   const routeTemplates = templatesOf(must(customs, 'the custom templates') as Parameters<typeof templatesOf>[0])
   const uploads = (must(deploys, 'the deploys') ?? []) as { version: string; activated: boolean; activated_at: string | null }[]
   const bound = (must(binding, 'the binding') as { theme_name: string } | null)?.theme_name ?? null
+  // Story 7.24 — before the first accepted upload, the names every other project holds on this Ghost (any account): the rule
+  // suffixes past them. It rides `reads`, so a name claimed between Run checks and Ship it makes the artefact stale and Ship it
+  // recompiles under the next free name. A frozen name reads nothing more: it never changes
+  const held = bound === null ? await heldNamesIn(db, { siteId, userId, projectId }) : []
 
   // the routing, judged before the compile is asked anything: the same reader and validator the routes page saves through
   const rawRouting = routingRow?.config ?? {}
@@ -156,7 +161,7 @@ export async function compileInputOf(a: { projectId: string; siteId: string; use
   const prev = activated === undefined ? Number.NaN : versionNumber(activated.version)
   // Story 7.22 (DW-372): the highest number plus one — pruning keeps every row, so the number goes on
   const n = nextVersion(uploads)
-  const themeName = bound ?? themeNameOf(p.slug)
+  const themeName = themeNameFor({ slug: p.slug, bound, held })
   const lists = config === null ? {} : Object.fromEntries([...listsOf(config)].map(([file, ls]) => [file, ls.map((l) => l.context)]))
   const input: CompileInput = {
     templates: docs,

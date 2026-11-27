@@ -510,6 +510,38 @@ test('stale at Ship: the same row re-runs compiling and checking, then uploads â
   assert.equal(v.calls.length, 0, 'nothing uploaded')
 })
 
+test('7.24: a name claimed by another project between Pre-flight and Ship it â€” Ship it\'s re-read is stale, re-makes the artefact and uploads and binds under the next free name, never stopping', async () => {
+  let claimed = false
+  const w = world({ siteBound: false, snapshot: [{ ok: true, id: 'snap-1', theme: 'casper', version: '6.0.0', bytes: 1 } as Snapshot] })
+  // the read as `compileInputOf` hands it: the name `themeNameFor` picked, in the input and in the reads the hash covers
+  w.io.read = async () => {
+    const name = claimed ? 'inflozo-notes-2' : 'inflozo-notes'
+    const r = w.baseRead()
+    return { ...r, themeName: name, reads: { ...r.reads, themeName: name }, input: { ...r.input, theme: { ...r.input.theme, name } } }
+  }
+  w.io.hash = async (reads) => JSON.stringify(reads)
+  const job = await begin(w)
+  assert.equal((w.deploys.get(job.deploy_id as string) as DeployRow).theme_name, 'inflozo-notes', 'Pre-flight compiled the free base')
+  claimed = true
+  await ship({ jobId: job.id, userId: U, mode: 'upload' }, w.io)
+  assert.equal(w.events.filter((e) => e === 'compile').length, 2, 're-made')
+  const d = w.deploys.get(job.deploy_id as string) as DeployRow
+  assert.equal(d.theme_name, 'inflozo-notes-2')
+  const uploads = w.calls.filter((c) => c.item === 'theme_upload')
+  assert.equal(uploads.length, 1)
+  assert.equal(((uploads[0].body as FormData).get('file') as File).name, 'inflozo-notes-2.zip', 'Ghost names the theme by the zip\'s filename (VERIFY 30)')
+  assert.deepEqual(w.bound, ['inflozo-notes-2'])
+  assert.equal(w.jobs.get(job.id)?.stage, 'done')
+  assert.equal(w.jobs.get(job.id)?.error, null)
+  // the control: nothing claimed meanwhile, nothing re-made, the base uploads
+  const v = world({ siteBound: false, snapshot: [{ ok: true, id: 'snap-1', theme: 'casper', version: '6.0.0', bytes: 1 } as Snapshot] })
+  v.io.hash = async (reads) => JSON.stringify(reads)
+  const vj = await begin(v)
+  await ship({ jobId: vj.id, userId: U, mode: 'upload' }, v.io)
+  assert.equal(v.events.filter((e) => e === 'compile').length, 1)
+  assert.equal(((v.calls.find((c) => c.item === 'theme_upload')?.body as FormData).get('file') as File).name, 'inflozo-notes.zip')
+})
+
 test('a 23505 on the binding that is not this name stops the ship with AD-24\'s running sentence', async () => {
   const w = world({ bind: 'taken' })
   const job = await begin(w)

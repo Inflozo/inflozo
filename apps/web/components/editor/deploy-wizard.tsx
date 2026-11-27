@@ -1143,11 +1143,22 @@ export function DeployWizard({
    *  Ghost's own answer — and says so under B15's panel; a probe's Preview-only stays as 7.18a drew it */
   const refusedPlan = site?.capability === 'preview_only' && site.source === 'deploy_error'
 
+  /** the theme row shows (7.18a): a connected site that is not B15's Preview-only (a refused upload's keeps it, R-270) */
+  const themeRow = !picking && site !== null && (site.capability !== 'preview_only' || refusedPlan)
+
   /* ── S8a · Destination ── */
   const destination = (
     <div className="flex flex-col gap-5">
       <div className="flex items-start justify-between">
-        <h2 id="deploy-title" className={`m-0 ${wideTitle}`}>{W.header}</h2>
+        <div className="flex items-center gap-[9px]">
+          <h2 id="deploy-title" className={`m-0 ${wideTitle}`}>{W.header}</h2>
+          {/* STORY 7.24 — D1a's pill `:47` (FR-J13's per-site first deploy: no project of the user's has uploaded to the site) */}
+          {themeRow && ship?.firstDeploy ? (
+            <span data-first-deploy className="shrink-0 rounded-pill border border-line px-[9px] py-[2px] font-mono text-[10px] font-medium text-ink-soft [font-variant-ligatures:none]">
+              {W.firstDeployPill}
+            </span>
+          ) : null}
+        </div>
         <button type="button" aria-label={W.close} onClick={close} className={`mt-1 rounded-sm text-ink-soft transition-colors hover:text-ink ${ring}`}>
           <X size={16} />
         </button>
@@ -1193,11 +1204,26 @@ export function DeployWizard({
           {refusedPlan ? <p data-plan-refused className="-mt-2 text-[12px] leading-[1.55] text-ink-soft">{W.planRefused(host)}</p> : null}
           {site.capability === 'preview_only' && !refusedPlan ? null : (
             <>
-              {/* the theme that will be created, in mono (FR-J10; EXPERIENCE's "plus one row under the destination card") */}
-              <div className="flex items-center gap-[10px] rounded-thumb border border-line p-[11px_13px]">
-                <span className="text-control-label text-ink-soft">{W.theme}</span>
-                <span data-theme-name className="ml-auto truncate font-mono text-[12.5px] font-medium text-ink [font-variant-ligatures:none]">{ship?.themeName}</span>
-              </div>
+              {ship?.newTheme ? (
+                // STORY 7.24 — D1a's box `:69-76` on this project's first ship to the site: the theme to be created, and one helper
+                // line — why it was suffixed (extrapolated into the same line), then its permanence (FR-J10)
+                <div data-theme-new className="flex flex-col gap-[5px] rounded-thumb border border-line p-[11px_13px]">
+                  <div className="flex items-center gap-[10px]">
+                    <span className="shrink-0 text-control-label text-ink-soft">{W.themeNew}</span>
+                    <span data-theme-name className="ml-auto truncate font-mono text-[12.5px] font-medium text-ink [font-variant-ligatures:none]">{ship.themeName}</span>
+                  </div>
+                  <span data-theme-line className="text-[11px] leading-[1.55] text-ink-soft [text-wrap:pretty]">
+                    {ship.suffixedFrom === null ? null : `${W.suffixed(ship.suffixedFrom, host)} `}
+                    {W.permanent(host)}
+                  </span>
+                </div>
+              ) : (
+                // the theme already on the site under its frozen name, in mono (FR-J10; EXPERIENCE's "plus one row under the destination card")
+                <div className="flex items-center gap-[10px] rounded-thumb border border-line p-[11px_13px]">
+                  <span className="text-control-label text-ink-soft">{W.theme}</span>
+                  <span data-theme-name className="ml-auto truncate font-mono text-[12.5px] font-medium text-ink [font-variant-ligatures:none]">{ship?.themeName}</span>
+                </div>
+              )}
               <fieldset className="m-0 flex flex-col gap-[10px] border-0 p-0">
                 <legend className="sr-only">{W.header}</legend>
                 <RadioCard name="deploy-mode" value="activate" checked={mode === 'activate'} title={W.activate} consequence={W.activateCard(n)} onChange={() => setMode('activate')} />
@@ -1213,7 +1239,7 @@ export function DeployWizard({
               </fieldset>
               <div className="flex flex-col gap-[6px]">
                 <div className="flex items-center">
-                  <VersionChip>{W.chip(n, prev)}</VersionChip>
+                  <VersionChip>{ship?.newTheme ? W.chipNew(n) : W.chip(n, prev)}</VersionChip>
                   {(safety && !safeAnswered) || (backup && !backupDone) ? (
                     // STORY 7.19 — D1a's Next (`D1 First-Deploy Gates.dc.html:89`): the Safety net comes first, and nothing starts;
                     // STORY 7.20a — so does the Backup step while it is owed

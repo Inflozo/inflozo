@@ -79,7 +79,7 @@ test('the next version is the highest plus one (DW-372): pruned rows are kept, s
   // shipStateOf reads the same rule: the wizard's caption and the theme's package.json agree
   const ship = shipStateOf({
     projectId: P, slug: 'notes', language: 'en', rtlAckAt: null, overridden: false, sites: [], linking: [], siteId: null, site: null,
-    deploys: [4, 5, 6].map((n) => ({ version: `${n}.0.0`, status: 'uploaded', activated: false, activated_at: null })), bindings: [], liveHere: false, required: [],
+    deploys: [4, 5, 6].map((n) => ({ version: `${n}.0.0`, status: 'uploaded', activated: false, activated_at: null })), bindings: [], held: [], liveHere: false, required: [],
   })
   assert.equal(ship.n, 7, 'three rows, but the next version is v7')
 })

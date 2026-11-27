@@ -8842,7 +8842,8 @@ test('7.18a · Ship it is S4\'s coral split button after ⋯ with "Deploy option
   // `full` is no first deploy, so Story 7.19's Safety net is not among them
   await expect(wizard(page).locator('ol li')).toHaveText(DEPLOY.stepsFor({ safety: false, backup: false }).map((s, i) => new RegExp(`^${i + 1}\\s*${s.label}$`)))
   await expect(wizard(page).locator('[data-theme-name]')).toHaveText('inflozo-pilot-sections')
-  await expect(wizard(page)).toContainText(DW.chip(1, null))
+  // Story 7.24 — `full` is this project's first ship to the site: D1a's chip (7.18a drew the plain version)
+  await expect(wizard(page)).toContainText(DW.chipNew(1))
   await page.keyboard.press('Escape')
   await expect(wizard(page)).toHaveCount(0)
   await expect(shipIt(page)).toBeFocused()
@@ -12385,4 +12386,68 @@ test.describe('7.23c · the phone\'s Deploy history card, on the iPhone 13, by t
     await expect(cardAct(page)).toBeFocused()
     expect(await cardSaid(page)).toBe('')
   })
+})
+
+// ── Story 7.24 — D1a's first-deploy confirmation (`D1 First-Deploy Gates.dc.html:28-93`): the pill beside "Ship it" on the
+// site's first deploy, the theme box naming the theme to be created with its permanence line (and, suffixed, why first), and the
+// chip "new theme · v1". A later ship keeps 7.18a's "Theme" row and `W.chip(n, prev)`. The harness's ship shapes: `first` (the
+// site's first deploy), `full` (this project's first ship to a site another project used), `shipped` (v2 live, v3 next) and
+// `taken` (`full`, suffixed because another Inflozo project holds the base on the site).
+const HOST_724 = 'harness.example'
+const BASE_724 = 'inflozo-pilot-sections'
+async function destination724(page, shape) {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': shape })
+  await open(page)
+  await openWizard(page)
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'destination')
+}
+
+test('7.24 · (a) `first`: the "first deploy" pill beside Ship it, "Theme to be created" with the name and the permanence line, "new theme · v1" — and the box is no stop: Tab goes from the mode to Next', async ({ page }) => {
+  await destination724(page, 'first')
+  await expect(wizard(page).locator('[data-first-deploy]')).toHaveText(DW.firstDeployPill)
+  expect(await wizard(page).locator('[data-first-deploy]').evaluate((el) => el.previousElementSibling?.id), 'beside the title').toBe('deploy-title')
+  const box = wizard(page).locator('[data-theme-new]')
+  await expect(box).toContainText(DW.themeNew)
+  await expect(box.locator('[data-theme-name]')).toHaveText(BASE_724)
+  await expect(box.locator('[data-theme-line]')).toHaveText(DW.permanent(HOST_724))
+  await expect(wizard(page)).toContainText(DW.chipNew(1))
+  // the box holds nothing focusable: from the chosen mode, one Tab is Next
+  await wizard(page).locator('input[value="activate"]').focus()
+  await page.keyboard.press('Tab')
+  await expect(page.locator('#deploy-next')).toBeFocused()
+})
+
+test('7.24 · (b) `full`: another of the user\'s projects shipped here first — the same box, line and chip, with no pill; Tab goes from the mode to Run checks', async ({ page }) => {
+  await destination724(page, 'full')
+  await expect(wizard(page).locator('[data-first-deploy]')).toHaveCount(0)
+  const box = wizard(page).locator('[data-theme-new]')
+  await expect(box).toContainText(DW.themeNew)
+  await expect(box.locator('[data-theme-name]')).toHaveText(BASE_724)
+  await expect(box.locator('[data-theme-line]')).toHaveText(DW.permanent(HOST_724))
+  await expect(wizard(page)).toContainText(DW.chipNew(1))
+  await wizard(page).locator('input[value="activate"]').focus()
+  await page.keyboard.press('Tab')
+  await expect(page.locator('#deploy-run')).toBeFocused()
+})
+
+test('7.24 · (c) `shipped`: the frozen name keeps 7.18a\'s "Theme" row — no box, no line, no pill — and the chip reads v2 → v3', async ({ page }) => {
+  await destination724(page, 'shipped')
+  await expect(wizard(page).locator('[data-first-deploy]')).toHaveCount(0)
+  await expect(wizard(page).locator('[data-theme-new]')).toHaveCount(0)
+  await expect(wizard(page).locator('[data-theme-line]')).toHaveCount(0)
+  const row = wizard(page).locator('[data-theme-name]')
+  await expect(row).toHaveText(BASE_724)
+  expect(await row.evaluate((el) => el.previousElementSibling?.textContent)).toBe(DW.theme)
+  await expect(wizard(page)).toContainText(DW.chip(3, 2))
+  await expect(wizard(page)).not.toContainText(DW.chipNew(3))
+  await expect(wizard(page)).not.toContainText(DW.permanent(HOST_724))
+})
+
+test('7.24 · (d) `taken`: another Inflozo project holds the base on the site — the name is suffixed -2 and the line says why, before the permanence sentence', async ({ page }) => {
+  await destination724(page, 'taken')
+  const box = wizard(page).locator('[data-theme-new]')
+  await expect(box.locator('[data-theme-name]')).toHaveText(`${BASE_724}-2`)
+  await expect(box.locator('[data-theme-line]')).toHaveText(`${DW.suffixed(BASE_724, HOST_724)} ${DW.permanent(HOST_724)}`)
+  await expect(wizard(page)).toContainText(DW.chipNew(1))
+  await expect(wizard(page).locator('[data-first-deploy]'), '`taken` is `full`: not the site\'s first deploy').toHaveCount(0)
 })

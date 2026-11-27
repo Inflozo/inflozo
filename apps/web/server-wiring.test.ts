@@ -39,6 +39,7 @@ const RETENTION = join('server', 'retention.ts')
 const RETENTION_IO = join('server', 'retention-io.ts')
 const PUT_BACK = join('server', 'deploy', 'put-back.ts')
 const PUT_BACK_IO = join('server', 'deploy', 'put-back-io.ts')
+const HELD_NAMES_IO = join('server', 'deploy', 'held-names-io.ts')
 const MIGRATIONS = '../../supabase/migrations'
 
 /** Every `.ts`/`.tsx` under `apps/web`, minus the build output and the tests themselves. */
@@ -213,6 +214,12 @@ test('the service-role client is imported by the flag reader and by nothing else
   //   "Download the live theme first" signs the check's own live copy (`deploy-artifacts/{projectId}/live/{siteId}-history.zip`), and
   //   that bucket has NO Storage policy at all (server-only, AD-29), so the service role is its only reader. It never touches a user
   //   ROW: the project and its link are read on the caller's own session (RLS), and it signs only that project × linked site's key.
+  // The NINETEENTH, added by Story 7.24 with its reason: FR-J10's collision suffix is per GHOST, not per account — two accounts
+  //   connected to one Ghost hold two site records at one address, and RLS shows each only its own bindings. `heldNames`
+  //   (`server/deploy/held-names-io.ts`, over `held-names.ts`' `heldNamesIn`) reads every OTHER project's binding to a site record
+  //   at the address of a site the caller OWNS (the first query carries `user_id`; none, and nothing more is read), and answers the
+  //   theme NAMES alone — never an id, an account or a project. Whoever can connect the site holds its Admin key and already sees
+  //   those themes in Ghost Admin. Pre-flight hands the same read its own (service-role) client through `project-input.ts`.
   const allowed = [
     join('lib', 'flags.ts'),
     SNAPSHOT_ROUTE,
@@ -232,6 +239,7 @@ test('the service-role client is imported by the flag reader and by nothing else
     SWEEP_ROUTE,
     PUT_BACK_IO,
     HISTORY_LIVE_ROUTE,
+    HELD_NAMES_IO,
   ]
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))

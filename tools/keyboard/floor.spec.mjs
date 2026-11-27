@@ -912,6 +912,88 @@ test.describe('7.19 · the Safety net at 1440, 820 and 390', () => {
   }
 })
 
+// ── Story 7.24 — D1a's first-deploy confirmation at 1440, 820 and 390 (`D1 First-Deploy Gates.dc.html:28-93`), under `first` (the
+// pill and the permanence line) and `taken` (the suffix sentence before it): the pill `:47` mono 10/500 in a `line` pill 2 × 9 beside
+// the title; the box `:69-76` a column, gap 5, `line` border, radius 10, 11 × 13, its label 12, the name mono 12.5/500 at the box's
+// right edge, the line 11 at 1.55. A long name truncates on one line, never wrapping; the line wraps inside the box; nothing
+// scrolls sideways.
+test.describe('7.24 · D1a\'s pill and theme box at 1440, 820 and 390', () => {
+  test.use({ hasTouch: false, isMobile: false })
+  for (const shape of ['first', 'taken']) {
+    for (const width of [1440, 820, 390]) {
+      test(`${shape} at ${width}`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 })
+        await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': shape })
+        await page.goto(HARNESS)
+        await painted(page)
+        const wizard = page.locator('dialog[data-deploy-wizard]')
+        await page.locator('#editor-ship').click()
+        await expect(wizard).toHaveAttribute('data-deploy-wizard', 'destination')
+        await expect(wizard.locator('[data-theme-new]')).toBeVisible()
+        const measure = () => page.evaluate(() => {
+          const px = (v) => parseFloat(v)
+          const q = (sel) => document.querySelector(`dialog[data-deploy-wizard] ${sel}`)
+          const box = q('[data-theme-new]')
+          const name = q('[data-theme-name]')
+          const line = q('[data-theme-line]')
+          const label = name.previousElementSibling
+          const pill = q('[data-first-deploy]')
+          const title = document.getElementById('deploy-title')
+          const b = getComputedStyle(box)
+          const r = (el) => el.getBoundingClientRect()
+          const lh = (el) => px(getComputedStyle(el).lineHeight)
+          return {
+            box: { dir: b.flexDirection, gap: b.rowGap, border: [b.borderTopWidth, b.borderTopColor], radius: b.borderTopLeftRadius, pad: [b.paddingTop, b.paddingLeft], left: r(box).left, right: r(box).right },
+            label: { size: getComputedStyle(label).fontSize, color: getComputedStyle(label).color, lines: Math.round(r(label).height / lh(label)) },
+            name: { size: getComputedStyle(name).fontSize, weight: getComputedStyle(name).fontWeight, mono: /mono/i.test(getComputedStyle(name).fontFamily), right: r(name).right, left: r(name).left, height: r(name).height, lh: lh(name), cut: name.scrollWidth > name.clientWidth, overflow: getComputedStyle(name).textOverflow },
+            line: { size: getComputedStyle(line).fontSize, lh: lh(line) / px(getComputedStyle(line).fontSize), color: getComputedStyle(line).color, left: r(line).left, right: r(line).right, lines: Math.round(r(line).height / lh(line)), text: line.textContent },
+            pill: pill === null ? null : (() => {
+              const p = getComputedStyle(pill)
+              return { size: p.fontSize, weight: p.fontWeight, mono: /mono/i.test(p.fontFamily), border: [p.borderTopWidth, p.borderTopColor], radius: p.borderTopLeftRadius, pad: [p.paddingTop, p.paddingLeft], color: p.color, gap: r(pill).left - r(title).right, middle: Math.abs((r(pill).top + r(pill).bottom) / 2 - (r(title).top + r(title).bottom) / 2) }
+            })(),
+            scroll: document.documentElement.scrollWidth,
+            inner: window.innerWidth,
+          }
+        })
+        const m = await measure()
+        const INK_SOFT = 'rgb(110, 106, 100)'
+        const LINE = 'rgb(231, 226, 219)'
+        expect(m.box, 'D1a :69-76').toMatchObject({ dir: 'column', gap: '5px', border: ['1px', LINE], radius: '10px', pad: ['11px', '13px'] })
+        expect(m.label).toEqual({ size: '12px', color: INK_SOFT, lines: 1 })
+        expect([m.name.size, m.name.weight, m.name.mono]).toEqual(['12.5px', '500', true])
+        expect(Math.abs(m.box.right - 13 - 1 - m.name.right), 'the name at the box\'s right edge (ml-auto)').toBeLessThanOrEqual(0.5)
+        expect([m.line.size, m.line.color]).toEqual(['11px', INK_SOFT])
+        expect(m.line.lh).toBeCloseTo(1.55, 2)
+        expect(m.line.left).toBeGreaterThanOrEqual(m.box.left + 13)
+        expect(m.line.right, 'the line inside the box').toBeLessThanOrEqual(m.box.right - 13 + 0.5)
+        if (width === 390) expect(m.line.lines, 'the line wraps inside the box').toBeGreaterThan(1)
+        if (shape === 'first') {
+          expect(m.pill, 'D1a :47').toMatchObject({ size: '10px', weight: '500', mono: true, border: ['1px', LINE], radius: '24px', pad: ['2px', '9px'], color: INK_SOFT })
+          expect(m.pill.gap, 'beside the title, 9 apart').toBeCloseTo(9, 0)
+          expect(m.pill.middle, 'centred on the title').toBeLessThanOrEqual(1)
+        } else {
+          expect(m.pill, '`taken` is no first deploy of the site').toBe(null)
+          expect(m.line.text.startsWith('inflozo-pilot-sections is already used'), 'the suffix sentence first').toBe(true)
+          expect(m.line.text.indexOf('This name is permanent')).toBeGreaterThan(0)
+        }
+        expect(m.scroll, 'nothing scrolls sideways').toBeLessThanOrEqual(m.inner)
+        // a long name: one line, cut with an ellipsis, inside the box — never wrapping and never pushing the box wider
+        await page.evaluate(() => {
+          document.querySelector('dialog[data-deploy-wizard] [data-theme-name]').textContent = `inflozo-${'a-very-long-project-name-'.repeat(6)}2`
+        })
+        const long = await measure()
+        expect(long.name.cut, 'the long name is cut').toBe(true)
+        expect(long.name.overflow).toBe('ellipsis')
+        expect(long.name.height, 'one line').toBeLessThanOrEqual(long.name.lh + 0.5)
+        expect(long.name.right).toBeLessThanOrEqual(long.box.right - 13 - 1 + 0.5)
+        expect(long.label.lines, '"Theme to be created" keeps its one line beside it').toBe(1)
+        expect(long.box.right, 'the box keeps its width').toBeCloseTo(m.box.right, 0)
+        expect(long.scroll, 'nothing scrolls sideways').toBeLessThanOrEqual(long.inner)
+      })
+    }
+  }
+})
+
 // ── Story 7.20a — the Backup step at its frame's width (D1d, `D1 First-Deploy Gates.dc.html:208-358`, as R-283 cut it to two rows):
 // at 1440 the card is 780 wide, scrolling INSIDE the wizard where it is taller than the window, the Downloads beside their rows'
 // words; at 820 (under `tablet`) and 390 nothing scrolls

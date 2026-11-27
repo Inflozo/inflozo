@@ -5,8 +5,8 @@
 //   APP_ORIGIN=http://localhost:3000 APP_PREFIX=/app …   # a local `next start`: no Vercel check, and not a deployed result
 //   T1_WRITES=1 …   # step 113 too (Story 7.18a): it WRITES TO T1, so only on the owner's in-session go, in the main session
 //                   (step 114, Story 7.18b, always runs: it writes to production through a throwaway account and reads T1);
-//                   steps 117 (Story 7.20a), 119 (Story 7.21), 120 (Story 7.22) and 121–123 (Stories 7.23a–c) write to T1 too, and
-//                   run under the same switch
+//                   steps 117 (Story 7.20a), 119 (Story 7.21), 120 (Story 7.22), 121–123 (Stories 7.23a–c) and 124 (Story 7.24) write
+//                   to T1 too, and run under the same switch
 //   STEP119_PLANT=<email> T1_WRITES=1 …   # Story 7.21: step 119 as Deploy's plant for the owner's test, as that address —
 //                   run it in a cut copy (steps 1–5 and 119); it stops after the hand edit and leaves T1 and the account planted
 //   STEP120_PLANT=<free email>,<pro email> T1_WRITES=1 …   # Story 7.22: step 120 as Deploy's plant, in a cut copy (steps 1–5 and
@@ -20,6 +20,10 @@
 //   STEP123_PLANT=<email> T1_WRITES=1 …   # Story 7.23c: step 123 as Deploy's plant, in a cut copy (steps 1–5 and 123): a NEW
 //                   address — "Phone test" v1 then v2 live on T1 ("Version n" on Home), v2's files then given an invisible hand edit under
 //                   the frozen name, live — found by the owner's first Roll back on his phone (R-291)
+//   STEP124_PLANT=<a email>,<b email> T1_WRITES=1 …   # Story 7.24: step 124 as Deploy's plant, in a cut copy (steps 1–5 and 124):
+//                   two NEW addresses — A's "Name test" shipped Deploy only (`inflozo-name-test` on T1, unused); B's "Name test" linked
+//                   to T1, nothing shipped, its staff token stored through Manage keys and its Backup confirmed — B's Destination
+//                   names `inflozo-name-test-2` with the suffix sentence
 //
 // Node 24 (it imports the seed, which reads the app's own TypeScript). Keys reach it through process.env only and it
 // prints none. Two throwaway accounts through the Auth Admin API: A is seeded with `seed-editor-project.mjs` ("Pilot
@@ -485,6 +489,15 @@
 // edit with the Admin API key found by the phone's check (D3a, the Download tapped to a zip equal to T1's live one, the page
 // staying), the Roll back still going, the next one clean; (d) Cancel sending no put-back; (e) a desktop session holding the lock
 // and the phone's Roll back landing; (f) a disconnected site's 409 under the row. `STEP123_PLANT=<address>` is Deploy's plant.
+// Story 7.24 adds step 124, WRITING TO T1 and to production, so it runs only with `T1_WRITES=1` on the owner's in-session go:
+// THEME NAMING, FROZEN PER SITE (FR-J10, D1a `:28-93`). Two throwaway Free accounts X and Y (`editor-harness-x-…`, `-y-…`) each
+// connect T1 with a project "Name test": (a) X's Destination names `inflozo-name-test` (the control — no suffix while it is free)
+// with the "first deploy" pill, the permanence line and "new theme · v1", and X's Deploy only binds it; (b) Y's names
+// `inflozo-name-test-2` with the suffix sentence first, Y's Deploy only binds it, T1 lists both and X's theme still equals X's
+// manifest; (c) Y renamed, its slug unchanged, Destination's "Theme" row with no line, and a second Deploy only `2.0.0` under `-2`
+// with no third theme. And since this story every step that named its theme `inflozo-{slug}` reads the product's name instead
+// (`productThemeName`: the stored binding, else the one rule over the bindings stored at the site's address) — a kept plant's
+// binding on T1 makes a rerun's throwaway `-2`. `STEP124_PLANT=<a>,<b>` is Deploy's plant.
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -553,6 +566,23 @@ const projectCount = async () => {
   return r.ok && Number.isInteger(n) ? n : null
 }
 
+/** STORY 7.24 — A STEP'S THEME NAME IS THE PRODUCT'S, NEVER DERIVED HERE (FR-J10): the project's stored binding to the site once one
+ *  exists, else the one rule (`lib/deploy.ts`' `themeNameFor`, handed as `DEP`) over every OTHER project's stored binding to a site
+ *  record at the same address, in any account — what `server/deploy/held-names.ts` reads. `inflozo-{slug}` is only the base now: a
+ *  kept plant on T1 (e.g. `inflozo-phone-test`) makes a rerun's throwaway `-2`. Null when a read fails */
+const productThemeName = async (DEP, { projectId, siteId, slug }) => {
+  const bound = (await call('/rest/v1', `/project_site_bindings?project_id=eq.${projectId}&site_id=eq.${siteId}&select=theme_name`)).body
+  if (!Array.isArray(bound)) return null
+  if (typeof bound[0]?.theme_name === 'string') return bound[0].theme_name
+  const url = (await call('/rest/v1', `/sites?id=eq.${siteId}&select=url`)).body?.[0]?.url
+  if (typeof url !== 'string' || typeof slug !== 'string' || slug === '') return null
+  const records = (await call('/rest/v1', `/sites?url=eq.${encodeURIComponent(url)}&select=id`)).body
+  if (!Array.isArray(records)) return null
+  const held = records.length === 0 ? [] : (await call('/rest/v1', `/project_site_bindings?site_id=in.(${records.map((r) => r.id).join(',')})&project_id=neq.${projectId}&select=theme_name`)).body
+  if (!Array.isArray(held)) return null
+  return DEP.themeNameFor({ slug, bound: null, held: held.map((b) => b.theme_name) })
+}
+
 async function main() {
   if (!LOCAL) {
     const { execSync } = require('node:child_process')
@@ -589,7 +619,7 @@ async function main() {
   const ids = []
   let browser = null
   let entitlementBack = null
-  // what a Deploy plant leaves on purpose (STEP120_PLANT, STEP121_PLANT, STEP122_PLANT, STEP123_PLANT), so the end-of-run counts expect it
+  // what a Deploy plant leaves on purpose (STEP120_PLANT, STEP121_PLANT, STEP122_PLANT, STEP123_PLANT, STEP124_PLANT), so the end-of-run counts expect it
   const plantKept = { users: 0, projects: 0 }
   try {
     // ── step 1 — the fixtures ──
@@ -11878,7 +11908,7 @@ async function main() {
         const seeded113 = UUID.test(idC ?? '') ? await seed({ email: emailC, name: `Walk 113 ${stamp}` }) : null
         P113 = seeded113?.id ?? null
         slug113 = (await project113())?.slug ?? null
-        theme113 = slug113 === null ? null : DEP113.themeNameOf(slug113)
+        // Story 7.24: the theme's name is read once the project is linked (`productThemeName`), never derived from the slug here
         const before113 = await themes113()
         prev113 = before113?.find((t) => t.active)?.name ?? null
         routesBefore113 = await routesFile113()
@@ -11886,7 +11916,7 @@ async function main() {
         // — and no walk's theme of ANY run installed (the review, 2026-10-19: each run's name is new, so naming only this one's
         // could never refuse what a killed run left)
         guard113 = prev113 !== null && !prev113.startsWith('inflozo-') && !before113.some((t) => t.name.startsWith('inflozo-walk-113-')) && routesBefore113 !== null
-        check(`step 113 — the fixture: account C made and seeded, its project's slug read (theme ${theme113}), and T1's start guard — the active theme read with the staff token and none of Inflozo's (${prev113}), no walk's theme installed, routes.yaml read (${routesBefore113?.length ?? 'unread'} bytes)`,
+        check(`step 113 — the fixture: account C made and seeded, its project's slug read (${slug113}; its theme's name is read once it is linked), and T1's start guard — the active theme read with the staff token and none of Inflozo's (${prev113}), no walk's theme installed, routes.yaml read (${routesBefore113?.length ?? 'unread'} bytes)`,
           UUID.test(idC ?? '') && UUID.test(P113 ?? '') && typeof slug113 === 'string' && guard113, JSON.stringify({ made: made113.status, P113, slug113, prev113, inflozoThemes: (before113 ?? []).filter((t) => t.name.startsWith('inflozo-')).map((t) => t.name) }))
         if (!guard113) throw new Error('step 113: the fixture or T1\'s start guard failed — nothing was written to T1')
 
@@ -11923,6 +11953,8 @@ async function main() {
         const linked113 = await call('/rest/v1', `/projects?id=eq.${P113}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: siteId113 }) })
         check('step 113a — the seeded project linked to the new site through the service key (the product\'s site picker is Story 7.18b\'s), read back',
           [200, 204].includes(linked113.status) && (await project113())?.linked_site_id === siteId113, `HTTP ${linked113.status}`)
+        theme113 = slug113 === null ? null : await productThemeName(DEP113, { projectId: P113, siteId: siteId113, slug: slug113 })
+        if (theme113 === null) throw new Error('step 113: the theme\'s name could not be read')
 
         // 113b — R-260 over T1's own posts, evaluated in the walk: the tag, the untagged posts, and the control
         const all113 = await posts113()
@@ -12035,8 +12067,8 @@ async function main() {
           refusedA113?.status === 423 && refusedA113.session === true && jobsA113 !== null && jobsA2113 === jobsA113, JSON.stringify({ refusedA113, jobsA113, jobsA2113 }))
         // window A's part is done: it leaves, so its editor neither beats nor asks for the lock again
         await pa.goto('about:blank').catch(() => {})
-        check(`step 113c — "${LK113.LOCK_COPY.shipConfirm}" takes the lock (the editor's reload) and opens the wizard there on Destination: ${HOST113} "${W113.connected}", "${W113.activate}" chosen, the theme ${theme113} and the chip "${W113.chip(1, null)}", Run checks offered`,
-          reloadedB113 && destB113?.at === 'destination' && destB113.mode === 'activate' && destB113.themeName === theme113 && destB113.run && destB113.text.includes(W113.connected) && destB113.text.includes(HOST113) && destB113.text.includes(W113.chip(1, null)),
+        check(`step 113c — "${LK113.LOCK_COPY.shipConfirm}" takes the lock (the editor's reload) and opens the wizard there on Destination: ${HOST113} "${W113.connected}", "${W113.activate}" chosen, the theme ${theme113} and the chip "${W113.chipNew(1)}", Run checks offered`,
+          reloadedB113 && destB113?.at === 'destination' && destB113.mode === 'activate' && destB113.themeName === theme113 && destB113.run && destB113.text.includes(W113.connected) && destB113.text.includes(HOST113) && destB113.text.includes(W113.chipNew(1)),
           JSON.stringify({ reloadedB113, ...(destB113 ?? {}), text: undefined }))
 
         // 113d — a clean Pre-flight, its rows against the verdicts stored on the `deploys` row
@@ -12137,9 +12169,9 @@ async function main() {
         await pb.locator('#editor-ship-menu li', { hasText: W113.uploadOnly }).locator('button, a').first().click()
         const destF113 = await until113(() => wiz113(pb), (w) => w?.at === 'destination', 15000)
         const cardF113 = await uploadCard113(pb)
-        check(`step 113f — on a first deploy ▾ → "${W113.uploadOnly}" is free (its row not greyed and captioned "${W113.uploadOnlyCaption(1, null)}" — the control for 113g) and opens Destination with it chosen, "${W113.uploadOnlyCard(1, null)}" and the chip "${W113.chip(1, null)}"`,
+        check(`step 113f — on a first deploy ▾ → "${W113.uploadOnly}" is free (its row not greyed and captioned "${W113.uploadOnlyCaption(1, null)}" — the control for 113g) and opens Destination with it chosen, "${W113.uploadOnlyCard(1, null)}" and the chip "${W113.chipNew(1)}"`,
           rowF113?.greyed === false && rowF113.text.includes(W113.uploadOnlyCaption(1, null)) && destF113?.mode === 'upload' && cardF113?.greyed === false &&
-          destF113.text.includes(W113.uploadOnlyCard(1, null)) && destF113.text.includes(W113.chip(1, null)),
+          destF113.text.includes(W113.uploadOnlyCard(1, null)) && destF113.text.includes(W113.chipNew(1)),
           JSON.stringify({ rowF113, mode: destF113?.mode ?? null, cardF113: cardF113 && { greyed: cardF113.greyed, checked: cardF113.checked } }))
         const jobF113 = await runChecks113(pb)
         const deployF113 = await deploy113(jobF113?.deploy_id)
@@ -14092,7 +14124,7 @@ async function main() {
         P119 = seeded.id
         const link = await call('/rest/v1', `/projects?id=eq.${P119}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: site119 }) })
         const slug = (await call('/rest/v1', `/projects?id=eq.${P119}&select=slug`)).body?.[0]?.slug ?? null
-        theme119 = slug === null ? null : DEP119.themeNameOf(slug)
+        theme119 = slug === null ? null : await productThemeName(DEP119, { projectId: P119, siteId: site119, slug })
         const hero0 = await heroOf119()
         check(`step 119 — the fixture: account ${PLANT119 ? 'the plant\'s' : 'J'}, T1 connected through the wizard, "Drift test" seeded and linked (theme ${theme119}), its hero "${hero0?.layerName ?? 'unread'}", no binding yet`,
           [200, 204].includes(link.status) && theme119 !== null && hero0 !== null && ((await call('/rest/v1', `/project_site_bindings?site_id=eq.${site119}&select=project_id`)).body ?? []).length === 0,
@@ -14487,11 +14519,14 @@ async function main() {
         const linkQ = await call('/rest/v1', `/projects?id=eq.${Q120}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: sitePro120 }) })
         const slugQ = (await call('/rest/v1', `/projects?id=eq.${Q120}&select=slug`)).body?.[0]?.slug ?? null
         const pro = await call('/rest/v1', `/entitlements?user_id=eq.${idPro120}`, { method: 'PATCH', body: JSON.stringify({ state: 'pro_active' }) })
+        // Story 7.24: the rows carry the name the product would give this project on its site (`productThemeName`), never the slug's
+        const nameQ = await productThemeName(DEP120, { projectId: Q120, siteId: sitePro120, slug: slugQ ?? 'pro-history-test' })
+        if (nameQ === null) throw new Error('step 120: the Pro project\'s theme name could not be read')
         // ten stored versions on its site as the product writes them — the zip at `{project}/{deploy}.zip`, a check of 0 · 0 — an hour
         // apart, the newest live
         const ten = []
         for (let n = 1; n <= 10; n++) {
-          const row = (await call('/rest/v1', '/deploys', { method: 'POST', body: JSON.stringify({ project_id: Q120, user_id: idPro120, site_id: sitePro120, version: `${n}.0.0`, theme_name: DEP120.themeNameOf(slugQ ?? 'pro-history-test'), status: n === 10 ? 'live' : 'uploaded', activated: n === 10, gscan: { errors: [], warnings: [] }, created_at: new Date(Date.now() - (11 - n) * 3_600_000).toISOString() }) })).body?.[0] ?? null
+          const row = (await call('/rest/v1', '/deploys', { method: 'POST', body: JSON.stringify({ project_id: Q120, user_id: idPro120, site_id: sitePro120, version: `${n}.0.0`, theme_name: nameQ, status: n === 10 ? 'live' : 'uploaded', activated: n === 10, gscan: { errors: [], warnings: [] }, created_at: new Date(Date.now() - (11 - n) * 3_600_000).toISOString() }) })).body?.[0] ?? null
           const key = `${Q120}/${row?.id}.zip`
           const put = row === null ? 0 : await putObject120(key, PLANTED_ZIP120)
           const pointer = put === 200 ? await call('/rest/v1', `/deploys?id=eq.${row.id}`, { method: 'PATCH', body: JSON.stringify({ artifact_path: key, artifact_bytes: PLANTED_ZIP120.length }) }) : null
@@ -14566,7 +14601,7 @@ async function main() {
         P120 = seeded.id
         await call('/rest/v1', `/projects?id=eq.${P120}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: site120 }) })
         const slug = (await call('/rest/v1', `/projects?id=eq.${P120}&select=slug`)).body?.[0]?.slug ?? null
-        theme120 = slug === null ? null : DEP120.themeNameOf(slug)
+        theme120 = slug === null ? null : await productThemeName(DEP120, { projectId: P120, siteId: site120, slug })
         if (theme120 === null) throw new Error('step 120: the project was not linked')
         await pg.goto(at(`/projects/${P120}`), { waitUntil: 'load' })
         await painted120(pg)
@@ -15319,7 +15354,7 @@ async function main() {
         P121 = seeded.id
         await call('/rest/v1', `/projects?id=eq.${P121}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: site121 }) })
         const linked = (await call('/rest/v1', `/projects?id=eq.${P121}&select=slug,linked_site_id`)).body?.[0] ?? null
-        theme121 = linked?.linked_site_id === site121 && linked.slug ? DEP121.themeNameOf(linked.slug) : null
+        theme121 = linked?.linked_site_id === site121 && linked.slug ? await productThemeName(DEP121, { projectId: P121, siteId: site121, slug: linked.slug }) : null
         if (theme121 === null) throw new Error('step 121: the project was not linked')
 
         // ── 121a — three ships, each Home naming its version ──
@@ -15893,7 +15928,9 @@ async function main() {
         await call('/rest/v1', `/projects?id=eq.${acc.project}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: acc.site }) })
         const linked = (await call('/rest/v1', `/projects?id=eq.${acc.project}&select=slug,linked_site_id`)).body?.[0] ?? null
         if (linked?.linked_site_id !== acc.site || !linked.slug) throw new Error(`step 122: "${name}" was not linked`)
-        return { acc, pg, theme: DEP122.themeNameOf(linked.slug) }
+        const theme = await productThemeName(DEP122, { projectId: acc.project, siteId: acc.site, slug: linked.slug })
+        if (theme === null) throw new Error(`step 122: the theme's name for "${name}" could not be read`)
+        return { acc, pg, theme }
       }
       const handBack122 = (p) => p.evaluate(async (url) => {
         const id = sessionStorage.getItem('inflozo-lock-session')
@@ -16752,7 +16789,7 @@ async function main() {
         P123 = seeded.id
         await call('/rest/v1', `/projects?id=eq.${P123}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: site123 }) })
         const linked = (await call('/rest/v1', `/projects?id=eq.${P123}&select=slug,linked_site_id`)).body?.[0] ?? null
-        theme123 = linked?.linked_site_id === site123 && linked.slug ? DEP123.themeNameOf(linked.slug) : null
+        theme123 = linked?.linked_site_id === site123 && linked.slug ? await productThemeName(DEP123, { projectId: P123, siteId: site123, slug: linked.slug }) : null
         if (theme123 === null) throw new Error('step 123: the project was not linked')
 
         // ── the two ships, each Home naming its version ──
@@ -16975,6 +17012,396 @@ async function main() {
         }
       }
       check('step 123 — the step\'s contexts recorded zero CSP violations', csp123.length === 0, JSON.stringify(csp123.slice(0, 3)))
+    }
+
+    /* ── step 124 — Story 7.24: THEME NAMING, FROZEN PER SITE (FR-J10, D1a `:28-93`), WRITING TO T1 ──
+       Runs only with `T1_WRITES=1`, on the owner's in-session go worded for the whole run: two Free throwaway accounts X and Y
+       (`editor-harness-x-…`, `editor-harness-y-…`) each connect T1 through the wizard at 1440 with a project "Name test" (step 1's
+       fixture, so its slug is `name-test`) linked; three Deploy only ships through the product (X's first, Y's first, Y's second —
+       uploads Ghost keeps, never activated, so T1 stays on its own theme), Y renamed through Projects, and the put-back of T1.
+       (a) X'S DESTINATION — the control, no suffix while the name is free: "Ship it" with the "first deploy" pill, D1a's box
+           "Theme to be created" naming `inflozo-name-test` with the permanence line alone, and "new theme · v1". X ships Deploy only
+           (the Safety net's Add token and the Backup step answered as a customer answers them): X's binding is `inflozo-name-test`,
+           and T1 (staff token, `GET themes/`) lists it, not active.
+       (b) Y'S DESTINATION — the suffix, across accounts on one Ghost: `inflozo-name-test-2`, its line the suffix sentence then the
+           permanence sentence, the pill (Y's own record has never been shipped to). Y ships Deploy only: Y's binding is `-2`; T1
+           lists both, neither active; X's theme downloaded from T1 equals X's `content_manifest` — nothing was overwritten.
+       (c) THE NAME HOLDS: Y renamed "Renamed test" on Projects (its card's menu), its `slug` read back unchanged; Destination's
+           "Theme" row naming `-2` with no line and no pill, the chip "v2"; a second Deploy only: `2.0.0` under `-2`, the binding
+           unchanged, and still exactly the two `inflozo-name-test*` themes on T1.
+       FINALLY: every job at rest; T1 put back (its own theme active, both test themes and every inflozo- theme the run uploaded
+       deleted, routes.yaml byte for byte) and read back; each account's objects removed, T1 disconnected through the product on
+       its own session, the account deleted; users and projects counted back. Ghost 5's half (T3, R-238) waits for DW-326's pass at
+       Story 15.7. The start refuses a T1 that already holds an `inflozo-name-test*` theme, or any account's binding of that name at
+       T1's address (a plant left in place): ask the owner, since (a)'s control could not hold.
+       `STEP124_PLANT=<a>,<b>` (with `T1_WRITES=1`, in a cut copy of steps 1–5 and this one) is Deploy's plant for the owner's test
+       instead: two NEW addresses — A as X through (a) (its `inflozo-name-test` on T1, unused); B connected with "Name test" linked,
+       nothing shipped, T1's Staff Access Token stored through Manage keys and its Backup step confirmed (the service key), so its
+       wizard has four steps and its first ship captures T1's own theme rather than stopping on B12b (no token reads `GET themes/`
+       with the Admin key, which Ghost refuses); B's Destination read back naming `-2` with the suffix sentence — then it stops and
+       leaves both accounts, their sites and A's theme as they are. Keys are read in-process by NAME and scrubbed; never printed.
+       SELF-CONTAINED, as 121–123 are. */
+    if (process.env.T1_WRITES !== '1') {
+      note('step 124 — NOT RUN', 'it writes to T1 (three Deploy only uploads through the product and the put-back) and to production (two throwaway accounts, a rename): set T1_WRITES=1 on the owner\'s in-session go')
+    } else {
+      const imp124 = (f) => import(require('node:url').pathToFileURL(path.join(REPO, f)).href)
+      const [DEP124, DR124, CR124, PR124, AR124, RU124, ZIP124, GATE124] = await Promise.all([
+        imp124('apps/web/lib/deploy.ts'), imp124('apps/web/lib/drift.ts'), imp124('apps/web/lib/connect-rule.ts'), imp124('apps/web/lib/probe-rule.ts'),
+        imp124('apps/web/server/ghost-admin/admin-rule.ts'), imp124('apps/web/lib/routes-upload.ts'), imp124('apps/web/server/deploy/zip.ts'), imp124('apps/web/lib/backup-gate.ts'),
+      ])
+      const W124 = DEP124.DEPLOY_WORDS
+      const until124 = async (read, test, ms) => {
+        const by = Date.now() + ms
+        for (;;) {
+          const v = await read()
+          if (test(v) || Date.now() > by) return v
+          await new Promise((r) => setTimeout(r, 500))
+        }
+      }
+      const ENV124 = {}
+      const NAMES124 = ['GHOST6_URL', 'GHOST6_ADMIN_API_KEY', 'GHOST6_CONTENT_API_KEY', 'GHOST6_STAFF_ACCESS_TOKEN']
+      for (const line of fs.readFileSync(path.join(REPO, 'tools/probe/.env'), 'utf8').split('\n')) {
+        const m = /^([A-Z0-9_]+)=(.*)$/.exec(line)
+        if (m && NAMES124.includes(m[1]) && m[2].trim()) ENV124[m[1]] = m[2].trim()
+      }
+      const missing124 = NAMES124.filter((k) => !ENV124[k])
+      if (missing124.length) throw new Error(`step 124: ${missing124.join(', ')} not in tools/probe/.env`)
+      const SECRETS124 = [ENV124.GHOST6_ADMIN_API_KEY, ENV124.GHOST6_STAFF_ACCESS_TOKEN].flatMap((k) => [k, k.split(':')[1] ?? '']).concat([ENV124.GHOST6_CONTENT_API_KEY, SECRET ?? '']).filter((x) => x.length >= 8)
+      const scrub124 = (x) => SECRETS124.reduce((t, k) => t.split(k).join('<key>'), String(x))
+      const HOST124 = CR124.hostOf(ENV124.GHOST6_URL)
+      const URL124 = CR124.normaliseSiteUrl(ENV124.GHOST6_URL)
+      const BASE124 = 'inflozo-name-test'
+      const TAKEN124 = `${BASE124}-2`
+      const ghost124 = async (credential, method, p, body) => {
+        const { url, init } = AR124.adminRequest({ credential, siteUrl: ENV124.GHOST6_URL, method, path: p, body, major: 6 })
+        const r = await fetch(url, { ...init, signal: AbortSignal.timeout(90_000) })
+        const bytes = Buffer.from(await r.arrayBuffer())
+        let parsed = null
+        try { parsed = JSON.parse(bytes.toString('utf8')) } catch {}
+        return { ok: r.ok, status: r.status, body: parsed, bytes }
+      }
+      const staff124 = (method, p, body) => ghost124(ENV124.GHOST6_STAFF_ACCESS_TOKEN, method, p, body)
+      const themes124 = async () => {
+        const r = await staff124('GET', 'themes/').catch(() => null)
+        return r?.ok && Array.isArray(r.body?.themes) ? r.body.themes.map((t) => ({ name: t.name, active: t.active === true })) : null
+      }
+      const named124 = (ts) => (ts ?? []).filter((t) => t.name === BASE124 || t.name.startsWith(`${BASE124}-`)).map((t) => `${t.name}${t.active ? '*' : ''}`).sort()
+      const routesFile124 = async () => {
+        const r = await staff124('GET', RU124.ROUTES_PATH).catch(() => null)
+        return r?.ok ? r.bytes : null
+      }
+      /** a theme on T1 downloaded with the staff token, compared with a stored manifest as the drift check compares them */
+      const liveDiff124 = async (name, manifest) => {
+        const r = await staff124('GET', `themes/${encodeURIComponent(name)}/download/`).catch(() => null)
+        return r?.ok && manifest ? DR124.compareManifests(manifest, DR124.liveManifest(ZIP124.unzipTheme(new Uint8Array(r.bytes)))) : null
+      }
+      const none124 = (d) => d !== null && d.changed.length + d.added.length + d.removed.length === 0
+      /** every binding of a `inflozo-name-test*` name to any site record at T1's address, in any account (the service key) */
+      const heldAtT1 = async () => {
+        const records = (await call('/rest/v1', `/sites?url=eq.${encodeURIComponent(URL124)}&select=id`)).body
+        if (!Array.isArray(records)) return null
+        if (records.length === 0) return []
+        const held = (await call('/rest/v1', `/project_site_bindings?site_id=in.(${records.map((r) => r.id).join(',')})&theme_name=like.${BASE124}*&select=theme_name`)).body
+        return Array.isArray(held) ? held.map((b) => b.theme_name).sort() : null
+      }
+      const storage124 = { apikey: SECRET, Authorization: `Bearer ${SECRET}` }
+      const listed124 = (bucket, prefix) => fetch(`${SB}/storage/v1/object/list/${bucket}`, { method: 'POST', headers: { ...storage124, 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix, limit: 100, offset: 0 }) })
+        .then((r) => r.json()).then((l) => (Array.isArray(l) ? l.filter((o) => typeof o?.name === 'string' && o.id !== null) : [])).catch(() => [])
+      const removeObject124 = (bucket, key) => fetch(`${SB}/storage/v1/object/${bucket}/${key}`, { method: 'DELETE', headers: storage124 }).then((r) => r.status).catch(() => 0)
+
+      const PLANT124 = (process.env.STEP124_PLANT ?? '').split(',').map((e) => e.trim().toLowerCase()).filter(Boolean)
+      if (PLANT124.length !== 0 && PLANT124.length !== 2) throw new Error('step 124: STEP124_PLANT takes two addresses, A and B, comma-separated')
+      let planted124 = false
+      const STOP124 = Symbol('step 124 planted') // thrown once the plant is read back; the catch knows it
+      const usersBefore124 = (await users())?.length ?? null
+      const projectsBefore124 = await projectCount()
+      /** the step's accounts (X and Y, or the plant's A and B), each with its site and project — every one taken down by the finally */
+      const accounts124 = []
+      let prev124 = null
+      let start124 = []
+      let routesBefore124 = null
+      const ctxs124 = []
+      const csp124 = []
+
+      const ROW124 = 'id,version,theme_name,status,activated,artifact_path,content_manifest'
+      const job124 = async (project) => (await call('/rest/v1', `/deploy_jobs?project_id=eq.${project}&select=id,stage,error,deploy_id&order=started_at.desc&limit=1`)).body?.[0] ?? null
+      const deploy124 = async (id) => (id == null ? null : (await call('/rest/v1', `/deploys?id=eq.${id}&select=${ROW124}`)).body?.[0] ?? null)
+      const binding124 = async (acc) => (await call('/rest/v1', `/project_site_bindings?project_id=eq.${acc.project}&site_id=eq.${acc.site}&select=theme_name`)).body?.[0]?.theme_name ?? null
+      const project124 = async (acc) => (await call('/rest/v1', `/projects?id=eq.${acc.project}&select=name,slug,linked_site_id`)).body?.[0] ?? null
+      const siteRow124 = async (acc) => (await call('/rest/v1', `/sites?id=eq.${acc.site}&select=id,disconnected_at,credentials_present,backup_confirmed_at`)).body?.[0] ?? null
+      const atRest124 = (j) => j === null || !['queued', 'compiling', 'checking', 'snapshotting', 'uploading', 'activating'].includes(j.stage)
+      /** Destination as drawn: the pill, D1a's box or 7.18a's row, the name and its line, the chosen mode, the text (the chip) */
+      const wiz124 = (p) => p.evaluate(() => {
+        const d = document.querySelector('dialog[data-deploy-wizard]')
+        if (!d) return null
+        const q = (s) => d.querySelector(s)
+        const name = q('[data-theme-name]')
+        const rows = q('[data-check-rows]')
+        return {
+          at: d.getAttribute('data-deploy-wizard'),
+          pill: q('[data-first-deploy]')?.textContent ?? null,
+          box: q('[data-theme-new]') !== null,
+          label: name?.previousElementSibling?.textContent ?? null,
+          name: name?.textContent ?? null,
+          line: q('[data-theme-line]')?.textContent ?? null,
+          mode: q('input[name="deploy-mode"]:checked')?.value ?? null,
+          next: q('#deploy-next') !== null,
+          text: d.textContent,
+          reading: q('#deploy-drift-reading') !== null,
+          passes: rows ? [...rows.children].filter((c) => !c.hasAttribute('data-finding')).length : 0,
+        }
+      }).catch(() => null)
+      const context124 = async (email) => {
+        const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
+        ctxs124.push(ctx)
+        await recorder(ctx, csp124)
+        const pg = steady(await ctx.newPage())
+        pg.on('pageerror', (e) => note('pageerror 124', scrub124(String(e))))
+        await pg.goto(await magic(email), { waitUntil: 'load' })
+        return pg
+      }
+      /** a NEW account (recorded for the finally first), its page signed in, T1 connected through the wizard (the wizard's own project
+       *  goes) and "Name test" seeded and linked to it, its slug read back `name-test` */
+      const account124 = async (email) => {
+        const made = await admin('/admin/users', { method: 'POST', body: JSON.stringify({ email, email_confirm: true }) })
+        const id = made.status === 200 ? made.body.id ?? null : null
+        if (!UUID.test(id ?? '')) throw new Error(`step 124: the account ${email} was not made`)
+        const acc = { email, id, site: null, project: null, pg: null }
+        accounts124.push(acc)
+        const pg = await context124(email)
+        acc.pg = pg
+        await pg.goto(at('/sites/connect?step=keys'), { waitUntil: 'load' })
+        await pg.locator('#s2b-api-url').fill(ENV124.GHOST6_URL)
+        await pg.locator('#s2b-admin-key').fill(ENV124.GHOST6_ADMIN_API_KEY)
+        await pg.locator('#s2b-content-key').fill(ENV124.GHOST6_CONTENT_API_KEY)
+        await pg.locator('form:has(#s2b-api-url) button[type="submit"]').click()
+        await pg.waitForURL((u) => !u.pathname.endsWith('/sites/connect'), { timeout: 60000 })
+        const use = pg.getByRole('button', { name: PR124.BRAND_COPY.use, exact: true })
+        if (await use.waitFor({ state: 'visible', timeout: 20000 }).then(() => true, () => false)) await use.click()
+        const linked = await until124(async () => (await call('/rest/v1', `/projects?user_id=eq.${id}&select=id,linked_site_id`)).body ?? [], (ps) => ps.some((p) => p.linked_site_id !== null), 45000)
+        acc.site = linked.find((p) => p.linked_site_id !== null)?.linked_site_id ?? null
+        if (acc.site === null) throw new Error(`step 124: T1 did not connect for ${email}`)
+        for (const p of linked) await call('/rest/v1', `/projects?id=eq.${p.id}`, { method: 'DELETE' })
+        const seeded = await seed({ email, name: 'Name test' })
+        if (!seeded?.created) throw new Error(`step 124: "Name test" was not seeded for ${email}`)
+        acc.project = seeded.id
+        await call('/rest/v1', `/projects?id=eq.${acc.project}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: acc.site }) })
+        const row = await project124(acc)
+        if (row?.linked_site_id !== acc.site || row.slug !== 'name-test') throw new Error(`step 124: "Name test" was not linked with the slug name-test (${row?.slug ?? 'unread'})`)
+        return acc
+      }
+      const handBack124 = (acc) => acc.pg?.evaluate(async (url) => {
+        const id = sessionStorage.getItem('inflozo-lock-session')
+        if (!id) return
+        await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ intent: 'release', session: id }) })
+      }, `${PREFIX}/projects/${acc.project}/lock`).catch(() => {})
+      const closed124 = async (pg) => {
+        if (!(await pg.locator('dialog[data-deploy-wizard]').count().catch(() => 0))) return
+        await pg.keyboard.press('Escape').catch(() => {})
+        await pg.waitForFunction(() => !document.querySelector('dialog[data-deploy-wizard]'), null, { timeout: 15000 }).catch(() => {})
+      }
+      /** the editor opened and ▾ → Deploy only pressed: Destination, Deploy only chosen, as drawn */
+      const destination124 = async (acc) => {
+        const pg = acc.pg
+        await pg.goto(at(`/projects/${acc.project}`), { waitUntil: 'load' })
+        await pg.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 }).catch(() => {})
+        await pg.locator('#editor-ship + button').click()
+        await pg.locator('#editor-ship-menu li', { hasText: W124.uploadOnly }).locator('button, a').first().click()
+        return until124(() => wiz124(pg), (w) => w?.at === 'destination' && w.name !== null, 20000)
+      }
+      /** from Destination: the first ship's Safety net (Add token) and Backup step answered as a customer answers them, else Run
+       *  checks; then Ship it — the job's end and its deploy row */
+      const shipOnly124 = async (acc, first) => {
+        const pg = acc.pg
+        const was = (await job124(acc.project))?.id ?? null
+        if (first) {
+          await pg.locator('#deploy-next').click()
+          await until124(() => wiz124(pg), (w) => w?.at === 'safety', 15000)
+          await pg.locator('#deploy-token').fill(ENV124.GHOST6_STAFF_ACCESS_TOKEN)
+          await pg.locator('#deploy-add-token').click()
+          await until124(() => wiz124(pg), (w) => w?.at === 'backup', 60000)
+          for (const { id } of GATE124.GATE_ROWS) await pg.locator(`#deploy-gate-${id}`).check()
+          await pg.locator('#deploy-gate-confirm').check()
+          await pg.locator('#deploy-backup-run').click()
+        } else {
+          await pg.locator('#deploy-run').click()
+        }
+        const pre = await until124(() => job124(acc.project), (j) => j !== null && j.id !== was && ['awaiting_ship', 'failed', 'cancelled'].includes(j.stage), 180000)
+        if (pre?.stage !== 'awaiting_ship') throw new Error(`step 124: Pre-flight ended ${pre?.stage ?? 'unread'} for ${acc.email}`)
+        await until124(() => wiz124(pg), (w) => w?.at === 'check' && !w.reading && w.passes > 0, 30000)
+        await until124(() => pg.locator('#deploy-ship').getAttribute('aria-disabled').catch(() => 'true'), (v) => v !== 'true', 60000)
+        // DW-404 (121's): a silent press is recorded, never pressed again
+        const sent = pg.waitForRequest((r) => r.method() === 'POST' && /\/deploy$/.test(new URL(r.url()).pathname), { timeout: 20000 }).then(() => true, () => false)
+        await pg.locator('#deploy-ship').click()
+        if (!(await sent)) {
+          await pg.screenshot({ path: path.join(OUT, `step-124-ship-silent-${Date.now()}.png`) }).catch(() => {})
+          note('step 124 — DW-404, a Ship it press sent nothing in 20 s', 'see the screenshot')
+        }
+        const end = await until124(() => job124(acc.project), (j) => j?.id === pre.id && (j.stage === 'done' || j.stage === 'failed'), 300000)
+        const title = await until124(() => pg.evaluate(() => document.getElementById('deploy-title')?.textContent ?? null).catch(() => null), (t) => t === W124.uploadOnlyTitle, 30000)
+        await closed124(pg)
+        return { end, title, row: await deploy124(end?.deploy_id) }
+      }
+      const first124 = (w) => w?.pill === W124.firstDeployPill && w.box === true && w.label === W124.themeNew
+
+      try {
+        // the start: T1's live theme and routes.yaml, which the finally puts back; nothing of this step's name on T1 or held at its
+        // address — else (a)'s control (the free name, unsuffixed) could not hold
+        start124 = (await themes124()) ?? []
+        prev124 = start124.find((t) => t.active)?.name ?? null
+        routesBefore124 = await routesFile124()
+        const held0 = await heldAtT1()
+        check(`step 124 — T1's live theme read with the staff token at the start (${prev124 ?? 'unread'}), not an Inflozo theme a test left live, routes.yaml read, and no ${BASE124}* theme on T1 nor any account's binding of that name at its address`,
+          prev124 !== null && !/^inflozo-/.test(prev124) && routesBefore124 !== null && named124(start124).length === 0 && Array.isArray(held0) && held0.length === 0,
+          JSON.stringify({ themes: start124.map((t) => `${t.name}${t.active ? '*' : ''}`), held: held0 }))
+        if (prev124 === null || /^inflozo-/.test(prev124) || routesBefore124 === null) throw new Error('step 124: T1 is not on its own theme — ask the owner before restoring it')
+        if (named124(start124).length !== 0 || !Array.isArray(held0) || held0.length !== 0) throw new Error(`step 124: ${BASE124} is already on T1 or held at its address (a plant left in place?) — ask the owner`)
+        if (PLANT124.length) {
+          const all = await users()
+          if (all === null) throw new Error('step 124: the user list is unreadable, so the plant cannot tell its addresses are new')
+          const taken = PLANT124.filter((e) => all.some((u) => (u.email ?? '').toLowerCase() === e))
+          if (taken.length || PLANT124[0] === PLANT124[1]) throw new Error(`step 124: the plant's two addresses must be new and different (${taken.join(', ') || 'the same twice'})`)
+        }
+
+        // ── 124a — X: the free name, unsuffixed (the control); Deploy only binds it ──
+        const X = await account124(PLANT124[0] ?? `editor-harness-x-${stamp}@inflozo.com`)
+        const destA = await destination124(X)
+        check(`step 124a — X's Destination on the site's first deploy: "${W124.firstDeployPill}" beside Ship it, "${W124.themeNew}" naming ${BASE124} (no suffix while the name is free), the line "${W124.permanent(HOST124)}" alone, "${W124.chipNew(1)}", Next, Deploy only chosen`,
+          first124(destA) && destA.name === BASE124 && destA.line === W124.permanent(HOST124) && destA.text.includes(W124.chipNew(1)) && destA.next && destA.mode === 'upload',
+          JSON.stringify({ ...(destA ?? {}), text: undefined }))
+        const shipA = await shipOnly124(X, true)
+        const themesA = await themes124()
+        const boundX = await binding124(X)
+        check(`step 124a — X ships Deploy only (D2f "${W124.uploadOnlyTitle}"): v1 uploaded, not activated, X's binding ${BASE124}; T1 lists it, not active, ${prev124} still live`,
+          shipA.end?.stage === 'done' && shipA.title === W124.uploadOnlyTitle && shipA.row?.status === 'uploaded' && shipA.row.activated === false && shipA.row.theme_name === BASE124 && shipA.row.version === '1.0.0' &&
+          boundX === BASE124 && JSON.stringify(named124(themesA)) === JSON.stringify([BASE124]) && themesA?.find((t) => t.active)?.name === prev124,
+          JSON.stringify({ stage: shipA.end?.stage, title: shipA.title, row: shipA.row && { ...shipA.row, content_manifest: undefined }, bound: boundX, t1: named124(themesA) }))
+        await handBack124(X)
+        await X.pg.goto('about:blank')
+        if (shipA.row?.status !== 'uploaded') throw new Error('step 124: X\'s Deploy only did not land')
+
+        if (PLANT124.length) {
+          // ── the plant: B connected, "Name test" linked, its token stored through Manage keys and its Backup confirmed — then STOP ──
+          const B = await account124(PLANT124[1])
+          await B.pg.goto(at(CR124.keysPath(B.site)), { waitUntil: 'load' })
+          const box = B.pg.locator('#keys-staff')
+          await box.waitFor({ state: 'visible', timeout: 30000 })
+          await box.fill(ENV124.GHOST6_STAFF_ACCESS_TOKEN)
+          await B.pg.locator('form:has(#keys-staff) button[type="submit"]').click()
+          const keyed = await until124(() => siteRow124(B), (r) => r?.credentials_present?.staff === true, 45000)
+          const confirmed = await call('/rest/v1', `/sites?id=eq.${B.site}`, { method: 'PATCH', body: JSON.stringify({ backup_confirmed_at: new Date().toISOString() }) })
+          const rowB = await siteRow124(B)
+          const destB = await destination124(B)
+          await closed124(B.pg)
+          await handBack124(B)
+          await B.pg.goto('about:blank')
+          planted124 = check(`step 124 (plant) — A ${PLANT124[0]}: ${BASE124} on T1 from a Deploy only, unused (${prev124} live); B ${PLANT124[1]}: T1 connected, "Name test" linked, nothing shipped, the staff token stored through Manage keys and the Backup step confirmed (four steps, no B12b); B's Destination reads ${TAKEN124} with "${W124.suffixed(BASE124, HOST124)} ${W124.permanent(HOST124)}" and the pill`,
+            keyed?.credentials_present?.staff === true && [200, 204].includes(confirmed.status) && typeof rowB?.backup_confirmed_at === 'string' &&
+            first124(destB) && destB.name === TAKEN124 && destB.line === `${W124.suffixed(BASE124, HOST124)} ${W124.permanent(HOST124)}` && !destB.next && (await binding124(B)) === null,
+            JSON.stringify({ keys: rowB?.credentials_present ?? null, backup: rowB?.backup_confirmed_at ?? null, dest: destB && { ...destB, text: undefined } }))
+          if (planted124) {
+            plantKept.users += 2
+            plantKept.projects += 2
+            note('step 124 — PLANT for the owner\'s test', `A ${PLANT124[0]} · "Name test" ${at(`/projects/${X.project}`)} (${BASE124} on T1, unused) · B ${PLANT124[1]} · "Name test" <B's project id> = ${B.project} · ${at(`/projects/${B.project}`)} · Ghost Admin ${new URL(ENV124.GHOST6_URL).origin}/ghost/#/settings/design/edit`)
+          }
+          throw STOP124
+        }
+
+        // ── 124b — Y, another account on the same Ghost: the suffix, said; Deploy only leaves X's theme untouched ──
+        const Y = await account124(`editor-harness-y-${stamp}@inflozo.com`)
+        const destB = await destination124(Y)
+        check(`step 124b — Y's Destination (another account, the same Ghost): "${W124.themeNew}" naming ${TAKEN124}, its line "${W124.suffixed(BASE124, HOST124)}" BEFORE "${W124.permanent(HOST124)}", the pill (Y's record has never been shipped to) and "${W124.chipNew(1)}"`,
+          first124(destB) && destB.name === TAKEN124 && destB.line === `${W124.suffixed(BASE124, HOST124)} ${W124.permanent(HOST124)}` && destB.text.includes(W124.chipNew(1)),
+          JSON.stringify({ ...(destB ?? {}), text: undefined }))
+        const shipB = await shipOnly124(Y, true)
+        const themesB = await themes124()
+        const diffX = await liveDiff124(BASE124, shipA.row?.content_manifest)
+        check(`step 124b — Y ships Deploy only: v1 under ${TAKEN124}, Y's binding ${TAKEN124}; T1 (GET themes/, the staff token) lists both, neither active; X's ${BASE124} downloaded from T1 equals X's content_manifest — nothing overwritten`,
+          shipB.end?.stage === 'done' && shipB.row?.status === 'uploaded' && shipB.row.theme_name === TAKEN124 && (await binding124(Y)) === TAKEN124 &&
+          JSON.stringify(named124(themesB)) === JSON.stringify([BASE124, TAKEN124]) && themesB?.find((t) => t.active)?.name === prev124 && none124(diffX),
+          JSON.stringify({ stage: shipB.end?.stage, row: shipB.row && { ...shipB.row, content_manifest: undefined }, t1: named124(themesB), diffX }))
+
+        // ── 124c — Y renamed: the slug and the name hold; a second Deploy only is 2.0.0 under the same name ──
+        await handBack124(Y)
+        await Y.pg.goto(at('/projects'), { waitUntil: 'load' })
+        await Y.pg.getByRole('button', { name: 'Options for Name test', exact: true }).click()
+        await Y.pg.locator('[popover]:popover-open').getByRole('button', { name: 'Rename', exact: true }).click()
+        await Y.pg.locator(`#rename-${Y.project}`).fill('Renamed test')
+        await Y.pg.locator(`dialog[aria-labelledby="rename-${Y.project}-title"] button[type="submit"]`).click()
+        const renamed = await until124(() => project124(Y), (r) => r?.name === 'Renamed test', 30000)
+        const destC = await destination124(Y)
+        check(`step 124c — Y renamed "Renamed test" on Projects: its slug read back name-test (unchanged); Destination's "${W124.theme}" row naming ${TAKEN124}, no line, no pill, the chip "${W124.chip(2, null)}"`,
+          renamed?.name === 'Renamed test' && renamed.slug === 'name-test' && destC?.box === false && destC.label === W124.theme && destC.name === TAKEN124 && destC.line === null && destC.pill === null &&
+          destC.text.includes(W124.chip(2, null)) && !destC.text.includes(W124.chipNew(2)),
+          JSON.stringify({ project: renamed, dest: destC && { ...destC, text: undefined } }))
+        const shipC = await shipOnly124(Y, false)
+        const themesC = await themes124()
+        check(`step 124c — a second Deploy only: 2.0.0 under ${TAKEN124}, the binding unchanged, and still exactly ${BASE124} and ${TAKEN124} on T1 (no third), ${prev124} live`,
+          shipC.end?.stage === 'done' && shipC.row?.status === 'uploaded' && shipC.row.version === '2.0.0' && shipC.row.theme_name === TAKEN124 && (await binding124(Y)) === TAKEN124 &&
+          JSON.stringify(named124(themesC)) === JSON.stringify([BASE124, TAKEN124]) && themesC?.find((t) => t.active)?.name === prev124,
+          JSON.stringify({ stage: shipC.end?.stage, row: shipC.row && { ...shipC.row, content_manifest: undefined }, t1: named124(themesC) }))
+      } catch (e) {
+        if (e !== STOP124) check('step 124 — the step ran to its end', false, scrub124(String(e?.message ?? e).split('\n')[0]))
+      } finally {
+        for (const acc of accounts124) if (acc.project !== null) await handBack124(acc)
+        for (const acc of accounts124) if (acc.project !== null) await until124(() => job124(acc.project), atRest124, 330000).catch(() => {})
+        if (planted124) {
+          note('step 124 — the plant is left in place', `T1 holds ${BASE124} (A's, unused) with ${prev124} live; ${PLANT124.join(' and ')} keep their sites and "Name test"; the owner's test ends with both test themes deleted on his go, T1 staying on ${prev124}`)
+        } else {
+          if (prev124 !== null) {
+            try {
+              const now = await themes124()
+              if (now !== null && now.find((t) => t.active)?.name !== prev124) await staff124('PUT', `themes/${encodeURIComponent(prev124)}/activate/`)
+              const startNames = new Set(start124.map((t) => t.name))
+              for (const t of (await themes124()) ?? []) if (/^inflozo-/.test(t.name) && !startNames.has(t.name)) await staff124('DELETE', `themes/${encodeURIComponent(t.name)}/`)
+              const routesNow = await routesFile124()
+              if (routesBefore124 !== null && routesNow !== null && Buffer.compare(routesBefore124, routesNow) !== 0) await staff124('POST', RU124.ROUTES_PATH, RU124.routesForm(routesBefore124.toString('utf8')))
+              const after = await themes124()
+              const routesAfter = await routesFile124()
+              check(`step 124 — finally: T1 put back with the staff token — ${prev124} active, ${BASE124}, ${TAKEN124} and every inflozo- theme the run uploaded deleted, routes.yaml byte for byte as at the start, read back`,
+                after !== null && after.find((t) => t.active)?.name === prev124 && after.every((t) => !/^inflozo-/.test(t.name) || startNames.has(t.name)) &&
+                routesAfter !== null && routesBefore124 !== null && Buffer.compare(routesAfter, routesBefore124) === 0,
+                JSON.stringify({ themes: (after ?? []).map((t) => `${t.name}${t.active ? '*' : ''}`), routes: `${routesBefore124?.length ?? 'unread'} → ${routesAfter?.length ?? 'unread'} bytes` }))
+            } catch (e) {
+              check('step 124 — finally: T1 put back', false, scrub124(String(e?.message ?? e).split('\n')[0]))
+            }
+          }
+          const gone = []
+          for (const acc of accounts124) {
+            if (acc.site !== null) for (const o of await listed124('site-snapshots', `${acc.id}/${acc.site}`)) await removeObject124('site-snapshots', `${acc.id}/${acc.site}/${o.name}`)
+            const prefixes = acc.project === null ? [] : [acc.project, `${acc.project}/live`]
+            for (const prefix of prefixes) for (const o of await listed124('deploy-artifacts', prefix)) await removeObject124('deploy-artifacts', `${prefix}/${o.name}`)
+            // T1 disconnected through the product, on the account's own session
+            const row = acc.site === null ? null : await siteRow124(acc).catch(() => null)
+            if (row !== null && row.disconnected_at === null) {
+              const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
+              try {
+                const pd = steady(await ctx.newPage())
+                await pd.goto(await magic(acc.email), { waitUntil: 'load' })
+                await pd.goto(at(`/sites/disconnect?site=${acc.site}`), { waitUntil: 'load' })
+                await pd.locator('form').getByRole('button', { name: CR124.DISCONNECT.menu, exact: true }).first().click()
+                await until124(() => siteRow124(acc), (r) => r?.disconnected_at != null, 30000)
+              } catch {} finally {
+                await ctx.close().catch(() => {})
+              }
+            }
+            const left = [...(acc.site === null ? [] : await listed124('site-snapshots', `${acc.id}/${acc.site}`)), ...(await Promise.all(prefixes.map((p) => listed124('deploy-artifacts', p)))).flat()]
+            const disconnected = acc.site === null || (await siteRow124(acc).catch(() => null))?.disconnected_at != null
+            // the accounts are always this step's own (a plant refuses an address that exists), so a failed plant's go too
+            const del = await admin(`/admin/users/${acc.id}`, { method: 'DELETE', body: '{}' })
+            gone.push({ left: left.length, disconnected, del: del.status })
+          }
+          const usersAfter = (await users())?.length ?? null
+          const projectsAfter = await projectCount()
+          if (accounts124.length) {
+            check(`step 124 — finally: no object left under each account's prefixes, T1 disconnected on each, ${accounts124.length === 2 ? 'both accounts' : 'the account'} deleted (sites, projects, bindings, jobs and deploys with them), users and projects counted back`,
+              gone.every((g) => g.left === 0 && g.disconnected && g.del === 200) && usersBefore124 !== null && usersAfter === usersBefore124 && projectsBefore124 !== null && projectsAfter === projectsBefore124,
+              `${JSON.stringify(gone)}, users ${usersBefore124} → ${usersAfter}, projects ${projectsBefore124} → ${projectsAfter}`)
+          }
+        }
+        for (const ctx of ctxs124) await ctx.close().catch(() => {})
+      }
+      check('step 124 — the step\'s contexts recorded zero CSP violations', csp124.length === 0, JSON.stringify(csp124.slice(0, 3)))
     }
 
     // ── step 9 — the skeleton streams first ──

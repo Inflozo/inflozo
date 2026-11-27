@@ -2,7 +2,8 @@
 title: 'Story 7.24 — Theme naming, frozen per site'
 type: 'feature'
 created: '2026-11-27'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: '09a3c7683b871e8a093e84f57ad09ce389b7bfc1'
 owner_test: pending
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-19-the-first-deploy-credential-step-and-its-decline-path.md']
@@ -217,75 +218,75 @@ and tokens:
 **Execution:**
 
 *The rule:*
-- [ ] `apps/web/lib/deploy.ts`:
+- [x] `apps/web/lib/deploy.ts`:
   - `themeNameFor` as in Always;
   - `ShipState.newTheme` and `suffixedFrom`;
   - `shipStateOf({ …, held })`;
   - the five words;
   - `themeNameOf`'s comment updated (the suffix lives in `themeNameFor`).
-- [ ] `apps/web/server/deploy/held-names.ts` (new):
+- [x] `apps/web/server/deploy/held-names.ts` (new):
   - `heldNamesIn` and `heldNames` as in Always;
   - its header carries the finding: why the address and not the site record, and why not Ghost's list (Design Notes).
-- [ ] `apps/web/server/deploy/project-input.ts` -- read `heldNamesIn` when unbound, and take the name from `themeNameFor`.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts` -- `heldNames` beside the ship reads when linked, handed
+- [x] `apps/web/server/deploy/project-input.ts` -- read `heldNamesIn` when unbound, and take the name from `themeNameFor`.
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts` -- `heldNames` beside the ship reads when linked, handed
   to `shipStateOf`.
-- [ ] `apps/web/server-wiring.test.ts` -- `server/deploy/held-names.ts` joins the allow-list with its reason: names only, scoped to
+- [x] `apps/web/server-wiring.test.ts` -- `server/deploy/held-names.ts` joins the allow-list with its reason: names only, scoped to
   a site the caller owns.
 
 *The screen:*
-- [ ] `apps/web/components/editor/deploy-wizard.tsx` -- Destination: the pill, D1a's box and the chip as in Always. Hooks:
+- [x] `apps/web/components/editor/deploy-wizard.tsx` -- Destination: the pill, D1a's box and the chip as in Always. Hooks:
   `data-theme-name` on the name (kept), `data-theme-new` on the box, `data-first-deploy` on the pill.
-- [ ] `apps/web/app/(app)/app/harness/editor/layout.tsx` -- every shape carries `newTheme` (true unless `shipped`/`live`) and
+- [x] `apps/web/app/(app)/app/harness/editor/layout.tsx` -- every shape carries `newTheme` (true unless `shipped`/`live`) and
   `suffixedFrom: null`. A new shape, `taken`, is `full` named `inflozo-pilot-sections-2` from `inflozo-pilot-sections`.
   Document it in the header.
 
 *Tests* (each new assertion seen red under a planted reversion):
-- [ ] `apps/web/deploy.test.ts` -- `themeNameFor`:
+- [x] `apps/web/deploy.test.ts` -- `themeNameFor`:
   - free;
   - held → `-2`;
   - `-2` held → `-3`;
   - `-2` held alone → the base;
   - bound beats held.
-- [ ] `apps/web/read.test.ts` -- `shipStateOf`:
+- [x] `apps/web/read.test.ts` -- `shipStateOf`:
   - `newTheme` and `suffixedFrom` from the binding and `held`;
   - a `held` read of null logged and counted as none;
   - its own `bindings`' other projects folded in;
   - re-expect `:94`.
-- [ ] `apps/web/held-names.test.ts` (new) -- `heldNamesIn` over a recorded fake client:
+- [x] `apps/web/held-names.test.ts` (new) -- `heldNamesIn` over a recorded fake client:
   - another account's same-url binding held;
   - a disconnected record's held;
   - this project's own excluded;
   - another url's not held;
   - a `siteId` not the caller's → `[]` with no second query;
   - sorted.
-- [ ] `apps/web/deploy-input.test.ts`:
+- [x] `apps/web/deploy-input.test.ts`:
   - unbound and held → `package.json` and the filename carry `-2`;
   - bound with zero deploy rows and the base held → the bound name, with no held read.
-- [ ] `apps/web/deploy-run.test.ts` -- a name claimed between Pre-flight and Ship it: Ship it re-makes the artefact and uploads
+- [x] `apps/web/deploy-run.test.ts` -- a name claimed between Pre-flight and Ship it: Ship it re-makes the artefact and uploads
   under the next free name.
-- [ ] `tools/keyboard/journey.spec.mjs` -- 7.24 (keyboard only, below the sentinel):
+- [x] `tools/keyboard/journey.spec.mjs` -- 7.24 (keyboard only, below the sentinel):
   - (a) `first`: the pill, "Theme to be created", the name, the permanence line, "new theme · v1", then Tab to Next;
   - (b) `full`: the same with no pill;
   - (c) `shipped`: "Theme", no line, no pill, `v2 → v3`;
   - (d) `taken`: `inflozo-pilot-sections-2` with the suffix sentence before the permanence sentence;
   - re-expect 7.18a's `:8845`.
-- [ ] `tools/keyboard/floor.spec.mjs` -- 7.24 at 1440, 820 and 390 under `first` and `taken`:
+- [x] `tools/keyboard/floor.spec.mjs` -- 7.24 at 1440, 820 and 390 under `first` and `taken`:
   - D1a's pill and box geometry `:47`, `:69-76`;
   - a long name truncating, never wrapping;
   - the line wrapping inside the box;
   - no sideways scroll.
-- [ ] `tools/probe/run-verify-editor.cjs`:
+- [x] `tools/probe/run-verify-editor.cjs`:
   - add step 124 and `STEP124_PLANT` (the Verification's run, under `T1_WRITES=1`), written at Dev and never run there;
   - make every step that derives a theme name with `themeNameOf(slug)` read the stored binding's `theme_name` instead.
 
 *Propagation* (standing rules 3 and 7; end with `grep -rn "collision suffix is Story 7.24's\|themeNameOf(" apps/web tools`):
-- [ ] PRD FR-J10 (`prd.md:429`), a dated note covering:
+- [x] PRD FR-J10 (`prd.md:429`), a dated note covering:
   - the suffix is resolved across every account's bindings to one address;
   - "cannot be detected in advance" holds for what Inflozo checks — a staff token does lift `GET /themes/` (VERIFY 9), and the
     rule does not read it (Design Notes).
-- [ ] `EXPERIENCE.md` -- the Deploy Destination row `:191`, a dated note: D1a's box, pill and chip as built, and the suffix
+- [x] `EXPERIENCE.md` -- the Deploy Destination row `:191`, a dated note: D1a's box, pill and chip as built, and the suffix
   sentence.
-- [ ] `epics.md` Story 7.25's card -- a dated line, "Raised by Story 7.24's Create". AD-19's lock is keyed on `site_id`, so two
+- [x] `epics.md` Story 7.25's card -- a dated line, "Raised by Story 7.24's Create". AD-19's lock is keyed on `site_id`, so two
   accounts shipping to one Ghost do not serialize, and both can resolve the same free name in the same minutes. Key on the
   site's address, or say why not.
 
@@ -309,6 +310,36 @@ and tokens:
   `grep -rn "themeNameOf(" apps/web` finds it only inside `themeNameFor`, the harness and tests.
 
 ## Spec Change Log
+
+**Dev (2026-11-27).** Each entry is outside the frozen block, except where it says so, and was made where the build met a fact the
+plan did not hold.
+
+1. **`heldNames` lives in `server/deploy/held-names-io.ts`, not beside `heldNamesIn`** (the frozen Always names one file for both;
+   behaviour unchanged). `held-names.ts` must load under `node --test` for `held-names.test.ts`, and a file that imports
+   `supabaseAdmin` cannot: `lib/supabase/server.ts` imports `next/headers`, which Node's resolver cannot find without Next's bundler
+   (executed: `ERR_MODULE_NOT_FOUND`). It is the codebase's own split — `put-back.ts`/`put-back-io.ts`, `snapshot.ts`/`snapshot-io.ts`.
+   So `held-names-io.ts` (one line over `heldNamesIn`) is the file on `server-wiring.test.ts`' service-role list, the nineteenth, with
+   the reason Tasks gave; `held-names.ts` carries the finding header.
+2. **`STEP124_PLANT`'s B stores T1's Staff Access Token through Manage keys instead of recording a Not now.** The decline the plan
+   named would make the owner's step 3 untrue: a first upload with no token asks Ghost's theme list with the Admin API key, Ghost
+   refuses it (403, VERIFY 9's other half), and the job rests on B12b ("Deploy without a snapshot") before anything uploads — walk
+   step 117c holds exactly that. With the token stored and the Backup step confirmed (the service key), B's wizard still has four
+   steps, and its Ship it captures T1's own theme and uploads. "Before you start" and Verification's plant line are reworded to match.
+3. **The suffix's base in `shipStateOf` is the rule itself with nothing held** (`themeNameFor({ slug, bound: null, held: [] })`), so the
+   One rule criterion's grep finds `themeNameOf(` only inside `themeNameFor`, the harness and the tests.
+4. **Every walk step that derived its theme name now asks `productThemeName`** (a top-level helper): the stored binding when there is
+   one, else `themeNameFor` over every other project's stored binding at the site's address — the steps that named the theme before
+   their first upload (113, 119, 120, 121, 122, 123) have no binding to read yet. Step 113 reads it once the project is linked, and
+   its two first-ship chip expectations become `chipNew(1)`.
+5. **The name in D1a's box needs no `min-w-0`.** `truncate`'s `overflow: hidden` already zeroes a flex item's automatic minimum (a
+   planted `min-w-0` removal stayed green); the label carries `shrink-0`, without which a long name squeezed "Theme to be created"
+   onto two lines (the floor's one-line check, seen red under that reversion).
+6. **The main session's matrix audit added one test** for the I/O row "Another site" (frozen on S1, first ship to S2): nothing held
+   that row by itself — the binding read's `site_id` filter was asserted nowhere. `deploy-input.test.ts`' "frozen on one site, a first
+   ship to ANOTHER site resolves afresh there" binds the project on S and compiles for S2 at another address: unbound, the base name,
+   the held read at S2's address. Its fake answers as a table would (an unfiltered read finds S's row), and it went red with
+   `.eq('site_id', siteId)` removed from Pre-flight's binding read, green restored. Spec Change Log 2 was checked against
+   `run.ts`' `ship()`: the first upload per site record captures unless `withoutSnapshot`, so a decline with no token rests on B12b.
 
 ## Design Notes
 
@@ -345,8 +376,8 @@ Story 7.25's lock closes the first, and its card now asks it to consider the sec
 **Before you start:** on your go, Deploy plants two new Free test accounts, both connected to T1 (`ghost6.inflozo.com`):
 - **A**, `umngkmr+names724a@gmail.com`: a project **"Name test"**, already shipped to T1 with Deploy only. T1 keeps Casper live,
   and A's theme `inflozo-name-test` sits on T1 unused.
-- **B**, `umngkmr+names724b@gmail.com`: its own project **"Name test"**, linked to T1, nothing shipped. Its Safety net is already
-  answered "Not now" and its backup confirmed, so its wizard has four steps.
+- **B**, `umngkmr+names724b@gmail.com`: its own project **"Name test"**, linked to T1, nothing shipped. T1's Staff Access Token is
+  already stored for it (through Manage keys) and its backup confirmed, so its wizard has four steps.
 
 You sign in only as **B**.
 
@@ -405,7 +436,23 @@ Casper.
     counted back.
 
   **Ghost 5's half** (T3, R-238) is postponed to DW-326's pass at Story 15.7.
-- **`STEP124_PLANT=<a email>,<b email>`** (Deploy): plants the owner's test above — A shipped Deploy only, B linked with the decline
-  and backup recorded — and stops.
+- **`STEP124_PLANT=<a email>,<b email>`** (Deploy): plants the owner's test above — A shipped Deploy only, B linked with T1's
+  Staff Access Token stored through Manage keys and its backup confirmed (Spec Change Log 2), B's Destination read back naming
+  `inflozo-name-test-2` with the suffix sentence — and stops.
 - **Vercel:** the deployment is READY from the Dev head.
 - **The owner's test above (R-80).**
+
+**Executed — Dev (2026-11-27, Node 24; nothing written to production or T1, no key read):**
+- `pnpm check` green; `bash supabase/tests/run-rls-gate.sh` green, `guard_slug`'s PASS ("projects.slug frozen once a theme name
+  exists") among it; `pnpm keyboard` green in full (7.24 (a)–(d), its floor at 1440/820/390 under `first` and `taken`, 7.18a's
+  re-expected journey and 7.19's journeys and floor among them); `pnpm build` green; `python3 tools/doc-audit.py --check` green on its
+  second run.
+- Each new assertion seen red under a planted reversion: the rule without its suffix, the held read without its owner clause, its
+  `neq`, its dedupe/sort and its infrastructure mark, Pre-flight's held read skipped or always run, Ship it never stale, `shipStateOf`
+  without its log, its fold, `newTheme` or `suffixedFrom`, `read.ts` handing no `held`; in the browser the pill and the suffix sentence
+  removed, the chip and the box reverted, the label's `shrink-0` and the name's `truncate` removed.
+- The main session re-ran `pnpm check` under Node 24 after its added test: green (apps/web's run prints its own count).
+- `grep -rn "collision suffix is Story 7.24's" apps/web tools`: nothing. `grep -rn "themeNameOf(" apps/web tools`: inside
+  `themeNameFor`, the harness and the tests only.
+- **Not run at Dev, the Review's and Deploy's on the owner's in-session go:** walk step 124 (`T1_WRITES=1`, from a clean worktree at
+  the deployed sha) and `STEP124_PLANT`; the re-expected walk steps 113 and 119–123 (`productThemeName`). `node --check` passes.

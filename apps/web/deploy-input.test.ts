@@ -27,23 +27,28 @@ const at = (designId: string, over: Record<string, unknown> = {}) => ({
 })
 const doc = (...instances: unknown[]) => ({ schemaVersion: 1, instances })
 
-/** A query builder over fixed rows: every `.eq`/`.is`/`.in`/`.order` is recorded, and the filters a row must carry
- *  (`user_id`) are asserted — so a read that forgot its owner clause fails here. */
-function fakeDb(tables: Record<string, unknown>, filters: string[]): SupabaseClient {
+/** A query builder over fixed rows: every `.eq`/`.neq`/`.is`/`.in`/`.order` is recorded, and the filters a row must carry
+ *  (`user_id`) are asserted — so a read that forgot its owner clause fails here. A table may be a function of the recorded
+ *  filters (Story 7.24: one table read two ways), and a list read of a single row answers it as a list of one. */
+type Table = unknown | ((seen: readonly string[], single: boolean) => unknown)
+function fakeDb(tables: Record<string, Table>, filters: string[]): SupabaseClient {
   const builder = (table: string) => {
     const seen: string[] = []
     const q = {
       select: () => q,
       eq: (col: string, v: unknown) => (seen.push(`${col}=${String(v)}`), q),
+      neq: (col: string, v: unknown) => (seen.push(`${col}!=${String(v)}`), q),
       is: (col: string) => (seen.push(`${col} is`), q),
       in: (col: string) => (seen.push(`${col} in`), q),
       order: (col: string) => (seen.push(`order ${col}`), q),
-      maybeSingle: async () => done(),
-      then: (resolve: (v: unknown) => void) => resolve(done()),
+      maybeSingle: async () => done(true),
+      then: (resolve: (v: unknown) => void) => resolve(done(false)),
     }
-    const done = () => {
+    const done = (single: boolean) => {
       filters.push(`${table}: ${seen.join(' ')}`)
-      return { data: tables[table] ?? null, error: null }
+      const t = tables[table]
+      const data = (typeof t === 'function' ? t(seen, single) : t) ?? null
+      return { data: !single && data !== null && !Array.isArray(data) ? [data] : data, error: null }
     }
     return q
   }
@@ -158,6 +163,62 @@ test('a project with routing hands the compile `routes`, `routed` and `lists` fr
   const theme = compileTheme(new JSDOM('<body></body>').window.document, read.input)
   assert.match(theme.files['README.md'] as string, /## Routes/)
   for (const major of [5, 6] as const) assert.equal((await gscanGate(theme.files, major)).errors.length, 0, `v${major}`)
+})
+
+test('7.24: unbound, with the base held on the same Ghost by another account\'s project — package.json and the zip\'s name carry -2, and the name rides the staleness reads', async () => {
+  const filters: string[] = []
+  const OTHER_SITE = '00000000-0000-4000-8000-0000000000dd'
+  const db = fakeDb({
+    projects: { id: P, name: 'Name test', slug: 'name-test', dark_enabled: false, posts_per_page: 12, style_pack: null, language: 'en' },
+    // Pre-flight's own site read and the held read's ownership read answer this account's row; the read by address both records
+    sites: (seen: readonly string[]) => (seen.some((f) => f.startsWith('url=')) ? [{ id: S }, { id: OTHER_SITE }] : { id: S, url: 'https://ghost6.inflozo.com', ghost_version: '6.58.0', capability: 'full', site_settings: null }),
+    // this project × site: no binding yet; every other project's on that Ghost: another account's `inflozo-name-test`
+    project_site_bindings: (_seen: readonly string[], single: boolean) => (single ? null : [{ theme_name: 'inflozo-name-test' }]),
+    project_templates: [], custom_settings: [], translation_overrides: [], custom_templates: [], deploys: [], routes_config: null,
+  }, filters)
+  const read = await compileInputOf({ projectId: P, siteId: S, userId: U }, db)
+  assert.ok(read !== null)
+  assert.equal(read.themeName, 'inflozo-name-test-2', 'the deploy row\'s theme_name — the zip is uploaded as `${theme_name}.zip` (VERIFY 30)')
+  assert.equal(read.input.theme.name, 'inflozo-name-test-2')
+  assert.equal(read.reads.themeName, 'inflozo-name-test-2', 'a name that moves makes the stored artefact stale')
+  assert.equal(read.bound, null)
+  // the held read: the caller's own site first, then every record at its address, then the other projects' bindings there
+  assert.ok(filters.includes(`sites: id=${S} user_id=${U}`), filters.join('\n'))
+  assert.ok(filters.includes('sites: url=https://ghost6.inflozo.com'))
+  assert.ok(filters.includes(`project_site_bindings: site_id in project_id!=${P}`))
+  const theme = compileTheme(new JSDOM('<body></body>').window.document, read.input)
+  assert.equal(JSON.parse(theme.files['package.json'] as string).name, 'inflozo-name-test-2')
+})
+
+test('7.24: bound with no deploy row left and the base held elsewhere — the frozen name, and no held read at all', async () => {
+  const filters: string[] = []
+  const db = fakeDb({
+    projects: { id: P, name: 'Renamed test', slug: 'name-test', dark_enabled: false, posts_per_page: 12, style_pack: null, language: 'en' },
+    sites: (seen: readonly string[]) => (seen.some((f) => f.startsWith('url=')) ? [{ id: S }] : { id: S, url: 'https://ghost6.inflozo.com', ghost_version: '6.58.0', capability: 'full', site_settings: null }),
+    project_site_bindings: (_seen: readonly string[], single: boolean) => (single ? { theme_name: 'inflozo-name-test' } : [{ theme_name: 'inflozo-name-test' }]),
+    project_templates: [], custom_settings: [], translation_overrides: [], custom_templates: [], deploys: [], routes_config: null,
+  }, filters)
+  const read = await compileInputOf({ projectId: P, siteId: S, userId: U }, db)
+  assert.equal(read?.themeName, 'inflozo-name-test', 'the binding is the authority, whatever is pruned or held')
+  assert.equal(read?.input.theme.name, 'inflozo-name-test', 'no deploy row read, and the name still comes from the binding alone')
+  assert.ok(!filters.some((f) => f.includes('url=') || f.includes('!=')), `no held read: ${filters.join(' | ')}`)
+})
+
+test('7.24: frozen on one site, a first ship to ANOTHER site resolves afresh there — the binding is per project × site', async () => {
+  // the project froze `inflozo-name-test-2` on S (suffixed there); S2 is another Ghost where nothing is held
+  const S2 = '00000000-0000-4000-8000-0000000000dd'
+  const filters: string[] = []
+  const db = fakeDb({
+    projects: { id: P, name: 'Name test', slug: 'name-test', dark_enabled: false, posts_per_page: 12, style_pack: null, language: 'en' },
+    sites: (seen: readonly string[]) => (seen.some((f) => f.startsWith('url=')) ? [{ id: S2 }] : { id: S2, url: 'https://other.example.com', ghost_version: '6.58.0', capability: 'full', site_settings: null }),
+    // the row lives at S, as a table would answer: a read filtered to another site misses it, an unfiltered one finds it
+    project_site_bindings: (seen: readonly string[], single: boolean) => (single ? (seen.some((f) => f.startsWith('site_id=') && f !== `site_id=${S}`) ? null : { theme_name: 'inflozo-name-test-2' }) : []),
+    project_templates: [], custom_settings: [], translation_overrides: [], custom_templates: [], deploys: [], routes_config: null,
+  }, filters)
+  const read = await compileInputOf({ projectId: P, siteId: S2, userId: U }, db)
+  assert.equal(read?.bound, null, 'no binding on S2')
+  assert.equal(read?.themeName, 'inflozo-name-test', 'resolved afresh for S2\'s address, never carried over from S')
+  assert.ok(filters.includes('sites: url=https://other.example.com'), 'the held read is S2\'s address')
 })
 
 const GSCAN_SOURCE = readFileSync(new URL('../../packages/theme-compiler/gate/gscan.ts', import.meta.url), 'utf8')

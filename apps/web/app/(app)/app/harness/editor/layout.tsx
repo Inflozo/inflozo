@@ -196,6 +196,11 @@ import { GHOST_5_SITE, HARNESS_PROJECT, HARNESS_SITES, MEMBERS_OFF_SITE, SURFACE
  * v10 — the widest row). Its Roll back's check
  * and put-back answer by `x-inflozo-harness-check` and this header as the drawer's do.
  *
+ * STORY 7.24 — every ship shape carries `newTheme` (true on every shape but `shipped` and `live`, which have uploaded: D1a's
+ * "Theme to be created" box and "new theme · v1" chip; those two keep 7.18a's "Theme" row) and `suffixedFrom: null`; `first`
+ * adds D1a's "first deploy" pill (its `firstDeploy`). And one more shape, `taken`: `full` named `inflozo-pilot-sections-2`
+ * because another Inflozo project holds `inflozo-pilot-sections` on the site (`suffixedFrom`), so Destination says why.
+ *
  * STORY 5.24d — THE MAIN FEED IS THE RULE'S, NOT THE HARNESS'S (DW-257): every doc leaves through `read.ts`'s
  * `designateAll`, the server door the editor's real read uses, and no instance is flagged here — so the post grid becomes
  * Home's main feed because the rule picks it, and a no-op door turns the main-feed journeys red. And THE SIGNED-IN USER
@@ -455,9 +460,12 @@ function shipOf(shape: string | null, required: readonly string[]): ShipState {
   ]
   // Story 7.19 — every shape but `first` is NOT a first deploy (`firstDeploy: false`), so no journey before 7.19's meets the
   // Safety net; `first` is `full` on a site no project has uploaded to, with no token and no recorded decline — offered
-  const base = { themeName: themeNameOf('pilot-sections'), required: [...required], language: 'en', rtlAckAt: null, overridden: false, sites, firstDeploy: false }
+  // Story 7.24 — a first ship to the site on every shape but the two that have uploaded (`newTheme`), never suffixed but `taken`
+  const named = themeNameOf('pilot-sections')
+  const base = { themeName: named, required: [...required], language: 'en', rtlAckAt: null, overridden: false, sites, firstDeploy: false, newTheme: true, suffixedFrom: null }
+  if (shape === 'taken') return { ...base, themeName: `${named}-2`, suffixedFrom: named, linkedSiteId: site.id, site: { ...site, capability: 'full' }, n: 1, prev: null, shipped: false, liveHere: false }
   if (shape === 'first') return { ...base, linkedSiteId: site.id, site: { ...site, capability: 'full' }, n: 1, prev: null, shipped: false, liveHere: false, firstDeploy: true }
-  if (shape === 'shipped' || shape === 'live') return { ...base, linkedSiteId: site.id, site: { ...site, capability: 'full' }, n: 3, prev: 2, shipped: true, liveHere: shape === 'live' }
+  if (shape === 'shipped' || shape === 'live') return { ...base, linkedSiteId: site.id, site: { ...site, capability: 'full' }, n: 3, prev: 2, shipped: true, liveHere: shape === 'live', newTheme: false }
   // Story 7.18c — DW-381: the sites read failed (`sites: null`), linked as `full` or with no site
   if (shape === 'sites-failed') return { ...base, linkedSiteId: site.id, sites: null, site: { ...site, capability: 'full' }, n: 1, prev: null, shipped: false, liveHere: false }
   if (shape === 'sites-failed-unlinked') return { ...base, linkedSiteId: null, sites: null, site: null, n: 1, prev: null, shipped: false, liveHere: false }

@@ -26,6 +26,7 @@ import { DEFAULT_LANGUAGE, scriptOf } from '@inflozo/library/languages'
 import { judgeOverrides } from '@inflozo/library/override'
 import { requiredTemplates } from '@inflozo/theme-compiler'
 import { shipStateOf, type ShipState } from '@/lib/deploy'
+import { heldNames } from '@/server/deploy/held-names-io'
 
 /**
  * THE EDITOR'S TWO READS (Story 5.1), both through the user's own session, so RLS decides what exists for them.
@@ -94,7 +95,7 @@ export const projectOf = cache(async (id: string): Promise<Project | null> => {
 export type Project = {
   id: string
   name: string
-  /** Story 7.18a — FR-J10's source of the theme's name (`themeNameOf`), frozen once a binding exists (`guard_slug`) */
+  /** Story 7.18a — FR-J10's source of the theme's name (`themeNameFor`, Story 7.24), frozen once a binding exists (`guard_slug`) */
   slug: string
   dark_enabled: boolean
   revision: number
@@ -298,7 +299,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
   // `cache`d, and the 404 guard above this boundary already read it — so this is the linked site's id at no cost, and
   // the site's own row can join the reads below rather than follow them
   const linked = (await projectOf(projectId))?.linked_site_id ?? null
-  const [{ data, error }, { plan }, project, profile, prefs, lock, siteRow, settingsRow, overridesRow, cardsRow, routeRows, routingRow, shipRows, sitesRows, linkingRows] = await Promise.all([
+  const [{ data, error }, { plan }, project, profile, prefs, lock, siteRow, settingsRow, overridesRow, cardsRow, routeRows, routingRow, shipRows, sitesRows, linkingRows, heldRow] = await Promise.all([
     sb.from('project_templates').select('template_key, doc').eq('project_id', projectId),
     resolveEntitlement(user.id),
     // `cache`d and already read by the 404 guard above this boundary, so this costs no second query
@@ -350,6 +351,13 @@ export async function editorData(projectId: string): Promise<EditorData> {
     // projects links each (FR-B5, DW-69's one project per site) — both through the user's own session, so RLS decides
     sb.from('sites').select('id, title, url, capability, capability_source, site_settings').is('disconnected_at', null).order('created_at', { ascending: false }),
     sb.from('projects').select('id, name, linked_site_id').not('linked_site_id', 'is', null),
+    // Story 7.24 — the names every OTHER project holds on the linked site's Ghost, in any account (`themeNameFor` suffixes past them):
+    // the service role, scoped to a site this user owns, names only. A failed read is none here, and logged by `shipStateOf`;
+    // Pre-flight reads again and its read is what ships
+    linked === null ? [] : heldNames({ siteId: linked, userId: user.id, projectId }).catch((e: unknown) => {
+      console.error('editorData: the held names read failed', { message: e instanceof Error ? e.message : String(e) })
+      return null
+    }),
   ])
   if (error) throw new Error(`the project's templates could not be read (${error.code})`)
   // Story 7.13: a failed read THROWS, as the templates' does — an editor opened on no designs would write that empty record
@@ -559,6 +567,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
       site: siteRow && !siteRow.error ? siteRow.data : null,
       deploys: shipRows?.[0].error ? null : (shipRows?.[0].data ?? []),
       bindings: shipRows === null ? [] : shipRows[1].error ? null : (shipRows[1].data ?? []),
+      held: heldRow,
       // a failed read is "not live here" — Deploy only stays offered, and the server's own guard reads again
       liveHere: !shipRows?.[2].error && (shipRows?.[2].data?.[0] as { project_id?: unknown } | undefined)?.project_id === projectId,
       required: requiredTemplates(held),

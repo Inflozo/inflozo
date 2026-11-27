@@ -28,7 +28,7 @@ export const dynamic = 'force-dynamic'
 
 /** AD-13's window: long enough for a browser to follow the redirect, short enough to be useless */
 const SIGNED_URL_TTL_S = 60
-/** a theme's name as Ghost and `themeNameOf` write it — the only thing `?theme=` may put in a file name */
+/** a theme's name as Ghost and `themeNameFor` write it (a suffix included) — the only thing `?theme=` may put in a file name */
 const PLAIN = /^[\w.-]{1,120}$/
 
 const no = (status: number, body: string) => new NextResponse(body, { status, headers: { 'Cache-Control': 'no-store' } })

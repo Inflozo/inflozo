@@ -216,7 +216,7 @@ export async function switchSite(projectId: string, siteId: string, session: str
       }
       // the site as the picker lists it — `shipStateOf`'s own mapping, its holder beside it
       const sites = site.data === null ? [] : shipStateOf({
-        projectId, slug: '', language: project.data.language, rtlAckAt: null, overridden: false, siteId: null, site: null, deploys: [], bindings: [], liveHere: false, required: [],
+        projectId, slug: '', language: project.data.language, rtlAckAt: null, overridden: false, siteId: null, site: null, deploys: [], bindings: [], held: [], liveHere: false, required: [],
         sites: [site.data], linking: holder.data ? [{ ...holder.data, linked_site_id: siteId }] : [],
       }).sites
       return { project: { language: project.data.language, linkedSiteId: project.data.linked_site_id, overridden: (overrides.count ?? 0) > 0 }, site: sites?.[0] ?? null }

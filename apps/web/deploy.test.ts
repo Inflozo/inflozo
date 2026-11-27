@@ -10,7 +10,7 @@ import { SETTING_WORDS } from '@inflozo/section-runtime/custom-settings'
 import {
   activateAnswer, afterSafety, BACKUP_WORDS, backupOwed, CANCELLABLE, canonical, CHECK_FAILED, checkRows, DEPLOY_WORDS, deployError, endingOf, fileLabel, GHOST_PLANS_HELP, inputsHash,
   isSnapshotError, MOVING, placeOf, refusalWords, SAFETY_PICTURE, SAFETY_WORDS, safetyOffered, SNAPSHOT_CODES, SNAPSHOT_WORDS, snapshotError, STAGE_NAMES, stepNumber, stepOf, STEPS,
-  stepsFor, themeNameOf, thrownCode, UNSTOPPABLE, uploadAnswer, versionLabel, versionNumber, versionOf, type ShipState,
+  stepsFor, themeNameFor, themeNameOf, thrownCode, UNSTOPPABLE, uploadAnswer, versionLabel, versionNumber, versionOf, type ShipState,
 } from './lib/deploy.ts'
 import { KEYS } from './lib/connect-rule.ts'
 import { keysPath } from './lib/connect-rule.ts'
@@ -67,6 +67,23 @@ test('the version is n.0.0, shown v{n}; the theme is inflozo-{slug}', () => {
   assert.equal(DEPLOY_WORDS.uploadOnlyCaption(1, null), 'Upload v1, keep your current theme active')
   assert.equal(DEPLOY_WORDS.uploadOnlyCaption(5, 4), 'Upload v5, keep v4 active')
   assert.equal(DEPLOY_WORDS.activateCaption(5), 'Ship v5 and make it live')
+})
+
+test('7.24: one rule names the theme — the frozen binding, else inflozo-{slug} or the first free -2, -3 past every other project\'s name on the Ghost', () => {
+  const name = (bound: string | null, held: string[]) => themeNameFor({ slug: 'name-test', bound, held })
+  assert.equal(name(null, []), 'inflozo-name-test', 'free: the base, unsuffixed')
+  assert.equal(name(null, ['inflozo-other']), 'inflozo-name-test', 'the control: another name held changes nothing')
+  assert.equal(name(null, ['inflozo-name-test']), 'inflozo-name-test-2', 'held: the first suffix')
+  assert.equal(name(null, ['inflozo-name-test', 'inflozo-name-test-2']), 'inflozo-name-test-3', '-2 held too: the next')
+  assert.equal(name(null, ['inflozo-name-test-2']), 'inflozo-name-test', '-2 held alone: the base is still free')
+  assert.equal(name('inflozo-name-test', ['inflozo-name-test']), 'inflozo-name-test', 'bound beats held: a frozen name never moves')
+  assert.equal(name('inflozo-name-test-2', []), 'inflozo-name-test-2', 'bound with nothing held: still the frozen name, never re-derived')
+  // D1a's words, as the spec names them (R-170)
+  assert.equal(DEPLOY_WORDS.themeNew, 'Theme to be created')
+  assert.equal(DEPLOY_WORDS.permanent('ghost6.inflozo.com'), 'This name is permanent for ghost6.inflozo.com. Renaming the project later changes its name in Inflozo only.')
+  assert.equal(DEPLOY_WORDS.suffixed('inflozo-name-test', 'ghost6.inflozo.com'), 'inflozo-name-test is already used on ghost6.inflozo.com by another Inflozo project, so this one gets its own name.')
+  assert.equal(DEPLOY_WORDS.chipNew(1), 'new theme · v1')
+  assert.equal(DEPLOY_WORDS.firstDeployPill, 'first deploy')
 })
 
 test('the staleness hash: the same rows in any key order hash alike; a moved row or another release does not', async () => {
@@ -347,7 +364,7 @@ test('7.20a: shipStateOf reads the gate\'s two columns — a confirmation that c
   const of = (site: Record<string, unknown>) => shipStateOf({
     projectId: P, slug: 'notes', language: 'en', rtlAckAt: null, overridden: false, sites: [], linking: [], siteId: 's',
     site: { url: 'https://ghost6.inflozo.com', ghost_version: '6.58.0', capability: 'full', disconnected_at: null, ...site },
-    deploys: [], bindings: [], liveHere: false, required: [],
+    deploys: [], bindings: [], held: [], liveHere: false, required: [],
   }).site
   assert.equal(of({ backup_confirmed_at: '2026-10-26T10:00:00Z' })?.backupConfirmed, true)
   assert.equal(of({ backup_confirmed_at: null })?.backupConfirmed, false)

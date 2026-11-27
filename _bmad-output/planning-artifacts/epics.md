@@ -4748,6 +4748,11 @@ still race it (Ghost answers `EEXIST` to one of them, `deploy_running`); the loc
 *(Story 7.23b's Dev, 2026-11-26)* Restore original (`restoreOriginal`, the same file) takes the same lock beside the put-back: it
 activates the site's saved original, or uploads it under its own name when Ghost no longer holds it, with no `deploy_jobs` row,
 and today refuses `busy` the same way.
+**And** *(Raised by Story 7.24's Create, 2026-11-27)* AD-19's lock is keyed on `site_id`, a site RECORD — and since Story 7.24
+"one site" for a theme's name is one Ghost, whichever account connected it (`server/deploy/held-names.ts` reads every account's
+bindings at the same address). Two accounts shipping to one Ghost hold two records, so a lock on `site_id` does not serialize
+them, and both can resolve the same free `inflozo-{slug}` in the same minutes, the second upload replacing the first's theme
+(`unique (site_id, theme_name)` is per record). Key the lock on the site's address, or say why not.
 
 **FRs:** FR-J11. · **Owner test:** none.
 

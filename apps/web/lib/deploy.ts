@@ -20,6 +20,7 @@ import {
   CANVASES, canvasPath, labelOf, routeCanvasOf, settingsPath, translationsPath, type Canvas, type CanvasKey,
 } from './editor.ts'
 import { hostOf, KEYS, keysPath } from './connect-rule.ts'
+import { uniqueSlug } from './projects.ts'
 import { sizeLabel } from './routes-upload.ts'
 import { EVERY_PAGE } from './theme-settings.ts'
 import { RAIL_WORDS } from './translations.ts'
@@ -123,9 +124,16 @@ export const nextVersion = (rows: readonly { version: unknown }[]): number =>
     const n = versionNumber(String(r.version))
     return Number.isFinite(n) && n > top ? n : top
   }, 0)
-/** FR-J10 / AD-19: the theme's name, from the frozen `projects.slug` — and the zip's filename, which is what Ghost names a
- *  theme by (VERIFY 30). The collision suffix is Story 7.24's. */
+/** FR-J10 / AD-19: the theme's BASE name, from the frozen `projects.slug` — and the zip's filename, which is what Ghost names a
+ *  theme by (VERIFY 30). Only `themeNameFor` (below) calls it: the suffix lives there. */
 export const themeNameOf = (slug: string): string => `inflozo-${slug}`
+/** STORY 7.24 — THE ONE RULE THAT NAMES A THEME, before the compile (FR-J10): the binding's frozen name when this project × site has
+ *  one, whatever else is held; otherwise `inflozo-{slug}`, or the first of `-2`, `-3`, … that no OTHER project holds on the same
+ *  Ghost (`held`: every other project's binding to a site record at the same address, in any account — `server/deploy/held-names.ts`).
+ *  Destination (`shipStateOf`) and Pre-flight (`compileInputOf`) call it; nothing else derives a name. Within one account a collision
+ *  cannot happen (slugs are unique per account, DW-24), so the suffix only bites across accounts sharing one Ghost. */
+export const themeNameFor = (a: { slug: string; bound: string | null; held: readonly string[] }): string =>
+  a.bound ?? uniqueSlug(themeNameOf(a.slug), a.held)
 
 // ── the staleness hash ──────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -272,6 +280,14 @@ export const DEPLOY_WORDS = {
     prev === null ? `Upload ${versionLabel(n)}, keep your current theme active for now.` : `Upload ${versionLabel(n)}, keep ${versionLabel(prev)} active for now.`,
   theme: 'Theme',
   chip: (n: number, prev: number | null) => (prev === null ? versionLabel(n) : `${versionLabel(prev)} → ${versionLabel(n)}`),
+  /** STORY 7.24 — D1a (`D1 First-Deploy Gates.dc.html`): on a project's first ship to the linked site, the theme box `:69-76` names
+   *  the theme to be created with its permanence line (and, when the rule suffixed it, why — extrapolated into the same 11px line),
+   *  the chip reads `:88`, and the pill `:47` sits beside the title on the site's first deploy (FR-J13) */
+  themeNew: 'Theme to be created',
+  permanent: (host: string) => `This name is permanent for ${host}. Renaming the project later changes its name in Inflozo only.`,
+  suffixed: (base: string, host: string) => `${base} is already used on ${host} by another Inflozo project, so this one gets its own name.`,
+  chipNew: (n: number) => `new theme · ${versionLabel(n)}`,
+  firstDeployPill: 'first deploy',
   runChecks: 'Run checks',
   /** STORY 7.19 — Destination's button while Safety net is still to come (D1a `:89`): nothing starts, so no busy label */
   next: 'Next',
@@ -774,8 +790,12 @@ export type ShipState = {
    *  the picker's rows (`lib/site-switch.ts`). Story 7.18c (DW-381, R-276): NULL when the sites or the linking projects could
    *  not be read — the picker says so in place of an empty list, which would look like having no other site */
   sites: readonly SwitchSite[] | null
-  /** the binding's frozen name, or `themeNameOf(slug)` before the first upload */
+  /** `themeNameFor`'s: the binding's frozen name, or before the first upload `inflozo-{slug}` with the first free suffix */
   themeName: string
+  /** STORY 7.24 — this project has no binding to the linked site: Destination draws D1a's "Theme to be created" box and chip */
+  newTheme: boolean
+  /** STORY 7.24 — the base `inflozo-{slug}` when the rule suffixed it (another project holds it on this Ghost), else null */
+  suffixedFrom: string | null
   /** this project's uploads to this site plus one */
   n: number
   /** the version the site serves from this project (its last activated deploy), or null — "your current theme" */
@@ -791,7 +811,7 @@ export type ShipState = {
 }
 
 /** STORY 7.18a — SHIP IT'S STATE FROM THE STORED ROWS (`ShipState`): the site only while it is connected; the theme's name
- *  the binding froze, else `themeNameOf(slug)`; n = this project's uploads to this site plus one; the version it serves =
+ *  by `themeNameFor` (Story 7.24: the binding's, else the first free `inflozo-{slug}` on this Ghost); n = this project's uploads to this site plus one; the version it serves =
  *  its last activated deploy's. A failed read is logged and counted as none — the next Pre-flight counts again on the
  *  server, which is the truth that ships.
  *
@@ -817,13 +837,23 @@ export function shipStateOf(a: {
   /** STORY 7.19 — every binding to the linked site among the user's projects (RLS scopes the read): this project's gives the
    *  frozen theme name, and none at all is a first deploy to the site. Null when the read failed — counted as none */
   bindings: readonly { project_id?: unknown; theme_name?: unknown }[] | null
+  /** STORY 7.24 — the names every OTHER project holds on the linked site's Ghost, in any account (`heldNames`). Null when the read
+   *  failed — logged and counted as none, with this read's own `bindings` still folded in; Pre-flight's own read decides what ships */
+  held: readonly string[] | null
   liveHere: boolean
   required: readonly string[]
 }): ShipState {
   if (a.deploys === null) console.error('editorData: the deploys could not be read')
   if (a.sites === null || a.linking === null) console.error('editorData: the sites to choose from could not be read')
   if (a.bindings === null) console.error('editorData: the site\'s bindings could not be read')
+  if (a.held === null) console.error('editorData: the names held on the site could not be read')
   const binding = (a.bindings ?? []).find((b) => b.project_id === a.projectId) ?? null
+  const bound = typeof binding?.theme_name === 'string' ? binding.theme_name : null
+  // Story 7.24 — the rule over every other project's name on this Ghost: the held read's, and this read's own other bindings
+  const held = [...(a.held ?? []), ...(a.bindings ?? []).flatMap((b) => (b.project_id !== a.projectId && typeof b.theme_name === 'string' ? [b.theme_name] : []))]
+  const themeName = themeNameFor({ slug: a.slug, bound, held })
+  // the base the rule suffixed from: the rule itself with nothing held (one derivation of a name, R-170)
+  const base = themeNameFor({ slug: a.slug, bound: null, held: [] })
   const rows = a.deploys ?? []
   const url = typeof a.site?.url === 'string' ? a.site.url : ''
   const connected = a.siteId !== null && a.site !== null && (a.site.disconnected_at === null || a.site.disconnected_at === undefined) && url !== ''
@@ -869,7 +899,9 @@ export function shipStateOf(a: {
     linkedSiteId: a.siteId,
     overridden: a.overridden,
     sites,
-    themeName: typeof binding?.theme_name === 'string' ? binding.theme_name : themeNameOf(a.slug),
+    themeName,
+    newTheme: bound === null,
+    suffixedFrom: bound === null && themeName !== base ? base : null,
     n: nextVersion(rows),
     prev: Number.isFinite(prev) ? prev : null,
     shipped: rows.length > 0,

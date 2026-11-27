@@ -143,8 +143,8 @@ export type CompileInput = {
   language?: string
   /** `projects.posts_per_page` — `package.json`'s `config.posts_per_page`, and a secondary feed's query is sized by it */
   postsPerPage: number
-  /** `package.json`'s identity (Story 7.2): `name` and `version` are Story 7.24's frozen `inflozo-{slug}` and per-deploy
-   *  increment, `description` is `projects.name` */
+  /** `package.json`'s identity (Story 7.2): `name` is the shell's `themeNameFor` (Story 7.24: the frozen binding, else
+   *  `inflozo-{slug}` or its first free suffix), `version` the per-deploy increment, `description` is `projects.name` */
   theme: { name: string; version: string; description: string }
   /** Story 7.13 — `project_treatments.card_designs` AS STORED (no row: omitted or null), read by the shell: parsed here by
    *  `card_designs`' one schema (`parseCardDesigns`), so a malformed row refuses the build with its sentence (AD-36). It

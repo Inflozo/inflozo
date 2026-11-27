@@ -9,7 +9,7 @@ const SITE = '00000000-0000-4000-8000-0000000000bb'
 const base = (over: Partial<Parameters<typeof shipStateOf>[0]> = {}): Parameters<typeof shipStateOf>[0] => ({
   projectId: P, slug: 'field-notes', language: 'en', rtlAckAt: null, overridden: false, siteId: SITE,
   site: { url: 'https://ghost6.inflozo.com', ghost_version: '6.58.0', capability: 'full', capability_source: null, disconnected_at: null, site_settings: { locale: 'en' } },
-  deploys: [], bindings: [], liveHere: false, required: ['index.hbs', 'post.hbs'],
+  deploys: [], bindings: [], held: [], liveHere: false, required: ['index.hbs', 'post.hbs'],
   sites: [], linking: [], ...over,
 })
 
@@ -92,6 +92,8 @@ test('7.19: a first deploy is per SITE — no binding for it among the user\'s p
   const other = shipStateOf(base({ bindings: [{ project_id: 'p-other', theme_name: 'inflozo-other' }] }))
   assert.equal(other.firstDeploy, false, 'another project uploaded to this site')
   assert.equal(other.themeName, themeNameOf('field-notes'), 'another project\'s frozen name is never this one\'s')
+  // Story 7.24 — …but another project of the user's holding THIS name on the site suffixes it (the rule over the read's own bindings)
+  assert.equal(shipStateOf(base({ bindings: [{ project_id: 'p-other', theme_name: 'inflozo-field-notes' }] })).themeName, 'inflozo-field-notes-2')
   assert.equal(shipStateOf(base({ bindings: null })).firstDeploy, true, 'a failed read counts as none — so it is offered')
   assert.equal(shipStateOf(base({ bindings: [{ project_id: P, theme_name: 'inflozo-field-notes' }] })).firstDeploy, false, 'this project\'s own')
 })
@@ -128,8 +130,62 @@ test('7.20a: the editor\'s read carries the gate\'s two columns — `backup_conf
   const s = shipStateOf({
     projectId: 'p', slug: 'notes', language: 'en', rtlAckAt: null, overridden: false, sites: [], linking: [], siteId: 's',
     site: { url: 'https://ghost6.inflozo.com', disconnected_at: null, backup_confirmed_at: '2026-10-26T10:00:00Z', hosted_by_ghost: false },
-    deploys: [], bindings: [], liveHere: false, required: [],
+    deploys: [], bindings: [], held: [], liveHere: false, required: [],
   })
   assert.equal(s.site?.backupConfirmed, true)
   assert.equal(s.site?.hosting, 'self')
+})
+
+test('7.24: the name by the one rule — newTheme while this project has no binding to the site, suffixedFrom when another project holds the base on this Ghost; frozen beats held', () => {
+  const free = shipStateOf(base())
+  assert.equal(free.themeName, 'inflozo-field-notes')
+  assert.equal(free.newTheme, true, 'no binding: D1a\'s box')
+  assert.equal(free.suffixedFrom, null, 'the control: nothing held, nothing suffixed')
+  const taken = shipStateOf(base({ held: ['inflozo-field-notes'] }))
+  assert.equal(taken.themeName, 'inflozo-field-notes-2', 'another account\'s project holds the base on the same Ghost')
+  assert.equal(taken.suffixedFrom, 'inflozo-field-notes')
+  assert.equal(taken.newTheme, true)
+  assert.equal(shipStateOf(base({ held: ['inflozo-field-notes', 'inflozo-field-notes-2'] })).themeName, 'inflozo-field-notes-3')
+  assert.equal(shipStateOf(base({ held: ['inflozo-other'] })).suffixedFrom, null, 'another name held: unsuffixed')
+  // frozen: the binding's name whatever `held` says — the Theme row, no line
+  const frozen = shipStateOf(base({ held: ['inflozo-field-notes'], bindings: [{ project_id: P, theme_name: 'inflozo-field-notes' }] }))
+  assert.equal(frozen.themeName, 'inflozo-field-notes')
+  assert.equal(frozen.newTheme, false)
+  assert.equal(frozen.suffixedFrom, null)
+  // a project of the user's shipped here first (not the site's first deploy) and this one unbound: still a new theme
+  const second = shipStateOf(base({ bindings: [{ project_id: 'p-other', theme_name: 'inflozo-other' }] }))
+  assert.equal(second.firstDeploy, false)
+  assert.equal(second.newTheme, true)
+})
+
+test('7.24: a held read that failed (null) is logged and counted as none — the rule still runs over the read\'s own other bindings', () => {
+  const said: unknown[][] = []
+  const was = console.error
+  console.error = (...args: unknown[]) => void said.push(args)
+  try {
+    const none = shipStateOf(base({ held: null }))
+    assert.equal(none.themeName, 'inflozo-field-notes', 'counted as none')
+    assert.ok(said.some((a) => String(a[0]).includes('held')), 'logged')
+    const own = shipStateOf(base({ held: null, bindings: [{ project_id: 'p-other', theme_name: 'inflozo-field-notes' }] }))
+    assert.equal(own.themeName, 'inflozo-field-notes-2', 'the user\'s own other project\'s binding is folded in')
+    assert.equal(own.suffixedFrom, 'inflozo-field-notes')
+  } finally {
+    console.error = was
+  }
+  // the control: a read that answered logs nothing about it
+  said.length = 0
+  console.error = (...args: unknown[]) => void said.push(args)
+  try {
+    shipStateOf(base({ held: [] }))
+  } finally {
+    console.error = was
+  }
+  assert.ok(!said.some((a) => String(a[0]).includes('held')))
+})
+
+test('7.24: the editor\'s read hands shipStateOf the held names, read through the service role\'s one scoped door only while a site is linked', async () => {
+  const { readFileSync } = await import('node:fs')
+  const read = readFileSync('app/(app)/app/(authed)/projects/[id]/(editor)/read.ts', 'utf8')
+  assert.match(read, /linked === null \? \[\] : heldNames\(\{ siteId: linked, userId: user\.id, projectId \}\)\.catch\(/)
+  assert.match(read, /held: heldRow,/)
 })
