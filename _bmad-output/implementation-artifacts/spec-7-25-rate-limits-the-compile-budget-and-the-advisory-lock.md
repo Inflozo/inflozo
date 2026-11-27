@@ -1,0 +1,513 @@
+---
+title: 'Story 7.25 — Rate limits, the compile budget and the advisory lock'
+type: 'feature'
+created: '2026-11-27'
+status: 'ready-for-dev'
+owner_test: none
+review_loop_iteration: 0
+context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-24-theme-naming-frozen-per-site.md']
+---
+
+## In plain English
+
+Inflozo now sends one theme at a time to each Ghost site. If two of your projects ship to it at once, the second waits up to
+half a minute for the first to finish instead of the two colliding. The same holds for two Inflozo accounts connected to the
+same Ghost, and for a Roll back, a Restore original or a site switch.
+
+To stop a broken script or a misuse from running up costs, there are two limits. One Ghost site takes at most 10 deploys an hour.
+One account runs at most 60 theme builds an hour, and every Run checks is one build. A customer who reaches a limit is told in one
+sentence when they can go again, for example: "Inflozo ships to one site at most 10 times an hour. You can ship to
+ghost6.inflozo.com again in 12 minutes."
+
+There is no owner's test: nothing new is drawn, and the epic's card says none. Walk step 125 proves the story on production and T1.
+One question is open for the owner: the 60 (Question 1).
+
+<frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
+
+## Intent
+
+**Problem:** Nothing makes two writes to one Ghost wait for each other, and nothing counts deploys or compiles.
+- **Ghost has no lock of its own.** Two uploads of one name at once answer `200` and a raw `500 EEXIST` (VERIFY 39,
+  MEASUREMENTS §25f).
+- **The races left open by earlier stories:**
+  - two projects that pick the same free name in the same minutes. Since Story 7.24 this includes two accounts on one Ghost,
+    where the second upload replaces the first's theme;
+  - a switch that moves a site while a deploy to it is uploading (DW-379);
+  - a ship that starts during a Roll back, and two Roll backs at once (`put-back.ts:121-127`);
+  - a second Pre-flight running beside one still compiling (DW-373).
+- **The limits:** FR-J11's 10 deploys an hour per site, and the per-account compile budget, exist only on paper.
+
+**Approach:**
+- **One lock, `withSiteLock`.** It is a Postgres transaction-scoped advisory lock:
+  - keyed on the site's ADDRESS;
+  - held on its own short-lived pooler connection;
+  - waited for at most `LOCK_WAIT_MS`.
+
+  Every path that changes what a Ghost serves takes it, and each holds it over the reads its decisions rest on: Ship it,
+  Re-activate, History's Roll back and Re-activate, Restore original, and the site switch.
+- **Two counts.** Each is one pure rule over one read:
+  - Ship it is refused once the site record has had 10 uploads Ghost accepted in the last hour, unless the record is exempt;
+  - Run checks is refused once the account has started `ACCOUNT_COMPILES_PER_HOUR` compiles in the last hour.
+- **DW-373.** A new Pre-flight cancels one of the same project × site that is still running, as it already clears one resting at
+  `awaiting_ship`.
+
+**Frame (R-74): none — the card names none.** Nothing new is drawn:
+- the two limit sentences and the switch's refusal appear in the refusal lines Story 7.18a built under Run checks, under Ship it
+  and in the site picker, with the same components and tokens;
+- a timed-out Ship it ends on S8d′ with `deploy_running`'s existing sentence;
+- the wait itself shows as the pressed button's own busy state (R-98).
+
+**The epic's criteria, word for word (R-195), and how this story meets each:**
+- **Given** deploys and exports **When** the limit is applied **Then** deploys are rate-limited **10/hour per site** and are
+  idempotent
+  - **The limit:** `SITE_DEPLOYS_PER_HOUR`, at Ship it.
+  - **Idempotent:**
+    - one Ship it and one Re-activate per row (7.18a's claim, as built);
+    - one Pre-flight per project × site (DW-373);
+    - put-backs, restores and switches re-read inside the lock, so a second press finds the first one's result.
+- **And** **the count is per-account over compiles, whatever they are called**, with the per-site deploy limit sitting inside it —
+  because export runs **the same compile pipeline** and writes a row with a null `site_id`, so a per-site count would miss it
+  entirely and an account could compile without limit by exporting
+  - The budget counts `deploy_jobs` by `user_id`, whatever the site. Every Pre-flight is a row, and rows are never deleted.
+  - The schema already says `site_id` is "null for FR-J12 export" (`complete_schema.sql:415`).
+  - Story 7.26's card gains the line that its export runs on such a row and asks this budget first.
+- **And** the per-account compile budget is **billing hygiene, not capacity**, sized against a measured number — one deploy costs
+  $0.000427 — and sized to be invisible to every honest user
+  - Question 1. Option 1 is 60 an hour, which caps a runaway at about $18.45 a month per account at a full deploy's cost.
+  - A refusal leaves a log line naming the account, so a runaway is visible.
+- **And** **deploy + activate holds a per-site Postgres advisory lock**, so two projects targeting the same site **serialize
+  rather than interleave** — theme activation is globally stateful and **a rate limit is not a mutex**
+  - `withSiteLock`, held over Ship it's whole span (Design Notes).
+- **And** a failed upload **never leaves a partially active theme**
+  - As built:
+    - Ghost's refusals leave the site untouched (VERIFY 39's four `422`s; MEASUREMENTS §91's fatal theme);
+    - an upload accepted whose activation then fails is `uploaded` and not live (FR-J8).
+  - The lock adds that no second upload or activation interleaves with either.
+- **And** **the §4 test targets are exempt from the rate limit**, because a single DoD run is 30 serialized deploys which the limit
+  alone would stretch past three hours before compile time.
+  - `sites.deploy_rate_limit_exempt` is server-only (`rls.sql:216-224`). Only the per-site count reads it.
+- **And** *(R-254, R-259)* the lock's span also covers `offerRoutes` … this story's Create settles how it is held
+  - The routes step is inside Ship it's span.
+  - The lock is held on its own connection, never on `db.ts`' pooled one (Design Notes).
+- **And** *(7.18a's Review)* a Pre-flight never runs beside another of the same project to the same site (DW-373) — `start()`.
+- **And** *(7.18b's Review)* a switch never moves a site while a deploy to it is uploading or activating (DW-379)
+  - The switch takes the chosen site's lock.
+- **And** *(7.23a, 7.23b)* the put-back and Restore original take the same per-site lock — they do, over their whole body.
+- **And** *(7.24's Create)* key the lock on the site's address, or say why not
+  - It is keyed on the address: `sites.url`, `normaliseSiteUrl`'s lowercased origin.
+  - This is the same "one Ghost" as 7.24's `heldNamesIn`.
+
+## Boundaries & Constraints
+
+**Always:**
+- **The lock: `withSiteLock(siteId, run)` in `server/site-lock.ts` (new)**, over a dedicated client from `db.ts`' new `lockSql()`.
+  In one transaction, in this order:
+  1. `select set_config('lock_timeout', '<LOCK_WAIT_MS>ms', true), set_config('statement_timeout', '<LOCK_WAIT_MS + 5000>ms',
+     true), set_config('idle_in_transaction_session_timeout', '<STALLED_MS>ms', true)`;
+  2. `select pg_advisory_xact_lock(hashtextextended('site:' || coalesce((select url from public.sites where id = $1), $1::text),
+     0))`;
+  3. `run()`;
+  4. commit, with the client ended in `finally`.
+  - `LOCK_WAIT_MS = 30_000`. `STALLED_MS` is `run.ts`' own. Both are named once.
+  - **Not held:** SQLSTATE `55P03` or `57014` on step 2 answers `{ held: false }`, and `run` is never called.
+  - **A throw from `run`:** rolled back and rethrown unchanged.
+  - **A transaction that fails AFTER `run` returned** (the connection lost): logged `site-lock: the lock was lost`, and `run`'s
+    value is returned. Finished work never becomes a failure.
+  - The answer type `Locked<T> = { held: true; value: T } | { held: false }` lives in `lib/deploy.ts`.
+- **Who takes it:**
+
+  | Path | Keyed on | Inside the lock | Not held within `LOCK_WAIT_MS` |
+  |---|---|---|---|
+  | Ship it, `run.ts` `ship` | the job's site | everything after its first read, unchanged and in order: the cancel check, R-264 (a), the deploy read, DW-374's link re-read, the project read (7.24's held names), the stale re-make, the capture, the upload, the bind, the activation, the routes step | a claim off `awaiting_ship` to `failed` with `deploy_running`, and only if it moved the row, the deploy `failed`. A row another invocation moved (a double press) is left alone. Nothing is sent to Ghost |
+  | Re-activate, `run.ts` `activate` | the job's site | everything after its first read | a claim off its stage to `failed` with `deploy_running`; the deploy stays `uploaded` (D2e, its Re-activate still offered) |
+  | History's Roll back and Re-activate, `putBack` | the project's linked site, read once for the key | the whole body, unchanged (its reads run again inside) | `busy` |
+  | Restore original, `restoreOriginal` | the same | the whole body | `busy` |
+  | The switch, `switchWith` | the chosen site | the read, plan and write loop, after `holds()` | `{ refused: DEPLOY_WORDS.running }`, nothing written |
+
+  Pre-flight, the check before a Roll back and every read take no lock.
+  - A linked site of none runs the body unlocked; the body answers it as today.
+- **The counts: pure rules in `lib/deploy.ts`.**
+  - **The constants:** `SITE_DEPLOYS_PER_HOUR = 10` and `ACCOUNT_COMPILES_PER_HOUR = 60`. The 60 is Question 1's ruled value, and
+    this is its one place.
+  - **`overLimit(times, cap, now)`:**
+    - it reads the timestamps within the last hour;
+    - fewer than `cap` → null;
+    - otherwise the minutes until the oldest counted one leaves the hour, rounded up, at least 1.
+  - **Ship it: `siteLimit(a, io)` in `run.ts`.** The route's ship arm calls it after its existing refusals and before `after()`.
+    - It counts the site record's `deploys.accepted_at` within the hour (`user_id`-scoped): every upload Ghost accepted, Roll
+      backs included.
+    - `sites.deploy_rate_limit_exempt` → never refused.
+    - Over → 429 with `deployError('deploy_rate_limited', { host, minutes })`.
+  - **Run checks: `compileBudget(a, io)` in `run.ts`.** The route's preflight arm calls it before `start`.
+    - It counts the account's `deploy_jobs.started_at` within the hour, any site or none.
+    - Over → 429 with `deployError('compile_budget', { minutes })`, and the log line `deploy: compile budget reached` with the
+      user's id.
+  - **Never refused by either:** Re-activate, History's Roll back and Re-activate, Restore original and Cancel. They compile
+    nothing and they are the way back.
+  - **Words, in `DEPLOY_WORDS` (R-170, R-283).** The numbers come from the constants; `1 minute`, otherwise `{n} minutes`.
+    - `siteLimit(host, minutes)`: "Inflozo ships to one site at most 10 times an hour. You can ship to {host} again in {minutes}."
+    - `budget(minutes)`: "Your account has built 60 themes in the last hour, the most Inflozo builds in an hour. You can run
+      checks again in {minutes}."
+  - **The route** answers each 429 with the envelope as JSON (AD-24). The wizard's `post` keeps a 429's `message`.
+    `runChecks` and `press` say it in their refusal line (`setRefused` and `say`), as they say a 423 or a 422.
+- **DW-373, in `start()`.** `jobs.resting` also returns the project × site's jobs still at `queued`, `compiling` or `checking`.
+  - Those are flagged through `cancel()`, and clear themselves at their next edge, as after a Cancel.
+  - The resting ones are cleared as today, then the new row is inserted.
+  - A flagged job still counts in the budget, since it compiled.
+- **`put-back.ts`' `moving` read stays.** It is the check's `busy`. Inside the lock it can only see a ship that was killed
+  mid-span.
+
+**Ask First:**
+- **Question 1 before Dev.** The ruled value goes into `ACCOUNT_COMPILES_PER_HOUR`, and into the AC and test numbers that
+  derive from it.
+- **Every production and T1 write needs the owner's in-session go**, asked in R-83's shape, run in the main session, never by a
+  subagent, and worded for the run's whole set. That covers:
+  - the lock recorder on the production pooler (MEASUREMENTS §92);
+  - walk step 125, with its seeded rows, the exempt flag and its cleanup.
+
+**Never:**
+- **A schema change.** There is no lock table, no counter table and no index, so there is no Schema phase. Each count's
+  `ponytail:` names its ceiling: `deploy_jobs (user_id, started_at)` and `deploys (site_id, accepted_at)`.
+- **The lock on `db.ts`' pooled `sql()` client.** With `max: 1`, a `begin` there waits on its own `call()` (`db.ts:23-28`).
+- **A session-level `pg_advisory_lock`.** The transaction pooler keeps no session.
+- **A wait longer than `LOCK_WAIT_MS`**, or a retry of a lock that timed out.
+- **A lock taken by Pre-flight, by the check before a Roll back, or by any read.**
+- **A per-plan budget,** unless Question 1 rules option 3.
+- **New UI:** no frame, no stage and no "waiting" line.
+- **Counting `exports` rows.** Story 7.26's export runs on a `deploy_jobs` row.
+- **Locking the site a switch leaves** (Design Notes).
+- **A changed sentence for Ghost's `EEXIST`.** It stays `deploy_running`: it can now come only from outside Inflozo.
+
+## I/O & Edge-Case Matrix
+
+| Scenario | Input / State | Expected Output / Behavior | Error Handling |
+|----------|--------------|---------------------------|----------------|
+| One ship | nothing else on the Ghost | lock at once; the ship as today | N/A |
+| Two ships, one Ghost, two accounts, one free name | X and Y both resolved `inflozo-lock-test` at Pre-flight; Ship it pressed in both within a second | the second waits; inside, its held-names read sees the first's binding, the artefact is stale, it is re-made as `-2` and shipped; nothing overwritten; no `taken`, no `EEXIST` | N/A |
+| Wait runs out | the holder takes more than 30 s | the waiter's row is claimed off `awaiting_ship` to `failed` with `deploy_running` (S8d′), the deploy is `failed`, and nothing is sent | logged |
+| Double press, holder slow | the same row's second invocation times out | its claim finds the row moved; the first invocation's ship is untouched | N/A |
+| Re-activate waits it out | the lock is not held in 30 s | `failed` with `deploy_running`, the deploy stays `uploaded`, D2e's Re-activate is offered | N/A |
+| Roll back during a ship | the same site, the ship in its span | the put-back waits, then runs on the site as the ship left it; past 30 s → `busy` | N/A |
+| Two Roll backs at once | two tabs | serialized; the second re-reads, finds its version `live`, and answers `live-already` | N/A |
+| Switch during a ship | the chosen site's ship in its span | the switch waits; past 30 s → the running sentence, nothing written. Inside, Ship it's link re-read sees a switch that came first and refuses `site_changed` | N/A |
+| Holder dies mid-span | the invocation killed, the connection dropped | the lock is released (§92 H2); at the latest, the idle ceiling ends the session at `STALLED_MS` | `view()` fails the stalled job (as built) |
+| Connection lost after the work | the commit fails | the work's outcome stands, and the loss is logged | N/A |
+| Site limit, under | 9 accepted uploads in the hour | Ship it is accepted (202) | N/A |
+| Site limit, reached | 10 in the hour, the oldest 48 min ago | 429: "…You can ship to {host} again in 12 minutes."; the job stays at `awaiting_ship`, and Ship it can be pressed again later | N/A |
+| Exempt record | `deploy_rate_limit_exempt` true, 10+ in the hour | Ship it is accepted | N/A |
+| Roll back at the limit | 10 in the hour | a Roll back is never refused for it (and its upload counts) | N/A |
+| Budget, under | 59 jobs in the hour | Run checks starts | N/A |
+| Budget, reached | 60 jobs in the hour, any sites | 429: the budget sentence with its minutes; a log line names the account; no job is inserted | N/A |
+| Count read fails | a query error | the route answers 502 and nothing is handed on | logged by code |
+| Second Pre-flight while compiling | the first is still at `checking` | the first is flagged and clears itself (no `deploys` row, no object); the second runs | N/A |
+| Site record gone | `sites` row deleted | the key falls back to the id; the body answers as today | N/A |
+
+</frozen-after-approval>
+
+## Code Map
+
+- `apps/web/server/ghost-admin/db.ts`:
+  - `:23-28`: `max: 1`, and "nothing inside a `begin` block may call `sql()`";
+  - `sql()` `:87-107`, with the client's options to copy;
+  - the header gains the second, per-hold connection and its reason.
+- `apps/web/server/deploy/run.ts`:
+  - `DeployIo` `:79-158`, with `jobs.resting` `:96`;
+  - `STALLED_MS` `:163`;
+  - `start` `:571-574`, `firstRead` `:596`;
+  - `ship` `:626-724`, with the claim `:661`, the bind and `taken` `:702-709`, and the routes step via `goLive` `:781-790`;
+  - `activate` `:737-756`, `cancel` `:846-864`.
+- `apps/web/server/deploy/deploy-io.ts`:
+  - `jobs` `:59-75`, with `resting` `:73` (stage `awaiting_ship` only);
+  - the header lists the service-role reads.
+- `apps/web/server/deploy/put-back.ts`:
+  - the header `:31-33` ("NO JOB ROW AND NO LOCK OF ITS OWN");
+  - `PutBackIo` `:70-91`, `admit` `:115-130` (its `moving` and ponytail `:121-127`);
+  - `putBack` `:156`, `restoreOriginal` `:240`, its ponytail `:256`.
+- `apps/web/server/deploy/put-back-io.ts:63` -- the `moving` query (it stays).
+- `apps/web/app/(app)/app/(authed)/projects/[id]/deploy/route.ts`:
+  - the header `:21` ("AD-19's advisory lock over the upload is Story 7.25's");
+  - the preflight arm `:59-73`, the ship arm `:79-91`, the activate arm `:93-95`;
+  - `json()` `:31`.
+- `apps/web/lib/deploy.ts`:
+  - `DeployCode` `:165`, EEXIST → `deploy_running` `:217`;
+  - `DEPLOY_WORDS.running` `:390`, `infrastructure` `:398`;
+  - `deployError` `:569-…`, the `deploy_running` arm `:577`;
+  - the stage sets `:59-64`;
+  - `nextVersion`'s comment `:121` ("Story 7.25's per-site lock removes the race").
+- `apps/web/lib/retention.ts:438` -- `HISTORY_WORDS.busy`, History's timeout sentence (unchanged).
+- `apps/web/lib/site-switch.ts` -- `SwitchIo` `:112-122`, `switchWith` `:129-147`.
+- `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/actions.ts:196` -- `switchSite`, which builds `SwitchIo`.
+- `apps/web/app/(app)/app/harness/editor/actions.ts:43` -- `harnessSwitch` and its `x-inflozo-harness-switch` values.
+- `apps/web/components/editor/deploy-wizard.tsx`:
+  - `post` `:577-586`, which keeps the status only;
+  - `runChecks` `:709-724`, `press` `:870-890`, both of which say refusals through `setRefused`.
+- `apps/web/server/deploy/held-names.ts` -- its header: why the address, and what one address cannot see.
+- **Schema, read-only:**
+  - `supabase/migrations/20260904120000_complete_schema.sql`: `sites.deploy_rate_limit_exempt` `:168`; `deploy_jobs` `:411-425`
+    (`site_id` "null for FR-J12 export" `:415`, `started_at` `:422`); `exports` `:478-485`;
+  - `20261125120100_deploys_accepted_at.sql` (`deploys.accepted_at`);
+  - `supabase/tests/rls.sql:216-224`: the exempt flag is server-only.
+- **Tests to extend:**
+  - `apps/web/deploy.test.ts` -- route source rules `:451-470` (`sliceOf`);
+  - `apps/web/deploy-run.test.ts` -- every stage over a fake `DeployIo`;
+  - `apps/web/put-back.test.ts` -- `moving` `:44`, `:99-101`, `:310`, `:404`, `:641`;
+  - `apps/web/site-switch.test.ts` -- `holds` `:108`, `:178`;
+  - `apps/web/server-wiring.test.ts` -- postgres's one importer `:368-382`, the chokepoint's importer list `:507-…`.
+- `tools/keyboard/journey.spec.mjs` -- keyboard only below the sentinel `:165`. The harness never reaches the deploy route:
+  journeys answer it through `page.route`.
+- `tools/probe/run-verify-editor.cjs` -- the last step is 124 (`:17022`, `STEP124_PLANT`, `T1_WRITES=1` `:492`).
+- **Evidence:**
+  - MEASUREMENTS §21 (one deploy: 12.7 s wall, $0.000427), §17 (Fluid's concurrency), §25f (`EEXIST`) and §91 (the fatal
+    theme `422`);
+  - VERIFY-AT-BUILD 35 and 39;
+  - the last section is §91, so this story's is §92.
+
+## Tasks & Acceptance
+
+**Dev gate:** Question 1 is ruled. Nothing else waits on the owner but the in-session gos.
+
+**Execution:**
+
+*The lock:*
+- [ ] `apps/web/server/ghost-admin/db.ts` -- `lockSql()`: a fresh `postgres` client with `sql()`'s URL, pinned root, `prepare: false`
+  and `max: 1`, one per hold, ended by its caller. The header says why it is a second connection.
+- [ ] `apps/web/server/site-lock.ts` (new) -- `withSiteLock`, `LOCK_WAIT_MS`, exactly as in Always. Its header carries:
+  - the key (the address, held-names' reason);
+  - the span rule;
+  - H1–H4 (§92).
+- [ ] `apps/web/lib/deploy.ts` -- `Locked<T>`.
+- [ ] `apps/web/server-wiring.test.ts` -- `server/site-lock.ts` joins the chokepoint importer list, with its reason: it holds one
+  advisory lock on a dedicated connection and decrypts nothing. `db.ts` stays postgres's only importer.
+
+*Who takes it:*
+- [ ] `apps/web/server/deploy/run.ts`:
+  - `DeployIo.lock`;
+  - `ship` and `activate` wrapped as in the table, with the timeout's claim;
+  - `start` flags moving checks (DW-373).
+- [ ] `apps/web/server/deploy/deploy-io.ts`:
+  - `lock` bound to `withSiteLock`;
+  - `jobs.resting` returns `queued`/`compiling`/`checking` beside `awaiting_ship`;
+  - the count reads: `deploys` accepted since, `sites` exempt and `deploy_jobs` started since, all `user_id`-scoped.
+- [ ] `apps/web/server/deploy/put-back.ts` and `put-back-io.ts`:
+  - `PutBackIo.lock`;
+  - `putBack` and `restoreOriginal` keyed on the linked site and wrapped whole; timeout → `busy`;
+  - the header `:31-33` and the ponytails `:121-127` and `:256` rewritten.
+- [ ] `apps/web/lib/site-switch.ts` -- `SwitchIo.lock`; `switchWith` locks its loop after `holds()`; timeout → the running sentence.
+- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/actions.ts` -- `switchSite` binds `lock` to the chosen site.
+- [ ] `apps/web/app/(app)/app/harness/editor/actions.ts` -- `x-inflozo-harness-switch: busy` answers the running sentence.
+  Document it in the harness header.
+
+*The counts:*
+- [ ] `apps/web/lib/deploy.ts`:
+  - the two constants and `overLimit`;
+  - `deploy_rate_limited` and `compile_budget` in `DeployCode` and `deployError`;
+  - `DEPLOY_WORDS.siteLimit` and `budget`;
+  - `nextVersion`'s comment updated.
+- [ ] `apps/web/server/deploy/run.ts` -- `siteLimit` and `compileBudget` (doors over `io`, like `uploadOnlyRefused`).
+- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/deploy/route.ts`:
+  - `compileBudget` before `start`, and `siteLimit` before `after(() => ship(`;
+  - 429 as JSON, 502 on a failed count;
+  - the header `:21` rewritten.
+- [ ] `apps/web/components/editor/deploy-wizard.tsx` -- `post` keeps a 429's `message`; `runChecks` and `press` say it.
+
+*Tests* (each new assertion seen red under a planted reversion):
+- [ ] `apps/web/site-lock.test.ts` (new), over a fake client:
+  - the statement order and the key text;
+  - `55P03` and `57014` → not held, with `run` never called;
+  - a throw from `run` rethrown;
+  - a commit failure after `run` → its value returned, and the log line;
+  - `end()` on every path.
+- [ ] `apps/web/deploy-run.test.ts`, with a fake lock (a promise chain per key that records enter and leave, plus a never-held
+  one):
+  - two ships of two projects on one site: the second's first Ghost call comes after the first's routes step; its held read sees
+    the first's binding; it is re-made under `-2`; no `taken`;
+  - never held: zero Ghost calls, the job `failed`/`deploy_running`, the deploy `failed`; a row moved by another invocation is
+    untouched;
+  - `activate` under the lock; never held → `failed`/`deploy_running`, the deploy `uploaded`;
+  - a throw inside leaves the lock;
+  - `start`: a `checking` job is flagged, an `awaiting_ship` one is cleared, then the insert;
+  - `siteLimit`: exempt; 9; 10 with its minutes;
+  - `compileBudget`: 59; 60, with its log line.
+- [ ] `apps/web/put-back.test.ts`:
+  - the put-back and the restore enter the lock, keyed on the linked site, before their reads;
+  - never held → `busy`, zero Ghost calls, nothing written;
+  - `moving` held as today.
+- [ ] `apps/web/site-switch.test.ts` -- never held → the running sentence, nothing written; held → as today.
+- [ ] `apps/web/deploy.test.ts`:
+  - `overLimit`: none; cap − 1; cap, with the minutes from the oldest; one outside the hour ignored; rounding up; a floor of 1;
+  - the words derive from the constants;
+  - the route source: the preflight arm asks `compileBudget` before `start(`, the ship arm asks `siteLimit` before `after(() =>
+    ship(`, and both answer `json(429`.
+- [ ] `tools/keyboard/journey.spec.mjs` -- 7.25, keyboard only:
+  - (a) Run checks answered 429 with the budget envelope: the sentence in the refusal line, announced, and Run checks reachable
+    again;
+  - (b) Ship it answered 429 with the site-limit envelope: the sentence, and the check still ready to ship;
+  - (c) `x-inflozo-harness-switch: busy`: the running sentence in the picker.
+- [ ] `tools/probe/record-site-lock.mjs` (new), recording MEASUREMENTS §92, with a catalogue row in `tools/doc-audit.py`:
+  - **What it runs:** H1–H4 (Design Notes), on a probe key that names no site, and nothing else. It reads and writes no table.
+  - **Where:** first against a throwaway `postgres:17` container, then against the production pooler.
+  - **How it reads the pooler URL:** from `tools/probe/.env` in-process, never through argv.
+  - **The driver:** `postgres` through `apps/web`'s install.
+- [ ] `tools/probe/run-verify-editor.cjs` -- step 125 (the Verification's), under `T1_WRITES=1`, written at Dev and never run
+  there.
+
+*Propagation* (standing rules 3 and 7; end with `grep -rn "Story 7.25's\|lock of its own\|7.25's per-site" apps/web tools`):
+- [ ] PRD FR-J11 (`prd.md:430`), a dated note covering:
+  - what each count reads;
+  - that the way back is never refused;
+  - the lock's key and span.
+- [ ] `ARCHITECTURE-SPINE.md`:
+  - AD-19, a dated rule: the address key, the dedicated connection, the wait, the idle ceiling, and the span over Ship it's whole
+    invocation, with its reason;
+  - the sentences "AD-19's lock covers uploading and activating only" at `:191` and `:258`, dated;
+  - AD-24's `EEXIST` line, dated: it is now unreachable from Inflozo across accounts too.
+- [ ] `VERIFY-AT-BUILD.md` 35 and 39, a dated "built by Story 7.25" each.
+- [ ] `EXPERIENCE.md` -- the Deploy Wizard row `:190`, a dated note covering:
+  - the two sentences and where they appear;
+  - that the wait is the press's busy state;
+  - the timeout's S8d′ sentence;
+  - the picker's refusal.
+- [ ] `epics.md` Story 7.26's card, a dated line: its export runs on a `deploy_jobs` row with `site_id` null and asks
+  `compileBudget` first. Its refusal reuses `budget`'s first sentence.
+- [ ] `deferred-work.md` -- DW-373 and DW-379 done (Story 7.25), with resolution lines.
+- [ ] MEASUREMENTS §92, from the recorder.
+
+**Acceptance Criteria:**
+- **Matches the frame (R-74: none drawn).** Given journeys 7.25 (a)–(c), when each refusal is said, then it appears in 7.18a's
+  existing refusal line or the picker's, in their own type and tokens, and nothing new is drawn.
+- **The lock holds on the real pooler.** Given the recorder on the container and then on the production pooler, then each of these
+  holds, each beside its control:
+  - H1: a second holder of one key gives up with `55P03` after its `lock_timeout`, while a holder of another key takes its lock at
+    once;
+  - H2: a holder killed mid-hold frees the key;
+  - H3: a transaction left idle 150 s commits through the pooler, and the pooler role's `statement_timeout` and
+    `idle_in_transaction_session_timeout` are recorded;
+  - H4: the local idle ceiling ends an abandoned holder.
+- **Two accounts, one Ghost, really.** Given walk step 125 (a), when X and Y both ship `inflozo-lock-test` within a second, then:
+  - both jobs are `done`;
+  - the bindings are `inflozo-lock-test` and `inflozo-lock-test-2`;
+  - the later job's `uploading` began after the earlier's last edge, and its `compiling` ran a second time;
+  - T1 lists both themes, and the earlier one's download equals its `content_manifest`;
+  - no `deploy_running` and no `taken`.
+- **The limits, really.** Given walk step 125 (b)–(c):
+  - 9 accepted uploads → Ship it ships; 10 → the site-limit sentence with its minutes; the record exempt → it ships;
+  - 59 jobs → Run checks starts; 60 → the budget sentence, plus Vercel's log line for that POST.
+- **One Pre-flight.** Given walk step 125 (d), when Run checks runs, the wizard is closed during Checking, and Run checks runs
+  again, then the first job ends `cancelled` with no `deploys` row and no object, and the second rests at `awaiting_ship`.
+- **Nothing else takes it.** Given the tree, `grep -rn "withSiteLock" apps/web` finds it only in `site-lock.ts`, `deploy-io.ts`,
+  `put-back-io.ts`, the editor's `actions.ts` and tests.
+
+## Spec Change Log
+
+## Design Notes
+
+**Why its own connection.** `db.ts` holds one pooled connection (`max: 1`), and every `call()` decrypts and audits through it. So
+a transaction held there waits on its own upload.
+- Raising `max` lets concurrent holders starve the decrypts their own spans need.
+- A connection per hold costs one TLS handshake per ship, and starves nothing.
+
+**Why transaction-scoped, with an idle ceiling.** The pooler is in transaction mode, so a session-level lock would not survive.
+- A transaction-scoped lock ends with its transaction or its connection.
+- The idle ceiling (`STALLED_MS`, the stalled-job rule's own number) is the belt: a holder whose death the pooler never noticed
+  still frees the site within it.
+- **H1–H4 are hypotheses until §92 executes them (standing rule 1):**
+  - H1: `lock_timeout` bounds an advisory-lock wait, with `55P03`;
+  - H2: a dropped connection frees the lock through the pooler;
+  - H3: the pooler keeps an idle transaction open for at least 300 s;
+  - H4: `set_config(…, true)` sets the idle ceiling.
+- **If H3 fails,** the lock connection runs `select 1` every 20 s while held. **If H2 fails,** H4 still bounds it. If both fail,
+  stop and say so.
+
+**Why the address.** It is 7.24's "one Ghost":
+- theme activation is per Ghost, not per Inflozo account;
+- two accounts' records of one Ghost share `sites.url`, `normaliseSiteUrl`'s lowercased origin.
+
+What one address cannot see is what `heldNamesIn` cannot see: one Ghost reached under two addresses.
+
+**Why Ship it's whole span, and not "uploading and activating only" (AD-20's F-075 sentence).** The lock protects decisions, and
+each decision is a read: the link (DW-379), the free name (7.24's race) and R-264 (a)'s live project. A read taken before the lock
+may be stale by the time it is acted on. Holding the lock through the stale re-make and the capture adds seconds to the span, and
+the wait stays bounded.
+
+**Why 30 s.**
+- A typical span is about 13 s: a 3.9 s compile plus 8.8 s to upload and activate (MEASUREMENTS §21). 30 s is twice that.
+- A waiter that waits 30 s still has 270 s of AD-11's 300 for its own work.
+- A longer wait risks the invocation's own budget.
+
+**Why the site count is accepted uploads per site record, at Ship it.**
+- **Accepted uploads:** that is what lands on the Ghost.
+- **At Ship it:** refusing there keeps the checked artefact, so Ship it works again once the minutes pass.
+- **Per site record, not per address:** the exemption and every query's scope are per record, and a per-address count would let
+  one account spend another's limit.
+
+**Why `deploy_jobs` for the budget.**
+- Job rows are never deleted: cancelled and abandoned ones stay, one per Pre-flight.
+- `deploys` rows are deleted with an abandoned check, so a count over them misses checks.
+- The export rides a job row.
+
+**Why the way back is never refused.** A Roll back, a Re-activate or a Restore original compiles nothing, and refusing one while a
+site is broken would be the wrong way round. A Roll back's upload still counts toward the next Ship it.
+
+**DW-373, flag rather than hand back the running job.**
+- Handing the running check back would show Pre-flight results for inputs the customer has just changed.
+- Flagging it reuses Cancel's own path. The flagged compile stops at its next edge, within seconds.
+
+**The switch locks only the chosen site.** A ship already uploading to the site the project LEAVES finishes there. That was the
+project's site when it was sent, which is DW-374's own line.
+
+**Owner test: none, as the card says.** Nothing is drawn. The sentences appear only past a limit, or past a 30 s wait that no
+manual step can time. Walk step 125 proves each one on production and T1.
+
+## Questions for the owner
+
+### Question 1 — How many theme builds may one account run in an hour?
+
+Every **Run checks** builds the customer's theme on our servers, and from Story 7.26 so will every theme ZIP export. Each build
+costs us a fraction of a cent. The budget is a ceiling that no honest customer ever meets. It exists so that a broken script, or
+someone misusing an account, is stopped and shows up in our logs instead of quietly running up the bill. It counts every build
+the account starts, on any site.
+
+**Example:** with 60, a customer who has pressed Run checks 60 times since 2:00 PM and presses it again at 2:50 PM sees "Your
+account has built 60 themes in the last hour, the most Inflozo builds in an hour. You can run checks again in 10 minutes." The
+most one account could then cost us in a month is 60 × 24 × 30 builds × $0.000427, about **$18.45**. That uses the measured cost
+of a whole deploy; a build alone costs about a third of it.
+
+1. **60 an hour, on every plan — one build a minute for a whole hour; at most about $18.45 a month per account. (RECOMMENDED)**
+2. 100 an hour, on every plan — at most about $30.74 a month per account.
+3. 30 an hour on Free and 100 on Pro — follows the plan; every Run checks also reads the account's plan first.
+4. 30 an hour, on every plan — at most about $9.22 a month; a busy designer iterating quickly could meet it.
+
+**Ruled:** _(awaiting the owner)_
+
+## Verification
+
+**Commands:**
+- `pnpm check` -- expected: green. That includes `site-lock.test.ts`, `deploy-run.test.ts`, `put-back.test.ts`,
+  `site-switch.test.ts`, `deploy.test.ts` and `server-wiring.test.ts`. The run prints its own counts.
+- `bash supabase/tests/run-rls-gate.sh` -- expected: green, unchanged (no migration). The exempt flag's server-only PASS is among
+  it.
+- `pnpm keyboard` -- expected: journeys 7.25 (a)–(c) green, and 7.18a's, 7.18b's, 7.23a's and 7.23b's unchanged.
+- `node tools/probe/record-site-lock.mjs --local` (a `postgres:17` container) -- expected: H1–H4 each PASS beside its control.
+- `python3 tools/doc-audit.py --check`, run twice -- expected: green.
+- `grep -rn "Story 7.25's\|lock of its own\|7.25's per-site" apps/web tools` -- expected: nothing that still promises the lock.
+
+**Real infrastructure** (R-82; each on the owner's in-session go, in the main session, from a clean worktree at the deployed
+sha):
+- **The recorder on the production pooler:** `node tools/probe/record-site-lock.mjs --pooler`. It uses a probe key only, reads
+  the URL in-process, and touches no table. Expected: H1–H4 on Supavisor, recorded as MEASUREMENTS §92.
+- **Walk step 125 on production and T1**, with three throwaway Free accounts X, Y and Z, each connecting T1 through the wizard
+  with a project "Lock test":
+  - (a) the cross-account race, as in the AC. Deploy only, so T1 stays on `casper`;
+  - (b) Z's site limit:
+    - service-role rows on Z's record: 9 accepted uploads in the hour (the control: Ship it ships, the 10th);
+    - then Run checks and Ship it → the sentence, with minutes between 1 and 60;
+    - then `deploy_rate_limit_exempt = true` on Z's record → the same press ships;
+  - (c) Z's budget:
+    - service-role `deploy_jobs` rows up to 59 in the hour (the control: Run checks starts, the 60th);
+    - then Run checks → the budget sentence, and Vercel's log line for the POST;
+  - (d) DW-373, as in the AC;
+  - finally: every `inflozo-lock-test*` theme deleted from T1 (RESET-PROTOCOL's way), T1 on `casper`, `routes.yaml` unchanged,
+    the three accounts deleted, and users and projects counted back.
+
+  **Ghost 5's half** (T3, R-238) is postponed to DW-326's pass at Story 15.7.
+- **Vercel:** the deployment is READY from the Dev head, and CI's `check`, `rls` and `deploy` are green.
