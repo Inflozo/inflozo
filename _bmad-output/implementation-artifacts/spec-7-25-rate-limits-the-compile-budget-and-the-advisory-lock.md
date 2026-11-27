@@ -2,7 +2,7 @@
 title: 'Story 7.25 — Rate limits, the compile budget and the advisory lock'
 type: 'feature'
 created: '2026-11-27'
-status: 'in-review'
+status: 'done'
 owner_test: none
 review_loop_iteration: 1
 baseline_commit: '6d2a6c7bd95b19721587ffd753dcca1634a27f59'
@@ -748,6 +748,18 @@ sha):
   is 125b's real 429 and journey 7.25 (a) in CI. Finally T1 back on `casper` (`routes.yaml` 130 → 130 bytes, every run theme
   deleted), each account's objects gone, T1 disconnected on each, the three accounts deleted, users 28 → 28, projects 21 → 21; zero
   CSP violations. The go's runs are spent; 125c's press is not re-run without a new one.
+
+**Deploy (2026-11-27), on the real infrastructure (R-82).** Keys read only into each command's environment, by name
+(`GITHUB_TOKEN`; `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`); no value printed; no write to any service. The story
+carries no migration (`git diff 6d2a6c7b HEAD --name-only -- supabase/` — none), so there is nothing to apply and no RLS-TEST.sql
+run beyond CI's own `rls` job.
+- `Deployment: dpl_FoPpXUti7eb4UYcVRx5ufJuPinWZ` (`inflozo-h2xn6zaco-umangkagathara.vercel.app`), `READY`, target production,
+  built from the Review head `c1e3bb62` (a documents-only commit over `bf039423`, whose code the Review's walk run 3 exercised).
+- **GitHub Actions on `c1e3bb62`** (`actions/runs?head_sha=…`): CI run `46032843407` — `check` (the full `pnpm keyboard`), `rls`
+  and `deploy` success; the render matrix run `46032843387` success. Control: an all-zero sha returns `total_count` 0.
+- **Aliases** (`/v4/aliases/app.inflozo.com`, `/v4/aliases/inflozo.com`): both point at `dpl_FoPpXUti7eb4UYcVRx5ufJuPinWZ`.
+  Live: `app.inflozo.com/sign-in` 200, `inflozo.com/` 200.
+- `owner_test: none` — nothing new is drawn and the epic's card names no test, so the story is Done at Deploy.
 
 **The I/O matrix, row by row → the check that ran:**
 - One ship → every existing ship test in `deploy-run.test.ts`, now through the fake lock (held); `withSiteLock` uncontended
