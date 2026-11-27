@@ -2,9 +2,9 @@
 title: 'Story 7.24 — Theme naming, frozen per site'
 type: 'feature'
 created: '2026-11-27'
-status: 'in-review'
+status: 'done'
 baseline_commit: '09a3c7683b871e8a093e84f57ad09ce389b7bfc1'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-19-the-first-deploy-credential-step-and-its-decline-path.md']
 ---
@@ -547,6 +547,31 @@ You sign in only as **B**.
 **After the test:** say "passed", or list what you saw. On your go, Claude then deletes both test themes from T1, which stays on
 Casper, and deletes the test accounts A and B (their bindings go with them, so a later "Name test" on T1 is free again and walk
 step 124's start guard can run) — and the empty `umngkmr+names724b@gmail.com` too, if you want it gone.
+
+## Owner's test findings
+
+**Owner's test (owner, 2026-11-27): passed.** The owner replied *"passed"* on the deployed site (`dpl_HFdZmBsBUKazFDZNeG5EZnaufiFx`,
+`https://app.inflozo.com`). No findings.
+
+**What production showed before the record.** Checked first with GET-only reads (`SUPABASE_SECRET_KEY`: auth `last_sign_in_at`,
+`projects`, `deploy_jobs`, `deploys` and `project_site_bindings`; `GHOST6_STAFF_ACCESS_TOKEN`: `GET themes/`). All times UTC,
+2026-11-27, on B's project `c42d49e0-…`:
+- B (`umngkmr+names724b2@gmail.com`) signed in at 09:29:38, six minutes after the plant (step 1); A was not signed in again.
+- One Deploy only, its job started 09:30:26 and `done` with no error: `1.0.0` `uploaded`, not activated, under
+  `inflozo-name-test-2`, B's binding `inflozo-name-test-2` (step 3).
+- The project renamed "Renamed test" at 09:31:58, its slug still `name-test` (step 5).
+- T1 listing `casper*`, `racer`, `source`, `inflozo-ghost6`, `inflozo-name-test` and `inflozo-name-test-2` (step 7's state). Steps
+  2, 4 and 6 open Ship it and write no row; they were not checked by row.
+
+**Afterwards, cleaned up** on the owner's in-session go (*"1. Clean up all (RECOMMENDED)"*), keys read in-process by name:
+- T1 (`GHOST6_STAFF_ACCESS_TOKEN`): `routes.yaml` read first, 130 bytes; `casper` already live; `DELETE themes/inflozo-name-test/`
+  204 and `DELETE themes/inflozo-name-test-2/` 204. Read back: `casper*`, `racer`, `source`, `inflozo-ghost6`; `routes.yaml` 130
+  bytes with the same hash.
+- Production (`SUPABASE_SECRET_KEY`): A's and B's stored objects removed (`site-snapshots` and `deploy-artifacts`, four objects, each
+  200, none left), then `umngkmr+names724a@gmail.com`, `umngkmr+names724b2@gmail.com` and the empty `umngkmr+names724b@gmail.com`
+  deleted through the Auth Admin API (200 each; sites, projects, bindings, jobs, deploys and the stored keys go with them by
+  cascade and `private.drop_vault_secrets`). Users 29 → 26, projects 21 → 19, no `names724` account left, and no
+  `inflozo-name-test*` binding at T1's address, so walk step 124's start guard can run again.
 
 ## Verification
 
