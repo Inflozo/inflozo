@@ -183,7 +183,8 @@ test('7.24: unbound, with the base held on the same Ghost by another account\'s 
   assert.equal(read.reads.themeName, 'inflozo-name-test-2', 'a name that moves makes the stored artefact stale')
   assert.equal(read.bound, null)
   // the held read: the caller's own site first, then every record at its address, then the other projects' bindings there
-  assert.ok(filters.includes(`sites: id=${S} user_id=${U}`), filters.join('\n'))
+  // Pre-flight's own site read and the held read's ownership read are both the caller's CONNECTED record (the review, 2026-11-27)
+  assert.equal(filters.filter((f) => f === `sites: id=${S} user_id=${U} disconnected_at is`).length, 2, filters.join('\n'))
   assert.ok(filters.includes('sites: url=https://ghost6.inflozo.com'))
   assert.ok(filters.includes(`project_site_bindings: site_id in project_id!=${P}`))
   const theme = compileTheme(new JSDOM('<body></body>').window.document, read.input)

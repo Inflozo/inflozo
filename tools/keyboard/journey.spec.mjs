@@ -12451,3 +12451,23 @@ test('7.24 · (d) `taken`: another Inflozo project holds the base on the site �
   await expect(wizard(page)).toContainText(DW.chipNew(1))
   await expect(wizard(page).locator('[data-first-deploy]'), '`taken` is `full`: not the site\'s first deploy').toHaveCount(0)
 })
+
+test('7.24 · (e) the review: the pill only beside a theme row — no pill on a project with no site or on B15\'s Preview-only site, each a first deploy as production counts it, nor while the site picker is open; Esc back to Destination brings it again', async ({ page }) => {
+  const pill = () => wizard(page).locator('[data-first-deploy]')
+  for (const shape of ['unlinked', 'preview']) {
+    await destination724(page, shape)
+    await expect(wizard(page).locator('[data-theme-name]'), `${shape}: no theme row`).toHaveCount(0)
+    await expect(pill(), `${shape}: no pill`).toHaveCount(0)
+    await page.keyboard.press('Escape')
+  }
+  // the control, and the picker: `first` draws the pill; Switch opens the picker over it, which hides it; Esc comes back to it
+  await destination724(page, 'first')
+  await expect(pill()).toHaveText(DW.firstDeployPill)
+  await wizard(page).locator('#deploy-switch').focus()
+  await page.keyboard.press('Enter')
+  await expect(sitePicker(page)).toBeVisible()
+  await expect(pill(), 'the picker open: no theme row, no pill').toHaveCount(0)
+  await page.keyboard.press('Escape')
+  await expect(sitePicker(page)).toHaveCount(0)
+  await expect(pill()).toHaveText(DW.firstDeployPill)
+})

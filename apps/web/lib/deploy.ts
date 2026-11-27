@@ -130,8 +130,10 @@ export const themeNameOf = (slug: string): string => `inflozo-${slug}`
 /** STORY 7.24 — THE ONE RULE THAT NAMES A THEME, before the compile (FR-J10): the binding's frozen name when this project × site has
  *  one, whatever else is held; otherwise `inflozo-{slug}`, or the first of `-2`, `-3`, … that no OTHER project holds on the same
  *  Ghost (`held`: every other project's binding to a site record at the same address, in any account — `server/deploy/held-names.ts`).
- *  Destination (`shipStateOf`) and Pre-flight (`compileInputOf`) call it; nothing else derives a name. Within one account a collision
- *  cannot happen (slugs are unique per account, DW-24), so the suffix only bites across accounts sharing one Ghost. */
+ *  Destination (`shipStateOf`) and Pre-flight (`compileInputOf`) call it; nothing else derives a name. Slugs are unique per account
+ *  (DW-24), so the suffix mostly bites across accounts sharing one Ghost — but not only: a suffixed name can meet a sibling's base in
+ *  the same account (`blog` suffixed to `inflozo-blog-2` beside a project slugged `blog-2`), which is why `held` counts the user's own
+ *  other projects too (the review, 2026-11-27). */
 export const themeNameFor = (a: { slug: string; bound: string | null; held: readonly string[] }): string =>
   a.bound ?? uniqueSlug(themeNameOf(a.slug), a.held)
 
@@ -900,8 +902,10 @@ export function shipStateOf(a: {
     overridden: a.overridden,
     sites,
     themeName,
-    newTheme: bound === null,
-    suffixedFrom: bound === null && themeName !== base ? base : null,
+    // the review (2026-11-27): only a bindings read that ANSWERED can say "no binding" — a failed one claims no theme to be created
+    // and no permanence (7.18a's row, as before this story); Pre-flight's own read decides what ships
+    newTheme: a.bindings !== null && bound === null,
+    suffixedFrom: a.bindings !== null && bound === null && themeName !== base ? base : null,
     n: nextVersion(rows),
     prev: Number.isFinite(prev) ? prev : null,
     shipped: rows.length > 0,

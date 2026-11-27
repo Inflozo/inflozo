@@ -199,7 +199,8 @@ import { GHOST_5_SITE, HARNESS_PROJECT, HARNESS_SITES, MEMBERS_OFF_SITE, SURFACE
  * STORY 7.24 — every ship shape carries `newTheme` (true on every shape but `shipped` and `live`, which have uploaded: D1a's
  * "Theme to be created" box and "new theme · v1" chip; those two keep 7.18a's "Theme" row) and `suffixedFrom: null`; `first`
  * adds D1a's "first deploy" pill (its `firstDeploy`). And one more shape, `taken`: `full` named `inflozo-pilot-sections-2`
- * because another Inflozo project holds `inflozo-pilot-sections` on the site (`suffixedFrom`), so Destination says why.
+ * because another Inflozo project holds `inflozo-pilot-sections` on the site (`suffixedFrom`), so Destination says why. Its review
+ * made `unlinked` and `preview` first deploys as production counts them, so the pill's guard (only beside a theme row) is tested.
  *
  * STORY 5.24d — THE MAIN FEED IS THE RULE'S, NOT THE HARNESS'S (DW-257): every doc leaves through `read.ts`'s
  * `designateAll`, the server door the editor's real read uses, and no instance is flagged here — so the post grid becomes
@@ -460,7 +461,9 @@ function shipOf(shape: string | null, required: readonly string[]): ShipState {
   ]
   // Story 7.19 — every shape but `first` is NOT a first deploy (`firstDeploy: false`), so no journey before 7.19's meets the
   // Safety net; `first` is `full` on a site no project has uploaded to, with no token and no recorded decline — offered
-  // Story 7.24 — a first ship to the site on every shape but the two that have uploaded (`newTheme`), never suffixed but `taken`
+  // Story 7.24 — a first ship to the site on every shape but the two that have uploaded (`newTheme`), never suffixed but `taken`.
+  // Its review (2026-11-27): `unlinked` and `preview` are first deploys too, as production counts them (no binding to the site), so
+  // the pill's guard — only where the theme row shows — is met; neither draws Run checks, so neither meets the Safety net
   const named = themeNameOf('pilot-sections')
   const base = { themeName: named, required: [...required], language: 'en', rtlAckAt: null, overridden: false, sites, firstDeploy: false, newTheme: true, suffixedFrom: null }
   if (shape === 'taken') return { ...base, themeName: `${named}-2`, suffixedFrom: named, linkedSiteId: site.id, site: { ...site, capability: 'full' }, n: 1, prev: null, shipped: false, liveHere: false }
@@ -469,11 +472,11 @@ function shipOf(shape: string | null, required: readonly string[]): ShipState {
   // Story 7.18c — DW-381: the sites read failed (`sites: null`), linked as `full` or with no site
   if (shape === 'sites-failed') return { ...base, linkedSiteId: site.id, sites: null, site: { ...site, capability: 'full' }, n: 1, prev: null, shipped: false, liveHere: false }
   if (shape === 'sites-failed-unlinked') return { ...base, linkedSiteId: null, sites: null, site: null, n: 1, prev: null, shipped: false, liveHere: false }
-  if (shape === 'full' || shape === 'preview') return { ...base, linkedSiteId: site.id, site: { ...site, capability: shape === 'full' ? 'full' : 'preview_only' }, n: 1, prev: null, shipped: false, liveHere: false }
+  if (shape === 'full' || shape === 'preview') return { ...base, linkedSiteId: site.id, site: { ...site, capability: shape === 'full' ? 'full' : 'preview_only' }, n: 1, prev: null, shipped: false, liveHere: false, firstDeploy: shape === 'preview' }
   // Story 7.18b — R-270: Preview-only because a refused upload marked it (`deploy_error`), so Run checks stays
   if (shape === 'refused') return { ...base, linkedSiteId: site.id, site: { ...site, capability: 'preview_only', source: 'deploy_error' }, n: 1, prev: null, shipped: false, liveHere: false }
   // Story 7.18b — `unlinked`: no site linked, three to choose from (Choose a site)
-  if (shape === 'unlinked') return { ...base, linkedSiteId: null, site: null, n: 1, prev: null, shipped: false, liveHere: false }
+  if (shape === 'unlinked') return { ...base, linkedSiteId: null, site: null, n: 1, prev: null, shipped: false, liveHere: false, firstDeploy: true }
   return { ...base, linkedSiteId: null, sites: [], site: null, n: 1, prev: null, shipped: false, liveHere: false }
 }
 

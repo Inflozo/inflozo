@@ -26,6 +26,7 @@ function fakeDb(tables: Record<string, Row[]>, log: string[], fail?: string): Su
       eq: (c: string, v: unknown) => (seen.push(`${c}=${String(v)}`), filters.push((r) => r[c] === v), q),
       neq: (c: string, v: unknown) => (seen.push(`${c}!=${String(v)}`), filters.push((r) => r[c] !== v), q),
       in: (c: string, vs: unknown[]) => (seen.push(`${c} in ${vs.join(',')}`), filters.push((r) => vs.includes(r[c])), q),
+      is: (c: string, v: unknown) => (seen.push(`${c} is ${String(v)}`), filters.push((r) => (r[c] ?? null) === v), q),
       maybeSingle: async () => {
         const a = answer()
         return { ...a, data: a.data?.[0] ?? null }
@@ -67,7 +68,7 @@ test('7.24: every other project\'s name on the same Ghost, in any account — a 
   assert.ok(!held.includes('inflozo-elsewhere'), 'another address\'s is not held')
   assert.deepEqual([...held].sort(), held, 'sorted')
   // the first query is the CALLER's own site; the bindings exclude this project
-  assert.equal(log[0], `sites: id=site-mine user_id=${ME}`)
+  assert.equal(log[0], `sites: id=site-mine user_id=${ME} disconnected_at is null`)
   assert.equal(log[1], `sites: url=${T1}`)
   assert.equal(log[2], `project_site_bindings: site_id in site-mine,site-theirs,site-old project_id!=${P}`)
   assert.equal(log.length, 3)
@@ -88,4 +89,14 @@ test('7.24: a failed query throws, marked as infrastructure for the run\'s retry
   for (const table of ['sites', 'project_site_bindings']) {
     await assert.rejects(heldNamesIn(fakeDb(world(), [], table), { siteId: 'site-mine', userId: ME, projectId: P }), (e: unknown) => (e as { infra?: unknown }).infra === true)
   }
+})
+
+test('7.24 (the review): the caller\'s own record DISCONNECTED answers no names and sends no second query — its key no longer connected, the reason the names may be read is gone', async () => {
+  const w = world()
+  w.sites[0] = { ...w.sites[0], disconnected_at: '2026-11-20T00:00:00Z' }
+  const log: string[] = []
+  assert.deepEqual(await heldNamesIn(fakeDb(w, log), { siteId: 'site-mine', userId: ME, projectId: P }), [])
+  assert.equal(log.length, 1, 'nothing past the ownership read')
+  // the control: the same record connected reads the names
+  assert.ok((await heldNamesIn(fakeDb(world(), []), { siteId: 'site-mine', userId: ME, projectId: P })).length > 0)
 })

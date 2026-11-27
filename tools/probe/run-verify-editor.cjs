@@ -17093,7 +17093,7 @@ async function main() {
       /** a theme on T1 downloaded with the staff token, compared with a stored manifest as the drift check compares them */
       const liveDiff124 = async (name, manifest) => {
         const r = await staff124('GET', `themes/${encodeURIComponent(name)}/download/`).catch(() => null)
-        return r?.ok && manifest ? DR124.compareManifests(manifest, DR124.liveManifest(ZIP124.unzipTheme(new Uint8Array(r.bytes)))) : null
+        return r?.ok && manifest ? DR124.compareManifests(manifest, await DR124.liveManifest(ZIP124.unzipTheme(new Uint8Array(r.bytes)))) : null
       }
       const none124 = (d) => d !== null && d.changed.length + d.added.length + d.removed.length === 0
       /** every binding of a `inflozo-name-test*` name to any site record at T1's address, in any account (the service key) */
@@ -17101,7 +17101,8 @@ async function main() {
         const records = (await call('/rest/v1', `/sites?url=eq.${encodeURIComponent(URL124)}&select=id`)).body
         if (!Array.isArray(records)) return null
         if (records.length === 0) return []
-        const held = (await call('/rest/v1', `/project_site_bindings?site_id=in.(${records.map((r) => r.id).join(',')})&theme_name=like.${BASE124}*&select=theme_name`)).body
+        // the base or a suffix of it (`named124`'s set), never a longer name that merely starts with it (`inflozo-name-testing`)
+        const held = (await call('/rest/v1', `/project_site_bindings?site_id=in.(${records.map((r) => r.id).join(',')})&or=(theme_name.eq.${BASE124},theme_name.like.${BASE124}-*)&select=theme_name`)).body
         return Array.isArray(held) ? held.map((b) => b.theme_name).sort() : null
       }
       const storage124 = { apikey: SECRET, Authorization: `Bearer ${SECRET}` }
@@ -17316,7 +17317,9 @@ async function main() {
         const shipB = await shipOnly124(Y, true)
         const themesB = await themes124()
         const diffX = await liveDiff124(BASE124, shipA.row?.content_manifest)
-        check(`step 124b — Y ships Deploy only: v1 under ${TAKEN124}, Y's binding ${TAKEN124}; T1 (GET themes/, the staff token) lists both, neither active; X's ${BASE124} downloaded from T1 equals X's content_manifest — nothing overwritten`,
+        // the review (2026-11-27): X and Y compile the same fixture, so an overwrite under the base would leave X's files equal to X's
+        // manifest too — what proves nothing was overwritten is T1 listing BOTH names; the manifest says X's files are untouched
+        check(`step 124b — Y ships Deploy only: v1 under ${TAKEN124}, Y's binding ${TAKEN124}; T1 (GET themes/, the staff token) lists both, neither active — so nothing was overwritten — and X's ${BASE124} downloaded from T1 still equals X's content_manifest`,
           shipB.end?.stage === 'done' && shipB.row?.status === 'uploaded' && shipB.row.theme_name === TAKEN124 && (await binding124(Y)) === TAKEN124 &&
           JSON.stringify(named124(themesB)) === JSON.stringify([BASE124, TAKEN124]) && themesB?.find((t) => t.active)?.name === prev124 && none124(diffX),
           JSON.stringify({ stage: shipB.end?.stage, row: shipB.row && { ...shipB.row, content_manifest: undefined }, t1: named124(themesB), diffX }))

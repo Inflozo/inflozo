@@ -156,6 +156,11 @@ test('7.24: the name by the one rule — newTheme while this project has no bind
   const second = shipStateOf(base({ bindings: [{ project_id: 'p-other', theme_name: 'inflozo-other' }] }))
   assert.equal(second.firstDeploy, false)
   assert.equal(second.newTheme, true)
+  // the review (2026-11-27): a bindings read that FAILED cannot say "no binding" — no theme to be created, no suffix line, no
+  // permanence claimed over a name that may already be frozen (7.18a's row); the control above: an answered empty read is new
+  const unread = shipStateOf(base({ bindings: null, held: ['inflozo-field-notes'] }))
+  assert.equal(unread.newTheme, false)
+  assert.equal(unread.suffixedFrom, null)
 })
 
 test('7.24: a held read that failed (null) is logged and counted as none — the rule still runs over the read\'s own other bindings', () => {

@@ -29,7 +29,9 @@ import { shipStateOf, type ShipState } from '@/lib/deploy'
 import { heldNames } from '@/server/deploy/held-names-io'
 
 /**
- * THE EDITOR'S TWO READS (Story 5.1), both through the user's own session, so RLS decides what exists for them.
+ * THE EDITOR'S TWO READS (Story 5.1), both through the user's own session, so RLS decides what exists for them — with one
+ * exception since Story 7.24: `editorData`'s held names (`heldNames`, the service role scoped to a site this user owns, names only),
+ * because a theme name is held on the Ghost by every account connected to it.
  *
  * `projectOf` is the 404 guard's read: a non-uuid never reaches Postgres (22P02), and another user's project, a
  * missing one and `abc` all come back null — one answer, so a project's existence is never revealed. `cache`d, so
@@ -352,8 +354,8 @@ export async function editorData(projectId: string): Promise<EditorData> {
     sb.from('sites').select('id, title, url, capability, capability_source, site_settings').is('disconnected_at', null).order('created_at', { ascending: false }),
     sb.from('projects').select('id, name, linked_site_id').not('linked_site_id', 'is', null),
     // Story 7.24 — the names every OTHER project holds on the linked site's Ghost, in any account (`themeNameFor` suffixes past them):
-    // the service role, scoped to a site this user owns, names only. A failed read is none here, and logged by `shipStateOf`;
-    // Pre-flight reads again and its read is what ships
+    // the service role, scoped to a site this user owns, names only. A failed read is logged here with its reason, and counted as
+    // none (and said once more) by `shipStateOf`; Pre-flight reads again and its read is what ships
     linked === null ? [] : heldNames({ siteId: linked, userId: user.id, projectId }).catch((e: unknown) => {
       console.error('editorData: the held names read failed', { message: e instanceof Error ? e.message : String(e) })
       return null

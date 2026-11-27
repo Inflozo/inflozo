@@ -10943,3 +10943,24 @@ location: `app/(app)/app/(authed)/sites/(list)/page.tsx` (the original-theme Dow
   (`fetchRow`'s `fetched.theme` line)
 reason: nothing unsaved is lost on the Sites page (it holds no editor work), and the Theme row's words are said; a second shape is
   cosmetic. Not this story's (DW-391 named the editor's four).
+
+## Deferred from: code review of spec-7-24-theme-naming-frozen-per-site (2026-11-27)
+
+### DW-406: the keyboard journey 7.23c (e) once timed out waiting for focus on the phone card's heading in CI
+
+plain: One automatic keyboard test of the phone's Deploy history card (a Roll back whose answer is lost on the network, but which
+  landed) failed once on GitHub's machine: focus never reached the card's heading within 15 seconds. It passed four times in a row
+  on this machine straight after, and on every earlier push since Story 7.23c. A red test publishes nothing, so each sighting costs
+  a re-run, never a bad deploy.
+status: open
+severity: low
+origin: Story 7.24's Review (2026-11-27): CI run 45941413602 on the Dev head `961b8f2e` — `check` failed at `pnpm keyboard`, 397
+  passed and this one failed (`journey.spec.mjs:12344`, `expect(cardHeading(page)).toBeFocused()`, "inactive" 34 times, the test
+  16.0 s against 2–6 s locally), so `deploy` never ran. Story 7.24 touches no file on that path (the phone card and its History
+  reads). `bash tools/keyboard/run-keyboard-gate.sh --grep "7.23c · the phone" --repeat-each 4` (Node 24.18.1): 28 passed.
+owner: Story 15.1 (the E2E suite). The test's second half re-opens the card and presses Roll back with a new History header set
+  just before the press; a slow CI machine may let the re-read land before the header or the press land before the confirm's
+  Cancel is focused. Next sighting: keep the trace, and wait for the confirm's check to end and Cancel to hold focus again after
+  `setExtraHTTPHeaders`, as `phoneConfirm` does before its first press.
+location: `tools/keyboard/journey.spec.mjs` (7.23c (e), its "lost answer that LANDED" half)
+reason: one sighting, untouched code, green on re-run; the product path it guards is unchanged by this story.

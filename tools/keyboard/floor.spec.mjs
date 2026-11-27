@@ -915,8 +915,9 @@ test.describe('7.19 · the Safety net at 1440, 820 and 390', () => {
 // ── Story 7.24 — D1a's first-deploy confirmation at 1440, 820 and 390 (`D1 First-Deploy Gates.dc.html:28-93`), under `first` (the
 // pill and the permanence line) and `taken` (the suffix sentence before it): the pill `:47` mono 10/500 in a `line` pill 2 × 9 beside
 // the title; the box `:69-76` a column, gap 5, `line` border, radius 10, 11 × 13, its label 12, the name mono 12.5/500 at the box's
-// right edge, the line 11 at 1.55. A long name truncates on one line, never wrapping; the line wraps inside the box; nothing
-// scrolls sideways.
+// right edge, the line 11 at 1.55. A long name is never cut (the review, 2026-11-27: the box is how the user catches the exact
+// theme) — it wraps onto its own line under the label, whole and inside the box; the line wraps inside the box; nothing scrolls
+// sideways.
 test.describe('7.24 · D1a\'s pill and theme box at 1440, 820 and 390', () => {
   test.use({ hasTouch: false, isMobile: false })
   for (const shape of ['first', 'taken']) {
@@ -944,8 +945,8 @@ test.describe('7.24 · D1a\'s pill and theme box at 1440, 820 and 390', () => {
           const lh = (el) => px(getComputedStyle(el).lineHeight)
           return {
             box: { dir: b.flexDirection, gap: b.rowGap, border: [b.borderTopWidth, b.borderTopColor], radius: b.borderTopLeftRadius, pad: [b.paddingTop, b.paddingLeft], left: r(box).left, right: r(box).right },
-            label: { size: getComputedStyle(label).fontSize, color: getComputedStyle(label).color, lines: Math.round(r(label).height / lh(label)) },
-            name: { size: getComputedStyle(name).fontSize, weight: getComputedStyle(name).fontWeight, mono: /mono/i.test(getComputedStyle(name).fontFamily), right: r(name).right, left: r(name).left, height: r(name).height, lh: lh(name), cut: name.scrollWidth > name.clientWidth, overflow: getComputedStyle(name).textOverflow },
+            label: { size: getComputedStyle(label).fontSize, color: getComputedStyle(label).color, lines: Math.round(r(label).height / lh(label)), bottom: r(label).bottom },
+            name: { size: getComputedStyle(name).fontSize, weight: getComputedStyle(name).fontWeight, mono: /mono/i.test(getComputedStyle(name).fontFamily), right: r(name).right, left: r(name).left, top: r(name).top, height: r(name).height, lh: lh(name), cut: name.scrollWidth > name.clientWidth },
             line: { size: getComputedStyle(line).fontSize, lh: lh(line) / px(getComputedStyle(line).fontSize), color: getComputedStyle(line).color, left: r(line).left, right: r(line).right, lines: Math.round(r(line).height / lh(line)), text: line.textContent },
             pill: pill === null ? null : (() => {
               const p = getComputedStyle(pill)
@@ -959,9 +960,10 @@ test.describe('7.24 · D1a\'s pill and theme box at 1440, 820 and 390', () => {
         const INK_SOFT = 'rgb(110, 106, 100)'
         const LINE = 'rgb(231, 226, 219)'
         expect(m.box, 'D1a :69-76').toMatchObject({ dir: 'column', gap: '5px', border: ['1px', LINE], radius: '10px', pad: ['11px', '13px'] })
-        expect(m.label).toEqual({ size: '12px', color: INK_SOFT, lines: 1 })
+        expect(m.label).toMatchObject({ size: '12px', color: INK_SOFT, lines: 1 })
         expect([m.name.size, m.name.weight, m.name.mono]).toEqual(['12.5px', '500', true])
         expect(Math.abs(m.box.right - 13 - 1 - m.name.right), 'the name at the box\'s right edge (ml-auto)').toBeLessThanOrEqual(0.5)
+        expect(m.name.cut, 'the name whole').toBe(false)
         expect([m.line.size, m.line.color]).toEqual(['11px', INK_SOFT])
         expect(m.line.lh).toBeCloseTo(1.55, 2)
         expect(m.line.left).toBeGreaterThanOrEqual(m.box.left + 13)
@@ -977,14 +979,15 @@ test.describe('7.24 · D1a\'s pill and theme box at 1440, 820 and 390', () => {
           expect(m.line.text.indexOf('This name is permanent')).toBeGreaterThan(0)
         }
         expect(m.scroll, 'nothing scrolls sideways').toBeLessThanOrEqual(m.inner)
-        // a long name: one line, cut with an ellipsis, inside the box — never wrapping and never pushing the box wider
+        // a long name: never cut — it wraps onto its own line(s) under the label, whole, inside the box, never pushing the box wider
         await page.evaluate(() => {
           document.querySelector('dialog[data-deploy-wizard] [data-theme-name]').textContent = `inflozo-${'a-very-long-project-name-'.repeat(6)}2`
         })
         const long = await measure()
-        expect(long.name.cut, 'the long name is cut').toBe(true)
-        expect(long.name.overflow).toBe('ellipsis')
-        expect(long.name.height, 'one line').toBeLessThanOrEqual(long.name.lh + 0.5)
+        expect(long.name.cut, 'the long name is whole').toBe(false)
+        expect(long.name.height, 'it wraps').toBeGreaterThan(long.name.lh + 0.5)
+        expect(long.name.top, 'on its own line, under the label').toBeGreaterThanOrEqual(long.label.bottom - 0.5)
+        expect(long.name.left).toBeGreaterThanOrEqual(long.box.left + 13 + 1 - 0.5)
         expect(long.name.right).toBeLessThanOrEqual(long.box.right - 13 - 1 + 0.5)
         expect(long.label.lines, '"Theme to be created" keeps its one line beside it').toBe(1)
         expect(long.box.right, 'the box keeps its width').toBeCloseTo(m.box.right, 0)

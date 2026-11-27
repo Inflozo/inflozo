@@ -9970,6 +9970,9 @@ re-run (DW-403)
 **And** *(given an owner by Story 7.23a's Review, 2026-11-25)* the deployed walk's Ship it press that now and then sends nothing
 (no request reaches Vercel) is classified from the state the walk now records — a swallowed click is a product defect, a request
 dying in the browser is the harness's (DW-404)
+**And** *(given an owner by Story 7.24's Review, 2026-11-27)* the phone card's journey 7.23c (e), "a lost answer that LANDED",
+waits for the confirm's check to end and Cancel to hold focus again after its new History header is set, before it presses Roll
+back — it failed once in CI with focus never on the card's heading, 4 of 4 on a local re-run (DW-406)
 
 **Owner test:** none (automated). · **Verification:** production stack, T1–T3 (R-82).
 

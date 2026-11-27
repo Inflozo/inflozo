@@ -1202,15 +1202,17 @@ export function DeployWizard({
             </div>
           ) : null}
           {refusedPlan ? <p data-plan-refused className="-mt-2 text-[12px] leading-[1.55] text-ink-soft">{W.planRefused(host)}</p> : null}
-          {site.capability === 'preview_only' && !refusedPlan ? null : (
+          {!themeRow ? null : (
             <>
               {ship?.newTheme ? (
                 // STORY 7.24 — D1a's box `:69-76` on this project's first ship to the site: the theme to be created, and one helper
-                // line — why it was suffixed (extrapolated into the same line), then its permanence (FR-J10)
+                // line — why it was suffixed (extrapolated into the same line), then its permanence (FR-J10). The name is never cut
+                // (the review, 2026-11-27): this box is how the user catches the exact theme, so a name too long for the row wraps
+                // onto its own line under the label, right-aligned, breaking anywhere — the frame's one row while it fits
                 <div data-theme-new className="flex flex-col gap-[5px] rounded-thumb border border-line p-[11px_13px]">
-                  <div className="flex items-center gap-[10px]">
+                  <div className="flex flex-wrap items-center gap-x-[10px]">
                     <span className="shrink-0 text-control-label text-ink-soft">{W.themeNew}</span>
-                    <span data-theme-name className="ml-auto truncate font-mono text-[12.5px] font-medium text-ink [font-variant-ligatures:none]">{ship.themeName}</span>
+                    <span data-theme-name className="ml-auto min-w-0 break-all text-right font-mono text-[12.5px] font-medium text-ink [font-variant-ligatures:none]">{ship.themeName}</span>
                   </div>
                   <span data-theme-line className="text-[11px] leading-[1.55] text-ink-soft [text-wrap:pretty]">
                     {ship.suffixedFrom === null ? null : `${W.suffixed(ship.suffixedFrom, host)} `}

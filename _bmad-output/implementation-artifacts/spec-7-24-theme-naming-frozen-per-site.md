@@ -2,10 +2,10 @@
 title: 'Story 7.24 — Theme naming, frozen per site'
 type: 'feature'
 created: '2026-11-27'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '09a3c7683b871e8a093e84f57ad09ce389b7bfc1'
 owner_test: pending
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-19-the-first-deploy-credential-step-and-its-decline-path.md']
 ---
 
@@ -18,7 +18,8 @@ same Ghost site) already uses that name, your project's theme gets its own name,
 says why, so one project can never overwrite another's theme. Once a theme has landed on a site its name never changes there,
 whatever you rename, prune or ship next.
 
-No question for the owner. Two routine calls, said in Design Notes: "one site" means one Ghost site, whichever Inflozo account
+One question for the owner, raised at the Review (below: what you are told if the name changes after you saw it). Two routine
+calls, said in Design Notes: "one site" means one Ghost site, whichever Inflozo account
 connected it; and the row naming the theme stays on later ships, as 7.18a built it.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
@@ -309,6 +310,35 @@ and tokens:
 - **One rule.** Given any state, then the name Destination shows and the name Pre-flight compiles come from `themeNameFor`, and
   `grep -rn "themeNameOf(" apps/web` finds it only inside `themeNameFor`, the harness and tests.
 
+### Review Findings
+
+*Story 7.24's Review (2026-11-27): five layers — Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier (in the main session, on the owner's go) — then walk step 124 and the re-expected steps on production and T1
+(Verification). One question for the owner; one item deferred. Each patch is Spec Change Log 7–14.*
+
+- [ ] [Review][Decision] A name that moves after Destination showed it is never said — Pre-flight's fresh held read, or Ship it's
+  re-make after a name was claimed meanwhile, can upload `-3` while D1a's box said `-2` and "permanent"; no later screen names the
+  theme (the epic's "surfaced to the user", "names the exact theme that will be created"). Question 1.
+- [x] [Review][Patch] Walk step 124b could never pass — `liveManifest` un-awaited; its overwrite claim rested on a manifest that
+  cannot discriminate; the start guard's `like` matched longer names [`tools/probe/run-verify-editor.cjs` step 124]
+- [x] [Review][Patch] A failed bindings read drew "Theme to be created" and the permanence line over a possibly frozen name
+  [`apps/web/lib/deploy.ts` `shipStateOf`]
+- [x] [Review][Patch] `heldNames` threw synchronously past `read.ts`' `.catch` when `supabaseAdmin()` throws
+  [`apps/web/server/deploy/held-names-io.ts`]
+- [x] [Review][Patch] `heldNamesIn` read other accounts' names for a caller whose own record is disconnected
+  [`apps/web/server/deploy/held-names.ts`]
+- [x] [Review][Patch] The pill's guard (only beside a theme row) was untested — the harness never made a no-row shape a first deploy
+  [`apps/web/app/(app)/app/harness/editor/layout.tsx` · `tools/keyboard/journey.spec.mjs` 7.24 (e)]
+- [x] [Review][Patch] D1a's name was cut with an ellipsis, hiding the exact permanent name the box exists to show
+  [`apps/web/components/editor/deploy-wizard.tsx` · `tools/keyboard/floor.spec.mjs`]
+- [x] [Review][Patch] "Within one account a collision cannot happen" is false (a suffixed name can meet a sibling's base); the dedupe
+  comment's staleness claim; `read.ts`' header; the PRD note's §7.6 item [`lib/deploy.ts`, `held-names.ts`, `read.ts`, `prd.md`,
+  `EXPERIENCE.md`, `epic-7-context.md`]
+- [x] [Review][Patch] The owner's test kept accounts A and B, whose bindings would hold the name for every later account and refuse
+  walk step 124 [this spec, After the test]
+- [x] [Review][Defer] Journey 7.23c (e) failed once in CI on the Dev head [`tools/keyboard/journey.spec.mjs` 7.23c (e)] — deferred,
+  pre-existing (DW-406)
+
 ## Spec Change Log
 
 **Dev (2026-11-27).** Each entry is outside the frozen block, except where it says so, and was made where the build met a fact the
@@ -341,16 +371,59 @@ plan did not hold.
    `.eq('site_id', siteId)` removed from Pre-flight's binding read, green restored. Spec Change Log 2 was checked against
    `run.ts`' `ship()`: the first upload per site record captures unless `withoutSnapshot`, so a decline with no token rests on B12b.
 
+**Review (2026-11-27).** Five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, the Real-infra verifier
+in the main session). Patched, each outside the frozen block:
+
+7. **Walk step 124b could never pass:** `liveDiff124` handed `compareManifests` the un-awaited `liveManifest` Promise (every file
+   would read removed). Awaited, as 121's does. Its check sentence now says what proves no overwrite — T1 listing BOTH names — since X
+   and Y compile the same fixture and an overwrite under the base would leave X's files equal to X's manifest too. And the start
+   guard's held read matches the base or a suffix of it, never a longer name that merely starts with it (`inflozo-name-testing`).
+8. **A failed bindings read drew D1a's box over a possibly frozen name** ("Theme to be created", the permanence line, maybe a suffix).
+   `newTheme` and `suffixedFrom` now need a bindings read that answered; a failed one keeps 7.18a's row. `read.test.ts`, red under
+   the reversion.
+9. **`heldNames` throwing synchronously** (`supabaseAdmin()` with its key unset) escaped `read.ts`' `.catch` and failed the editor
+   load: it is `async`, so the throw is a rejection counted as none.
+10. **The caller's own record must be connected** for `heldNamesIn` to read anything (`.is('disconnected_at', null)` on the first
+    query — a narrowing of Always' step 1): the Design Notes' reason ("anyone who can connect the site holds its Admin key") is no
+    reason for a disconnected record, and neither caller draws a name for one (Pre-flight returns earlier; Destination draws no row).
+    `held-names.test.ts`, red under the reversion. Its header now says what the address cannot match (one Ghost under two
+    addresses), and a `ponytail:` line names the unindexed `sites.url` scan.
+11. **The pill's guard was untested:** every harness shape but `first` said `firstDeploy: false`, where production counts an
+    unlinked project and an unshipped Preview-only site as first deploys. The harness's `unlinked` and `preview` now carry
+    `firstDeploy: true` (neither draws Run checks, so neither meets the Safety net), and journey 7.24 (e) holds no pill there and
+    none while the site picker is open — red with `themeRow &&` removed. The box's branch reads the same `themeRow`.
+12. **D1a's name is never cut** (a routine call under R-74, beside the epic's "names the exact theme that will be created so the
+    user can catch it"): the Tasks' "a long name truncating, never wrapping" hid any name past about 24 characters on a phone, and
+    slugs run to 80. The name stays on the label's row while it fits, else wraps onto its own line under the label, right-aligned,
+    breaking anywhere. The floor's long-name rows now assert it whole, wrapped, under the label and inside the box — red under
+    `truncate` restored. 7.18a's "Theme" row (a name already on the site) still truncates.
+13. **Words:** "within one account a collision cannot happen" corrected in `lib/deploy.ts`, `held-names.ts`, the PRD note, these
+    Design Notes and the epic context; the dedupe comment no longer claims the staleness hash reads the held set (it reads the name);
+    `read.ts`' header names its one service-role read; the PRD note says VERIFY 9 answers its §7.6 item; EXPERIENCE's note says the
+    name wraps. The Code Map's "re-expect `read.test.ts:94`" was a wrong premise (`:92` builds `inflozo-other`); Dev added `:96`.
+14. **After the owner's test** Claude also deletes accounts A and B: their bindings at T1's address would otherwise hold
+    `inflozo-name-test` and `-2` for every later account and refuse walk step 124's start.
+
+Dismissed, with the reason: the editor's held read while bound (Always names it beside the ship reads, which it runs parallel to);
+the harness and journeys writing `-2` literally (expected values); the walk's own copy of the held read (an independent observer
+over the product's `themeNameFor`); the pill outside the dialog's name (read in order after the heading); the suffix sentence's
+words (frozen); `server-wiring.test.ts`' ordinals (the file's convention); a refused first upload's chip (a refused upload writes
+no `uploaded` row); a suffixed name past `history/live`'s 120 (slugs run to 80); the floor in light only (the floor's convention).
+Deferred: **DW-406**, the 7.23c (e) keyboard journey that failed once in CI on the Dev head (untouched path, 4/4 on re-run).
+
 ## Design Notes
 
 **"One site" is one Ghost site, whichever account connected it.** A routine call, not a question:
 - Ghost's theme names live on the Ghost, not in an Inflozo account.
-- Within one account a collision cannot happen, because slugs are unique per account (DW-24). Read per site record, the epic's
-  suffix criterion could never fire.
+- Within one account a collision almost never happens, because slugs are unique per account (DW-24). Read per site record, the
+  epic's suffix criterion would almost never fire. *(The review, 2026-11-27: "never" was too strong — a suffixed name can meet a
+  sibling's base in one account, `blog` suffixed to `inflozo-blog-2` beside a project slugged `blog-2`; the rule already counts the
+  user's own other projects, so only the sentence was wrong. The frozen Intent's "cannot arise" carries the same overstatement.)*
 - Two accounts on one Ghost is real: an agency and its client, or the owner's test accounts on T1.
 - Without the suffix, the second account's upload replaces the first's theme, and makes it live when it is the active one (R-264).
 
-The read returns names only. Anyone who can connect the site holds its Admin key, and already sees those themes in Ghost Admin.
+The read returns names only. Anyone who can connect the site holds its Admin key, and already sees those themes in Ghost Admin
+— so the caller's own record must be connected (the review: a disconnected record's former key is no such reason).
 
 **Why Ghost's own list is not read** (VERIFY 9: the staff token lifts it). The epic keeps "D1a names the theme" as the safeguard
 here, and the read would only change behaviour for a theme named `inflozo-{slug}` that no Inflozo binding claims. That theme is
@@ -370,6 +443,30 @@ Story 7.25's lock closes the first, and its card now asks it to consider the sec
 
 **The row stays on later ships.** S8a draws no theme row. 7.18a added "Theme" on every ship (EXPERIENCE's Deploy Destination:
 "and the theme name") and the owner tested it, so only D1a's first-ship form is new.
+
+## Questions for the owner
+
+Question 1 was raised at the Review (2026-11-27).
+
+### Question 1 — What are you told if the theme's name changes after Ship it showed it to you?
+
+**In plain English.** Ship it's first screen names the theme it will create — say `inflozo-name-test-2` — and says that name is
+permanent. In one rare case the name can still change after that screen: another Inflozo account connected to the same Ghost ships
+a project with the same name in the minutes between you opening the editor and pressing Ship it (or the editor could not read the
+other accounts' names when it opened). Inflozo then picks the next free name and ships under it. It never overwrites anything, but
+today nothing tells you: you would only see the other name later, in Ghost Admin.
+
+**An example.** You open Ship it at 10:00 and see `inflozo-name-test-2`. At 10:02 an agency's account ships its own "Name test" to
+the same Ghost and takes `-2`. You press Ship it at 10:05, and your theme lands as `inflozo-name-test-3`.
+
+1. **(RECOMMENDED) Say it at the end.** When the name moved, the last screen adds one sentence, e.g. "It was uploaded as
+   inflozo-name-test-3, because inflozo-name-test-2 was taken by another Inflozo project meanwhile." A small change, made in this
+   story, so the screen never leaves you believing a name that was not used.
+2. **Keep it as built.** Nothing is overwritten and Ghost Admin shows the real name; Story 7.25's lock will make the race rarer.
+3. **Stop and show the first screen again** with the new name, so you confirm it before anything uploads. The safest, but it adds a
+   stop the plan chose not to have ("recompiled under the next free name and never stops").
+
+**Ruled:** _(awaiting the owner)_
 
 ## Owner's manual test
 
@@ -408,7 +505,8 @@ You sign in only as **B**.
    **See:** among the installed themes, both `inflozo-name-test` and `inflozo-name-test-2`, with Casper still active.
 
 **After the test:** say "passed", or list what you saw. On your go, Claude then deletes both test themes from T1, which stays on
-Casper.
+Casper, and deletes the two test accounts A and B (their bindings go with them, so a later "Name test" on T1 is free again and walk
+step 124's start guard can run).
 
 ## Verification
 
@@ -456,3 +554,25 @@ Casper.
   `themeNameFor`, the harness and the tests only.
 - **Not run at Dev, the Review's and Deploy's on the owner's in-session go:** walk step 124 (`T1_WRITES=1`, from a clean worktree at
   the deployed sha) and `STEP124_PLANT`; the re-expected walk steps 113 and 119–123 (`productThemeName`). `node --check` passes.
+
+**Executed — Review (2026-11-27, Node 24, on the owner's in-session go: "1. Go for all" — walk step 124 and the re-expected steps
+113 and 119–123, each at most three runs, all put back, plus read-only reads of production and T1):**
+- **CI on the Dev head `961b8f2e` was red, so nothing of the story deployed:** run 45941413602's `check` stopped at `pnpm keyboard`,
+  397 passed and journey 7.23c (e) failed once (focus never on the phone card's heading; untouched by this story).
+  `--grep "7.23c · the phone" --repeat-each 4` locally: 28 passed. Recorded as **DW-406**. `rls` and the matrix were green.
+- **Production, read-only (the service key read in-process by name, nothing printed):** every column the code reads exists
+  (`sites` id, url, user_id, disconnected_at; `project_site_bindings` project_id, site_id, theme_name, user_id), and the control —
+  an unknown column — is refused 42703 (R-99: no migration, and none needed). **`heldNamesIn` executed against production's
+  PostgREST:** T1's address carries 14 site records in 14 accounts (one disconnected); the names it answers equal an independent
+  read of every binding there (`inflozo-drift-test`, `-ghost6`, `-history-test`, `-phone-test`, `-restore-test`,
+  `-rollback-test` — the kept plants and the owner's own); as the project bound to `inflozo-ghost6` its own binding is excluded
+  (another project holds `inflozo-ghost6` there too — the overwrite this story ends, already on production); the controls answer
+  `[]` — a site that is not the caller's, and an address that does not exist. Over that answer `themeNameFor` gives `name-test` →
+  `inflozo-name-test` (free), `ghost6` → `inflozo-ghost6-2`, `phone-test` → `inflozo-phone-test-2`: so the re-expected walk steps'
+  throwaways ship as `-2` beside the kept plants, which `productThemeName` reads.
+- **T1, read-only (staff token):** `casper` active; `racer`, `source` and the owner's `inflozo-ghost6` installed, unused; no
+  `inflozo-name-test*`.
+- **Local:** the touched unit files 57/57, then `pnpm check` (below); the new assertions each seen red under a planted reversion —
+  the caller's `disconnected_at` filter removed (`held-names.test.ts` 2 failed), `newTheme: bound === null` restored (`read.test.ts`
+  1 failed), `themeRow &&` removed from the pill (journey 7.24 (e) failed), `truncate` restored on the name (the floor's six rows
+  failed); green restored each time. `--grep "7\.24"`: 11 passed.
