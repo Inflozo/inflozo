@@ -2,9 +2,9 @@
 title: 'Story 7.23c — The phone''s Deploy history card (split from Story 7.23 by R-290)'
 type: 'feature'
 created: '2026-11-26'
-status: 'in-review'
+status: 'done'
 baseline_commit: 7d97297f5b1a12efd1daa742e66b762495069755
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-23a-roll-back-and-re-activate-from-history.md', '{project-root}/_bmad-output/implementation-artifacts/spec-5-22-the-editor-s-responsive-floor.md']
 ---
@@ -468,6 +468,30 @@ You need a **phone**, held upright. On the phone:
 
 **After the test:** say "passed", or list what you saw. On your go, Claude then puts T1 back on Casper and removes the test theme
 from T1.
+
+## Owner's test findings
+
+**Owner's test (owner, 2026-11-27): passed.** The owner replied *"passed"* on the deployed site (`dpl_GxvLaPGUUb4qXR9vLaXGZ9CqL9sQ`,
+`https://app.inflozo.com`). No findings.
+
+**What production showed before the record.** Checked first with GET-only reads (`SUPABASE_SECRET_KEY`: auth `last_sign_in_at` and
+the `deploys` rows; `GHOST6_STAFF_ACCESS_TOKEN`: `GET themes/`) and Vercel's request rows (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, the
+request-logs endpoint, 20 s windows, none capped). All times UTC, 2026-11-27, on project `6b386937-…`:
+- **On an iPhone** (its user agent on every row): sign-in by magic link at 03:05:29, the project at 03:05:32 and the card's
+  `GET …/history` at 03:06:01 (step 1); the check `POST …/history` at 03:06:32 (step 2); `GET …/history/live` 200 at 03:06:46, the
+  Download (step 3); nothing sent for Cancel (step 4); a check and a put-back at 03:07:18 and 03:07:23, then the card's re-read
+  (step 5, Roll back to v1); the same at 03:07:50 and 03:07:58, then the re-read (step 6, Roll back to v2). No lock or sync
+  request from the phone.
+- **On a laptop** (X11 Linux): sign-in at 03:08:57, the editor (its lock beats) and History at 03:09:08 (step 7). He went past
+  step 7's Cancel and rolled back from the laptop too: a check and a put-back at 03:09:15 and 03:09:20 (v1's `accepted_at`
+  03:09:21), then at 03:09:31 and 03:09:32 (v2's `accepted_at` 03:09:33), then a last check at 03:09:36 with no put-back after it.
+- At the record: v2 `live` and v1 `uploaded`, T1 serving `inflozo-phone-test` with `/` reading "Version 2".
+
+**Afterwards, T1 was cleaned up** on the owner's in-session go (*"1. Yes, clean it (RECOMMENDED)"*), with
+`GHOST6_STAFF_ACCESS_TOKEN` read in-process: `routes.yaml` read first at 130 bytes (as at every walk's start); `PUT
+themes/casper/activate/` 200; `DELETE themes/inflozo-phone-test/` 204. The read-back shows `casper*`, `racer`, `source` and
+`inflozo-ghost6`, `/` 200 on Casper, and `routes.yaml` 130 bytes with the same hash. The planted account remains on production with
+its project and site.
 
 ## Verification
 
