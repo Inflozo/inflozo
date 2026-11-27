@@ -6315,6 +6315,30 @@ as the design draws it, and every address still opens. The limit gets written in
   - ✅ `epic-7-context.md`;
   - — the code: none, option 1 is as built.
 
+**R-294 — when a theme lands under another name than Ship it's first screen showed, the last screen says so.** Story 7.24's Review,
+Question 1, ruled **option 1** (owner, 2026-11-27): *"(RECOMMENDED) Say it at the end. When the name moved, the last screen adds one
+sentence, e.g. "It was uploaded as inflozo-name-test-3, because inflozo-name-test-2 was taken by another Inflozo project
+meanwhile.""*
+
+- **Why it was a question.** D1a's box names the theme to be created and calls the name permanent. The name is chosen again at
+  Pre-flight and, when another project claimed it meanwhile, again at Ship it (the artefact goes stale and is recompiled under the
+  next free name, "never stops" — Story 7.24's frozen plan). It never overwrites anything, but nothing told the customer the name
+  had moved; FR-J10 says the suffix is "surfaced to the user".
+- **The rule.** On both endings — Live, and D2e/D2f's "on your site" — when the ship showed "Theme to be created" and the deploy
+  row names another theme, one sentence: "It was uploaded as {shipped}, because {shown} was taken by another Inflozo project
+  meanwhile." Nothing else changes: no stop, no second confirm. A frozen name never moves, so a later ship never says it.
+- **Declined.** Option 2, keep it unsaid (Ghost Admin shows the real name); option 3, stop at Ship it and show the first screen
+  again with the new name.
+- Targets:
+  - ✅ this entry;
+  - ✅ Story 7.24's spec (Question 1's Ruled line, the Review Findings, Spec Change Log 17);
+  - ✅ `prd.md` FR-J10 (its Story 7.24 note);
+  - ✅ `EXPERIENCE.md`'s Deploy Destination row (its Story 7.24 note);
+  - ✅ `epics.md` Story 7.24's card;
+  - ✅ `epic-7-context.md`;
+  - ✅ the code (`lib/deploy.ts`' `movedFrom` and `DEPLOY_WORDS.themeMoved`, `deploy-wizard.tsx`'s two endings) — Story 7.24's
+    Review.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

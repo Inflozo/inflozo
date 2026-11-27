@@ -290,6 +290,9 @@ export const DEPLOY_WORDS = {
   suffixed: (base: string, host: string) => `${base} is already used on ${host} by another Inflozo project, so this one gets its own name.`,
   chipNew: (n: number) => `new theme · ${versionLabel(n)}`,
   firstDeployPill: 'first deploy',
+  /** R-294 (owner, 2026-11-27, Story 7.24's Question 1) — the ending's one sentence when the theme landed under another name than
+   *  the one D1a's box showed (`movedFrom`): taken by another Inflozo project between the box and the upload */
+  themeMoved: (shipped: string, shown: string) => `It was uploaded as ${shipped}, because ${shown} was taken by another Inflozo project meanwhile.`,
   runChecks: 'Run checks',
   /** STORY 7.19 — Destination's button while Safety net is still to come (D1a `:89`): nothing starts, so no busy label */
   next: 'Next',
@@ -918,6 +921,12 @@ export function shipStateOf(a: {
  *  `full` site, or a Preview-only one a refused upload marked, R-270), to a site no project of the user's has uploaded to
  *  (FR-J13's per-site first deploy), that holds no Staff Access Token and has no recorded Not now (R-278). A token stored or
  *  a decline recorded skips the step: nothing would be asked. */
+/** R-294 — the name D1a's box showed, when the theme then landed under another (`DeployView.deploy.themeName`, the deploy row's):
+ *  Pre-flight's own held read, or Ship it's re-make after a name was claimed meanwhile, picked the next free one. Only on a ship
+ *  that showed "Theme to be created" (`newTheme`) — a frozen name never moves — else null, and the ending says nothing more */
+export const movedFrom = (ship: Pick<ShipState, 'newTheme' | 'themeName'> | null | undefined, shipped: string | null | undefined): string | null =>
+  ship?.newTheme === true && typeof shipped === 'string' && shipped !== '' && shipped !== ship.themeName ? ship.themeName : null
+
 export function safetyOffered(ship: Pick<ShipState, 'site' | 'firstDeploy'> | null | undefined): boolean {
   const site = ship?.site ?? null
   if (site === null) return false

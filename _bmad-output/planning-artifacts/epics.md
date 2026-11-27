@@ -4706,6 +4706,9 @@ user, and never deadlocks**
 **And** a collision with a theme Inflozo did not deploy cannot be detected in advance, so **the first-deploy
 confirmation names the exact theme that will be created** so the user can catch it
 **And** the confirm matches D1a, including its permanence line.
+**And** *(R-294, owner, 2026-11-27, Story 7.24's Review)* when the theme lands under another name than D1a's box showed (claimed
+meanwhile), the ending — Live, or D2e/D2f — says so in one sentence: "It was uploaded as {shipped}, because {shown} was taken by
+another Inflozo project meanwhile."
 
 **FRs:** FR-J10. · **Frame:** `D1 First-Deploy Gates.dc.html` D1a. · **Owner test:** yes.
 

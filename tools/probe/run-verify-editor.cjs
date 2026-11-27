@@ -17245,8 +17245,10 @@ async function main() {
         }
         const end = await until124(() => job124(acc.project), (j) => j?.id === pre.id && (j.stage === 'done' || j.stage === 'failed'), 300000)
         const title = await until124(() => pg.evaluate(() => document.getElementById('deploy-title')?.textContent ?? null).catch(() => null), (t) => t === W124.uploadOnlyTitle, 30000)
+        // R-294's line: said only when the theme landed under another name than the box showed — never here, where nothing races
+        const moved = await pg.locator('dialog[data-deploy-wizard] [data-theme-moved]').count().catch(() => null)
         await closed124(pg)
-        return { end, title, row: await deploy124(end?.deploy_id) }
+        return { end, title, moved, row: await deploy124(end?.deploy_id) }
       }
       const first124 = (w) => w?.pill === W124.firstDeployPill && w.box === true && w.label === W124.themeNew
 
@@ -17278,8 +17280,8 @@ async function main() {
         const shipA = await shipOnly124(X, true)
         const themesA = await themes124()
         const boundX = await binding124(X)
-        check(`step 124a — X ships Deploy only (D2f "${W124.uploadOnlyTitle}"): v1 uploaded, not activated, X's binding ${BASE124}; T1 lists it, not active, ${prev124} still live`,
-          shipA.end?.stage === 'done' && shipA.title === W124.uploadOnlyTitle && shipA.row?.status === 'uploaded' && shipA.row.activated === false && shipA.row.theme_name === BASE124 && shipA.row.version === '1.0.0' &&
+        check(`step 124a — X ships Deploy only (D2f "${W124.uploadOnlyTitle}", no R-294 line — the name the box showed landed): v1 uploaded, not activated, X's binding ${BASE124}; T1 lists it, not active, ${prev124} still live`,
+          shipA.end?.stage === 'done' && shipA.title === W124.uploadOnlyTitle && shipA.moved === 0 && shipA.row?.status === 'uploaded' && shipA.row.activated === false && shipA.row.theme_name === BASE124 && shipA.row.version === '1.0.0' &&
           boundX === BASE124 && JSON.stringify(named124(themesA)) === JSON.stringify([BASE124]) && themesA?.find((t) => t.active)?.name === prev124,
           JSON.stringify({ stage: shipA.end?.stage, title: shipA.title, row: shipA.row && { ...shipA.row, content_manifest: undefined }, bound: boundX, t1: named124(themesA) }))
         await handBack124(X)
@@ -17325,7 +17327,7 @@ async function main() {
         // the review (2026-11-27): X and Y compile the same fixture, so an overwrite under the base would leave X's files equal to X's
         // manifest too — what proves nothing was overwritten is T1 listing BOTH names; the manifest says X's files are untouched
         check(`step 124b — Y ships Deploy only: v1 under ${TAKEN124}, Y's binding ${TAKEN124}; T1 (GET themes/, the staff token) lists both, neither active — so nothing was overwritten — and X's ${BASE124} downloaded from T1 still equals X's content_manifest`,
-          shipB.end?.stage === 'done' && shipB.row?.status === 'uploaded' && shipB.row.theme_name === TAKEN124 && (await binding124(Y)) === TAKEN124 &&
+          shipB.end?.stage === 'done' && shipB.moved === 0 && shipB.row?.status === 'uploaded' && shipB.row.theme_name === TAKEN124 && (await binding124(Y)) === TAKEN124 &&
           JSON.stringify(named124(themesB)) === JSON.stringify([BASE124, TAKEN124]) && themesB?.find((t) => t.active)?.name === prev124 && none124(diffX),
           JSON.stringify({ stage: shipB.end?.stage, row: shipB.row && { ...shipB.row, content_manifest: undefined }, t1: named124(themesB), diffX }))
 
@@ -17346,7 +17348,7 @@ async function main() {
         const shipC = await shipOnly124(Y, false)
         const themesC = await themes124()
         check(`step 124c — a second Deploy only: 2.0.0 under ${TAKEN124}, the binding unchanged, and still exactly ${BASE124} and ${TAKEN124} on T1 (no third), ${prev124} live`,
-          shipC.end?.stage === 'done' && shipC.row?.status === 'uploaded' && shipC.row.version === '2.0.0' && shipC.row.theme_name === TAKEN124 && (await binding124(Y)) === TAKEN124 &&
+          shipC.end?.stage === 'done' && shipC.moved === 0 && shipC.row?.status === 'uploaded' && shipC.row.version === '2.0.0' && shipC.row.theme_name === TAKEN124 && (await binding124(Y)) === TAKEN124 &&
           JSON.stringify(named124(themesC)) === JSON.stringify([BASE124, TAKEN124]) && themesC?.find((t) => t.active)?.name === prev124,
           JSON.stringify({ stage: shipC.end?.stage, row: shipC.row && { ...shipC.row, content_manifest: undefined }, t1: named124(themesC) }))
       } catch (e) {

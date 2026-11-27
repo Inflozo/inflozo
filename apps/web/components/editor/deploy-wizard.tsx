@@ -19,7 +19,7 @@ import { glyphOf, LayerThumb } from '@/components/kit/layers-row'
 import { RoutesFallback } from '@/components/routes-fallback'
 import {
   afterSafety, BACKUP_WORDS as BW, backupOwed, CANCELLABLE, CHECK_FAILED, checkRows, DEPLOY_WORDS as W, endingOf, isMoving, isSnapshotError, POSTS_CHECKED, SAFETY_PICTURE, SAFETY_WORDS as SN,
-  safetyOffered, SNAPSHOT_WORDS as SNAP, STAGE_NAMES, stepNumber, stepOf, stepsFor, themeSize, UNSTOPPABLE, uploadOnlyBlock, versionNumber, type DeployRequest, type DeployView, type Mode,
+  movedFrom, safetyOffered, SNAPSHOT_WORDS as SNAP, STAGE_NAMES, stepNumber, stepOf, stepsFor, themeSize, UNSTOPPABLE, uploadOnlyBlock, versionNumber, type DeployRequest, type DeployView, type Mode,
   type RailStep, type ShipState, type Stage, type Step, type Timings,
 } from '@/lib/deploy'
 import {
@@ -1143,6 +1143,14 @@ export function DeployWizard({
    *  Ghost's own answer — and says so under B15's panel; a probe's Preview-only stays as 7.18a drew it */
   const refusedPlan = site?.capability === 'preview_only' && site.source === 'deploy_error'
 
+  /** R-294 — both endings' one sentence when the theme landed under another name than D1a's box showed (`movedFrom`), in the
+   *  ending's own helper type (extrapolated: no frame draws it) */
+  const movedName = view?.deploy?.themeName ?? null
+  const shownName = movedFrom(ship, movedName)
+  const movedLine = shownName === null || movedName === null ? null : (
+    <p data-theme-moved className="text-ui-dense leading-[1.5] text-ink-soft [text-wrap:pretty]">{W.themeMoved(movedName, shownName)}</p>
+  )
+
   /** the theme row shows (7.18a): a connected site that is not B15's Preview-only (a refused upload's keeps it, R-270) */
   const themeRow = !picking && site !== null && (site.capability !== 'preview_only' || refusedPlan)
 
@@ -1602,6 +1610,7 @@ export function DeployWizard({
             ))(W.liveChips(n, checked.errors, checked.warnings, total))}
           </div>
         </div>
+        {movedLine}
         {routing === undefined || routing.kind === 'none' ? null : routing.kind === 'live' ? (
           <p data-routes-ending="live" className="text-ui-dense text-ink">{W.routesLive(host)}</p>
         ) : routing.kind === 'failed' ? (
@@ -1645,6 +1654,7 @@ export function DeployWizard({
             {ending_ === 'notLive' ? W.notLiveTitle : W.uploadOnlyTitle}
           </h2>
           <p className="text-[13.5px] leading-[1.6] text-ink [text-wrap:pretty]">{ending_ === 'notLive' ? W.notLiveBody(n, prev, host) : W.uploadOnlyBody(n, prev, host)}</p>
+          {movedLine}
         </div>
       </div>
       <div className="flex flex-col gap-[11px]">

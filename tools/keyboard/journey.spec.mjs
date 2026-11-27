@@ -12471,3 +12471,38 @@ test('7.24 · (e) the review: the pill only beside a theme row — no pill on a 
   await expect(sitePicker(page)).toHaveCount(0)
   await expect(pill()).toHaveText(DW.firstDeployPill)
 })
+
+test('7.24 · (f) R-294: a theme that landed under another name than D1a\'s box showed is said on the ending — D2f and Live alike, one sentence; the control: the name the box showed says nothing more', async ({ page }) => {
+  // `full`: the box said inflozo-pilot-sections; the deploy row the route answers names what Ghost was sent
+  const MOVED = `${BASE_724}-2`
+  const d2f = (themeName) => viewOf('done', { ...CHECKED, uploading: TIMED.uploading }, { deploy: deployOf({ themeName, status: 'uploaded' }) })
+  const live = (themeName) => viewOf('done', { ...CHECKED, uploading: TIMED.uploading, activating: TIMED.activating, routes: { kind: 'live' } }, { deploy: deployOf({ themeName, status: 'live', activated: true }) })
+  const shipThrough = async (mode, ending) => {
+    await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+    await page.unrouteAll({ behavior: 'ignoreErrors' })
+    await plantDeploy(page, { preflight: PREFLIGHT, ship: [UPLOADING, ending] })
+    await open(page)
+    if (mode === 'upload') {
+      await page.locator('#editor-ship + button').focus()
+      await page.keyboard.press('Enter')
+      await expect(shipMenu(page).locator('li button').first()).toBeFocused() // focused a frame after it opens (`lib/menu.ts`)
+      await page.keyboard.press('ArrowDown')
+      await page.keyboard.press('Enter')
+      await expect(wizard(page).locator('input[value="upload"]')).toBeChecked()
+    } else await openWizard(page)
+    await expect(wizard(page).locator('[data-theme-name]')).toHaveText(BASE_724)
+    await runChecks(page)
+    const ship = page.locator('#deploy-ship')
+    await expect(ship).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+    await ship.focus()
+    await page.keyboard.press('Enter')
+    await expect(wizard(page).locator('#deploy-title')).toHaveText(mode === 'upload' ? DW.uploadOnlyTitle : DW.liveTitle, { timeout: 15_000 })
+  }
+  await shipThrough('upload', d2f(MOVED))
+  await expect(wizard(page).locator('[data-theme-moved]')).toHaveText(DW.themeMoved(MOVED, BASE_724))
+  await shipThrough('activate', live(MOVED))
+  await expect(wizard(page).locator('[data-theme-moved]')).toHaveText(DW.themeMoved(MOVED, BASE_724))
+  // the control: the name the box showed landed — nothing more is said
+  await shipThrough('activate', live(BASE_724))
+  await expect(wizard(page).locator('[data-theme-moved]')).toHaveCount(0)
+})

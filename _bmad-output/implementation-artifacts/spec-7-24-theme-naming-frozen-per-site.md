@@ -18,8 +18,8 @@ same Ghost site) already uses that name, your project's theme gets its own name,
 says why, so one project can never overwrite another's theme. Once a theme has landed on a site its name never changes there,
 whatever you rename, prune or ship next.
 
-One question for the owner, raised at the Review (below: what you are told if the name changes after you saw it). Two routine
-calls, said in Design Notes: "one site" means one Ghost site, whichever Inflozo account
+One question for the owner, raised at the Review and ruled the same day (R-294: if the name changes after you saw it, the last
+screen says so in one sentence). Two routine calls, said in Design Notes: "one site" means one Ghost site, whichever Inflozo account
 connected it; and the row naming the theme stays on later ships, as 7.18a built it.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
@@ -314,11 +314,12 @@ and tokens:
 
 *Story 7.24's Review (2026-11-27): five layers — Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
 verifier (in the main session, on the owner's go) — then walk step 124 and the re-expected steps on production and T1
-(Verification). One question for the owner; two items deferred. Each patch is Spec Change Log 7–16.*
+(Verification). One question for the owner, ruled (R-294) and built; two items deferred. Each patch is Spec Change Log 7–17.*
 
-- [ ] [Review][Decision] A name that moves after Destination showed it is never said — Pre-flight's fresh held read, or Ship it's
+- [x] [Review][Decision] A name that moves after Destination showed it is never said — Pre-flight's fresh held read, or Ship it's
   re-make after a name was claimed meanwhile, can upload `-3` while D1a's box said `-2` and "permanent"; no later screen names the
-  theme (the epic's "surfaced to the user", "names the exact theme that will be created"). Question 1.
+  theme (the epic's "surfaced to the user", "names the exact theme that will be created"). Question 1, ruled option 1 (R-294):
+  built — Spec Change Log 17.
 - [x] [Review][Patch] Walk step 124b could never pass — `liveManifest` un-awaited; its overwrite claim rested on a manifest that
   cannot discriminate; the start guard's `like` matched longer names [`tools/probe/run-verify-editor.cjs` step 124]
 - [x] [Review][Patch] A failed bindings read drew "Theme to be created" and the permanence line over a possibly frozen name
@@ -418,6 +419,16 @@ in the main session). Patched, each outside the frozen block:
     answers B12b with Deploy without a snapshot when it appears; later ships find the binding and capture nothing. Not this
     story's defect; this story's own parts of 113 (the name read through `productThemeName`, `chipNew(1)` at 113c and 113f) passed
     on the first run.
+17. **R-294 (Question 1, option 1, owner 2026-11-27), built:** `movedFrom(ship, deploy.themeName)` in `lib/deploy.ts` — the name
+    D1a's box showed, when this was a "Theme to be created" ship (`newTheme`) and the deploy row the route answers
+    (`DeployView.deploy.themeName`, 7.18a's) names another; else null. Both endings — Live, and D2e/D2f — then say
+    `DEPLOY_WORDS.themeMoved`: "It was uploaded as {shipped}, because {shown} was taken by another Inflozo project meanwhile.", one
+    `text-ui-dense` `ink-soft` line (`data-theme-moved`), extrapolated from each ending's own helper lines (no frame draws it). A
+    frozen name never moves, so a Theme-row ship says nothing more; nor does a ship whose bindings read failed (Spec Change Log 8).
+    `deploy.test.ts` (red with the `newTheme` guard removed) and journey 7.24 (f) — D2f and Live with a moved name, and the control
+    with the shown name — red with the line removed from either ending. No walk step: staging the race needs a third account's
+    upload inside the minute; its parts are each proven — the re-resolve (`deploy-run.test.ts`), the route's `themeName` on
+    production (walk 113d, 124), the sentence (journey (f)).
 
 Dismissed, with the reason: the editor's held read while bound (Always names it beside the ship reads, which it runs parallel to);
 the harness and journeys writing `-2` literally (expected values); the walk's own copy of the held read (an independent observer
@@ -461,7 +472,7 @@ Story 7.25's lock closes the first, and its card now asks it to consider the sec
 
 ## Questions for the owner
 
-Question 1 was raised at the Review (2026-11-27).
+Question 1 was raised at the Review (2026-11-27) and ruled the same day: option 1, recorded as **R-294**.
 
 ### Question 1 — What are you told if the theme's name changes after Ship it showed it to you?
 
@@ -481,7 +492,8 @@ the same Ghost and takes `-2`. You press Ship it at 10:05, and your theme lands 
 3. **Stop and show the first screen again** with the new name, so you confirm it before anything uploads. The safest, but it adds a
    stop the plan chose not to have ("recompiled under the next free name and never stops").
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-11-27).** *"1"* — **R-294**: both endings (Live, and D2e/D2f's "on your site") add the one sentence
+when the deploy's theme name differs from the one D1a's box showed. Built in this story's Review (Spec Change Log 17).
 
 ## Owner's manual test
 
@@ -617,3 +629,8 @@ step 124's start guard can run).
     name `inflozo-rollback-test-2` through 121a–121h — held in all three. The go's three runs are spent.
   - T1 read back after the last run: `casper` active; `racer`, `source` and the owner's `inflozo-ghost6`; nothing of the walk's.
   - **Ghost 5's half** (T3, R-238) stays postponed to DW-326's pass at Story 15.7.
+
+**Executed — the ruling (R-294, 2026-11-27, Node 24):** `deploy.test.ts` 35/35 (R-294's test red with `movedFrom`'s `newTheme` guard
+removed); `--grep "7\.24"` 12 passed, journey 7.24 (f) red with the line removed from D2f's ending and, separately, from Live's;
+`pnpm check` green. Walk step 124's three ships now also hold that no R-294 line is drawn when the name the box showed is the one
+that landed (the real-infra control for the new line), for the run on the ruling's deployed head below.

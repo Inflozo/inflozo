@@ -9,7 +9,7 @@ import type { Finding } from '@inflozo/theme-compiler/gate'
 import { SETTING_WORDS } from '@inflozo/section-runtime/custom-settings'
 import {
   activateAnswer, afterSafety, BACKUP_WORDS, backupOwed, CANCELLABLE, canonical, CHECK_FAILED, checkRows, DEPLOY_WORDS, deployError, endingOf, fileLabel, GHOST_PLANS_HELP, inputsHash,
-  isSnapshotError, MOVING, placeOf, refusalWords, SAFETY_PICTURE, SAFETY_WORDS, safetyOffered, SNAPSHOT_CODES, SNAPSHOT_WORDS, snapshotError, STAGE_NAMES, stepNumber, stepOf, STEPS,
+  isSnapshotError, movedFrom, MOVING, placeOf, refusalWords, SAFETY_PICTURE, SAFETY_WORDS, safetyOffered, SNAPSHOT_CODES, SNAPSHOT_WORDS, snapshotError, STAGE_NAMES, stepNumber, stepOf, STEPS,
   stepsFor, themeNameFor, themeNameOf, thrownCode, UNSTOPPABLE, uploadAnswer, versionLabel, versionNumber, versionOf, type ShipState,
 } from './lib/deploy.ts'
 import { KEYS } from './lib/connect-rule.ts'
@@ -84,6 +84,16 @@ test('7.24: one rule names the theme — the frozen binding, else inflozo-{slug}
   assert.equal(DEPLOY_WORDS.suffixed('inflozo-name-test', 'ghost6.inflozo.com'), 'inflozo-name-test is already used on ghost6.inflozo.com by another Inflozo project, so this one gets its own name.')
   assert.equal(DEPLOY_WORDS.chipNew(1), 'new theme · v1')
   assert.equal(DEPLOY_WORDS.firstDeployPill, 'first deploy')
+})
+
+test('7.24 · R-294: the ending names a theme that landed under another name than D1a\'s box showed — only on a ship that showed "Theme to be created"', () => {
+  const shown = { newTheme: true, themeName: 'inflozo-name-test-2' }
+  assert.equal(movedFrom(shown, 'inflozo-name-test-3'), 'inflozo-name-test-2', 'claimed meanwhile: the box said -2, -3 landed')
+  assert.equal(movedFrom(shown, 'inflozo-name-test-2'), null, 'the control: the name the box showed is the one that landed')
+  assert.equal(movedFrom({ newTheme: false, themeName: 'inflozo-name-test' }, 'inflozo-name-test-2'), null, 'a frozen name never moves: no claim over the Theme row')
+  assert.equal(movedFrom(shown, null), null, 'no deploy read: nothing said')
+  assert.equal(movedFrom(null, 'inflozo-name-test-3'), null)
+  assert.equal(DEPLOY_WORDS.themeMoved('inflozo-name-test-3', 'inflozo-name-test-2'), 'It was uploaded as inflozo-name-test-3, because inflozo-name-test-2 was taken by another Inflozo project meanwhile.')
 })
 
 test('the staleness hash: the same rows in any key order hash alike; a moved row or another release does not', async () => {
