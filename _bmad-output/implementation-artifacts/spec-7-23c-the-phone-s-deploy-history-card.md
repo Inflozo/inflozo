@@ -428,40 +428,41 @@ undo does.
 
 ## Owner's manual test
 
-**Before you start:** Deploy plants one new Free test account on your go, connected to T1 (`ghost6.inflozo.com`): `{address —
-Deploy fills it}`, project **"Phone test"**.
-- v1 and then v2 were shipped live. The home page headline reads "Version 1" or "Version 2" to match.
-- One small invisible change was then made to v2's files on T1, as if someone had edited the theme in Ghost Admin. Your first
-  Roll back finds it.
+**Before you start:** Deploy planted one new Free test account on your go (2026-11-27, about 7:24 AM your time), connected to T1
+(`ghost6.inflozo.com`): `umngkmr+phone723c@gmail.com`, project **"Phone test"**.
+- v1 and then v2 were shipped live. The home page headline reads "Version 1" or "Version 2" to match; it reads "Version 2" now.
+- One small invisible change was then made to v2's Home template on T1, as if someone had edited the theme in Ghost Admin. Your
+  first Roll back finds it.
 
 You need a **phone**, held upright. On the phone:
 - sign in at `https://app.inflozo.com/sign-in` with that address;
 - open the link that arrives, on the phone too;
 - keep a second tab on `https://ghost6.inflozo.com`.
 
-1. **URL:** `https://app.inflozo.com/projects/{id — Deploy fills it}` on the phone. **Screen:** "The editor needs a bigger
+1. **URL:** `https://app.inflozo.com/projects/6b386937-ba70-4aea-88a3-2f306ff43d55` on the phone. **Screen:** "The editor needs a bigger
    screen." **Do:** scroll down to "WHAT WORKS HERE". **Type:** nothing. **See:**
-   - first, a white card: a clock icon, **Deploy history**, and "Live **v2** · today" with the time;
-   - inside it, a box with `v1`, "Today ·" and a time, and an orange-outlined **Roll back to v1** button;
+   - first, a white card: a clock icon, **Deploy history**, and "Live **v2** · today 7:24 AM" (on a later day, "Nov 27 7:24 AM");
+   - inside it, a box with `v1`, "Today · 7:24 AM" (on a later day, "Nov 27 · 7:24 AM"), and an orange-outlined **Roll back to
+     v1** button;
    - under the card, **Your sites** as before;
    - no sideways scrolling.
-2. **URL:** the same page. **Do:** tap **Roll back to v1**. **See:**
+2. **URL:** `https://app.inflozo.com/projects/6b386937-ba70-4aea-88a3-2f306ff43d55` (the same page). **Do:** tap **Roll back to v1**. **See:**
    - a box titled "Roll back to v1?" with "Your live site switches to v1 instantly. v2 stays in history — nothing is lost.";
    - "Comparing with your live theme…" for about a second;
-   - then a warning listing **one file that changed on your site**, a line saying Rolling back replaces it, a **Download the live
+   - then a warning listing **one file that changed on your site**, named **Home**, a line saying Rolling back replaces it, a **Download the live
      theme first** button, and **Cancel** and **Roll back** at the bottom.
-3. **URL:** the same page, the box open. **Do:** tap **Download the live theme first**. **See:** a zip downloads (your phone may
+3. **URL:** `https://app.inflozo.com/projects/6b386937-ba70-4aea-88a3-2f306ff43d55` (the same page), the box open. **Do:** tap **Download the live theme first**. **See:** a zip downloads (your phone may
    ask where to keep it), and the box stays open.
-4. **URL:** the same page. **Do:** tap **Cancel**. **See:** the box closes and the card is unchanged. Reload
+4. **URL:** `https://app.inflozo.com/projects/6b386937-ba70-4aea-88a3-2f306ff43d55` (the same page). **Do:** tap **Cancel**. **See:** the box closes and the card is unchanged. Reload
    ghost6.inflozo.com: it still reads "Version 2".
-5. **URL:** the same page. **Do:** tap **Roll back to v1**, wait for the check, then tap **Roll back**. **See:**
+5. **URL:** `https://app.inflozo.com/projects/6b386937-ba70-4aea-88a3-2f306ff43d55` (the same page). **Do:** tap **Roll back to v1**, wait for the check, then tap **Roll back**. **See:**
    - the button says "Rolling back…";
    - then the box closes, and the card reads "Live **v1** · today" with a box for `v2` and **Roll back to v2**;
    - reload ghost6.inflozo.com: it reads "Version 1".
-6. **URL:** the same page. **Do:** tap **Roll back to v2**. **See:** this time a green line, "Nothing changed on your site since
+6. **URL:** `https://app.inflozo.com/projects/6b386937-ba70-4aea-88a3-2f306ff43d55` (the same page). **Do:** tap **Roll back to v2**. **See:** this time a green line, "Nothing changed on your site since
    v1". **Do:** tap **Roll back**. **See:** the card reads "Live **v2**" with **Roll back to v1**, and ghost6.inflozo.com reads
    "Version 2".
-7. **URL:** `https://app.inflozo.com/projects/{id}` on a **laptop**, window at least 1366 px wide, signed in with the same address.
+7. **URL:** `https://app.inflozo.com/projects/6b386937-ba70-4aea-88a3-2f306ff43d55` on a **laptop**, window at least 1366 px wide, signed in with the same address.
    **Do:** press the clock icon left of **Ship it**, then **Roll back** on v1. **See:** History as before (v2 with the green
    **Live** dot), and the same box as on the phone. **Do:** press **Cancel**.
 
@@ -501,6 +502,36 @@ from T1.
   test above.
 - **Vercel:** the deployment is READY from the Dev head.
 - **The owner's test above (R-80).**
+
+**Executed — Deploy (2026-11-27, Node 24; keys by their variable names, read in-process, no value printed; the production and T1
+writes on the owner's in-session go, "1. Go", up to 3 runs, run in the main session):**
+- **Deployment: `dpl_GxvLaPGUUb4qXR9vLaXGZ9CqL9sQ`** (`inflozo-apqmjun2v-umangkagathara.vercel.app`), READY, target production,
+  built from `0eb7c4c5` (the Review's commit, which carries the Review's app changes — `RowNote` and the fresh clocks), aliased to
+  `app.inflozo.com`, `inflozo.com` and `www.inflozo.com` (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`, `v6/deployments` and
+  `v13/deployments/{id}`); `https://app.inflozo.com/sign-in` and `https://inflozo.com/` answer 200. Before it, production was the Dev
+  head's `dpl_J2hEDi5XAsoArDCM82TqEMoTsp3m`.
+- **CI on `0eb7c4c5`** (`GITHUB_TOKEN`, read only): run 45874560904 — `rls`, `check` (the whole keyboard gate among it) and `deploy`
+  success; the Render matrix (45874560572) success.
+- **Schema: none.** The story changes no table and has no Schema phase (R-99); `git diff --stat 7d97297f 0eb7c4c5 -- supabase` is
+  empty, so there is no migration to apply and no RLS gate to re-run (CI's `rls` is green on the commit above).
+- **Before the plant, read only:** T1's themes with `GHOST6_STAFF_ACCESS_TOKEN` (`GET themes/`, 200): `casper*`, `racer`, `source`,
+  `inflozo-ghost6`, no test theme (7.23b's plant was cleared); the plant address not among production's 25 users
+  (`SUPABASE_SECRET_KEY`, the Auth Admin list).
+- **The owner's test plant** — walk step 123's `STEP123_PLANT=umngkmr+phone723c@gmail.com` with `T1_WRITES=1`, as a cut copy (steps
+  1–5, then 123, then the walk's `finally`) from a clean detached worktree at the deployed `0eb7c4c5` (`tools/probe/.env` linked in,
+  never copied), the launcher reading `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_DB_POOLER_URL`, `VERCEL_TOKEN` and
+  `VERCEL_TEAM_ID` in-process and the step its own `GHOST6_*` keys. **Run 1 of 3: 0 FAIL, 44 PASS**, first time (one `stall` note,
+  step 5's 30 s GET of the project page retried once); the walk confirmed Vercel serving its HEAD before it started:
+  - T1 on `casper` at the start, `routes.yaml` read; T1 connected through the wizard; **"Phone test"**
+    (`6b386937-ba70-4aea-88a3-2f306ff43d55`) v1 then v2 shipped (Deploy & activate), `/` "Version 1" then "Version 2", v2 live under
+    `inflozo-phone-test`;
+  - v2's files with an invisible hand edit (a Handlebars comment) to `home.hbs` uploaded under `inflozo-phone-test` with the Admin API
+    key, active at once (R-264); T1's download differing from v2 by that file alone (R-291); `/` still "Version 2"; the History route
+    Live v2 with the undo v1, the card's rule `live`. The owner's first Roll back to v1 names "Home" in D3a's block;
+  - the step-1 throwaways deleted; users 25 → 26 and projects 18 → 19 (one each kept by the plant); zero CSP violations.
+- **Read back afterwards, GET only** (`GHOST6_STAFF_ACCESS_TOKEN`, `SUPABASE_SECRET_KEY`): T1's themes `casper`, `racer`, `source`,
+  `inflozo-ghost6`, `inflozo-phone-test*`, its `/` 200 reading "Version 2"; the account on `free`; Phone test linked to a connected
+  `https://ghost6.inflozo.com` (`disconnected_at` null); deploys 1.0.0 `uploaded` and 2.0.0 `live`, both `inflozo-phone-test`.
 
 **Executed — Review, the main session (2026-11-26, Node 24; every key read inside the process from `tools/probe/.env` by its variable
 name, never on argv, no value printed; the owner's in-session go for walk steps 97 and 123, "1. Go", up to three runs each):**
