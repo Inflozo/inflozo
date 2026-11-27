@@ -101,6 +101,7 @@ import { PackEditor, type PackEditing } from './pack-editor'
 import { StylePackCard, StylePackHead, StylePackRoster } from './style-pack'
 import { CardMenu, CardPanel, CardPanelHead, CardsCanvas, CardsLayers } from './cards-surface'
 import { DeployWizard, ShipButton, type ShipRequest } from '@/components/editor/deploy-wizard'
+import { ExportDialog } from '@/components/editor/export-dialog'
 import { DeployHistory } from '@/components/editor/deploy-history'
 import { historyRequests } from '@/components/editor/history-requests'
 import { HISTORY_WORDS, type ActOutcome, type CheckOutcome, type HistoryAnswer, type PinOutcome } from '@/lib/retention'
@@ -840,7 +841,8 @@ const onNarrowTouch = (change: () => void) => {
   return () => query.removeEventListener('change', change)
 }
 
-/** STORY 7.18a — D8g's "Take over and ship", kept in THIS tab across the take-over's reload (the tab's own store) */
+/** STORY 7.18a — D8g's "Take over and ship", kept in THIS tab across the take-over's reload (the tab's own store). STORY 7.26 — and
+ *  "Take over and export": `mode: 'export'` opens the export window on the way back instead of the wizard */
 const SHIP_AFTER = 'inflozo:ship-after-takeover'
 
 /** R-202's rule, LIVE — `useSyncExternalStore` over `matchMedia(COMPACT)`, so a window crossing 1280 (or a zoom) re-renders
@@ -2606,6 +2608,24 @@ function EditorShell({
     }
     setWizard((was) => ({ mode, n: (was?.n ?? 0) + 1 }))
   }
+  /* STORY 7.26 — THE EXPORT (FR-J12), ONE HANDLER FOR ITS THREE DOORS (R-141): Ship it ▾'s Download theme (S4d), S8a′'s Download
+   * theme (the wizard closes first) and B15's Export theme zip, which opens this editor at `?export` (read once on mount, then
+   * removed from the address). The export needs the edit lock as Run checks does, so a session READING ALONG meets D8g in export
+   * words first (`LOCK_COPY.export*`), opened on Wait; **Take over and export** is the same take-over, its ask kept in this tab's
+   * store across the reload (`SHIP_AFTER`, `mode: 'export'`). A holder opens the window (`components/editor/export-dialog.tsx`),
+   * which flushes, then starts. Close returns focus to Ship it. */
+  const exportTakeover = useRef<HTMLDialogElement>(null)
+  const [exporting, setExporting] = useState<{ n: number } | null>(null)
+  const openExport = () => {
+    if (!latest.current.lock.holder) {
+      openOnCancel(exportTakeover.current)
+      return
+    }
+    setExporting((was) => ({ n: (was?.n ?? 0) + 1 }))
+  }
+  /** an export asked for before this session knew whether it holds the lock (`?export`, or the take-over's reload): opened once
+   *  the lock is settled — acquired, or read as another session's — so the POST never races the first acquire */
+  const exportAsked = useRef(false)
   /** STORY 7.22 — the History drawer, mounted while open (a fresh read each time it opens), from the bar's clock or Ship it ▾ */
   const [history, setHistory] = useState<{ n: number; open: boolean }>({ n: 0, open: false })
   const openHistory = () => setHistory((was) => ({ n: was.n + 1, open: true }))
@@ -2621,6 +2641,12 @@ function EditorShell({
     void takeOver(shipTakeover, () => {
       setShipOpening(true)
       tabStore()?.setItem(SHIP_AFTER, JSON.stringify({ project: project.id, mode: shipAsked.current }))
+    })
+  /** STORY 7.26 — D8g's **Take over and export**: the same take-over, the export asked on the way back */
+  const takeOverToExport = () =>
+    void takeOver(exportTakeover, () => {
+      setShipOpening(true)
+      tabStore()?.setItem(SHIP_AFTER, JSON.stringify({ project: project.id, mode: 'export' }))
     })
   /** Run checks' flush: whatever is in flight lands first, then everything owed is sent — null when nothing is left, else the
    *  sentence that says why: Can't sync's own, word for word, when the save was refused for good (R-275, DW-304), and
@@ -2701,9 +2727,30 @@ function EditorShell({
       }
     })()
     if (asked?.project !== project.id || !latest.current.lock.holder) return
+    // Story 7.26 — an export asked through D8g opens the export window, once the lock is settled (below)
+    if (asked.mode === 'export') {
+      exportAsked.current = true
+      return
+    }
     setWizard({ mode: asked.mode === 'upload' ? 'upload' : 'activate', n: 1 })
     // mount only — the ask is one reload's
   }, [])
+  /** STORY 7.26 — B15's Export theme zip opens this editor at `?export`: read once on mount and taken out of the address at once, so
+   *  a reload or Back never exports again */
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    if (!url.searchParams.has('export')) return
+    url.searchParams.delete('export')
+    window.history.replaceState(window.history.state, '', url)
+    exportAsked.current = true
+    // mount only — the address's ask is one load's
+  }, [])
+  /** …and the ask is answered once the lock is settled: this session acquired it (`heldGeneration`), or reads along (D8g) */
+  useEffect(() => {
+    if (!exportAsked.current || (lock.holder && heldGeneration.current === null)) return
+    exportAsked.current = false
+    openExport()
+  }, [lock])
 
   useEffect(() => {
     let alive = true
@@ -5634,7 +5681,7 @@ function EditorShell({
      surface, which has Back to post instead. The device is ONE row that moves to the next device, because the menu is
      "one item deep" (`D8:293`). Undo and redo stay beside the indicator (R-143) — except on a touch screen below 768, where
      they lead ⋯ (R-263, Story 7.18a) — and D8a's Export row has no control at
-     1440 to be (Ship it's own menu carries Download theme, 7.26). Only the Remix row edits, so it alone greys reading
+     1440 to be (Ship it's own menu carries Download theme at every width, as Story 7.26 built it). Only the Remix row edits, so it alone greys reading
      along (R-192). */
   const chipsOf = (gesture: Gesture) => KEYMAP.find((b) => b.gesture === gesture)?.chips
   /** the glyph slot of a row whose control draws none (Theme settings is words at 1440, and R-92 forbids inventing one):
@@ -6081,7 +6128,7 @@ function EditorShell({
           </IconButton>
           {/* STORY 7.18a — S4's Ship it with S4d's ▾, AFTER ⋯ and at EVERY width (D8a/D8b draw it there below 1440): never in the
               hidden cluster, and live reading along — it changes nothing, and a reader's press meets D8g first */}
-          <ShipButton ship={ship} routes={shipRoutes} busy={shipOpening} onShip={openShip} onHistory={openHistory} />
+          <ShipButton ship={ship} routes={shipRoutes} busy={shipOpening} onShip={openShip} onExport={openExport} onHistory={openHistory} />
         </div>
       </header>
 
@@ -6976,6 +7023,33 @@ function EditorShell({
         taking={lock.taking}
         onConfirm={takeOverToShip}
       />
+      {/* STORY 7.26 — D8g in export words (its caption `:489` names Export): B5c's component again, opened on Wait by `openExport` */}
+      <LockTakeover
+        dialog={exportTakeover}
+        id="editor-export-takeover"
+        heading={LOCK_COPY.exportTitle}
+        body={LOCK_COPY.exportBody}
+        owed={lock.row?.unsyncedEdits ?? 0}
+        confirm={LOCK_COPY.exportConfirm}
+        taking={lock.taking}
+        onConfirm={takeOverToExport}
+      />
+      {/* STORY 7.26 — the export window, mounted while open; focus goes back to Ship it on close */}
+      {exporting === null ? null : (
+        <ExportDialog
+          // a key of its own kind: the wizard beside it is keyed by its own count, and two siblings sharing a key ("1") are
+          // duplicated by React — S8a′'s press mounts this while the wizard is still closing
+          key={`export-${exporting.n}`}
+          projectId={project.id}
+          prefix={isApp(pathname) ? '/app' : ''}
+          session={() => tabId.current}
+          flush={flushForShip}
+          onClose={() => {
+            setExporting(null)
+            document.getElementById('editor-ship')?.focus()
+          }}
+        />
+      )}
       {/* STORY 7.18a — the deploy wizard (S8a–d, S8d′, D2e/D2f), mounted while open; focus goes back to Ship it on close */}
       {wizard === null ? null : (
         <DeployWizard
@@ -7005,6 +7079,7 @@ function EditorShell({
           confirmBackup={(siteId) => backupConfirm(project.id, siteId)}
           downloadTheme={(siteId) => themeDownload(project.id, siteId)}
           downloadRoutes={(siteId) => routesDownload(project.id, siteId)}
+          onExport={openExport}
           onClose={(shipped) => {
             // a relink's kept ask is spent: an editor the re-read did not remount (the harness) never reopens it later
             tabStore()?.removeItem(SHIP_AFTER)

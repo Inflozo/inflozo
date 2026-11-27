@@ -52,7 +52,7 @@ const { iconDrawing } = await import(join(REPO, 'packages/library/src/icons.ts')
 const rt = await import(join(REPO, 'packages/section-runtime/src/index.ts'))
 const { REFERENCE_PACK } = await import(join(REPO, 'packages/section-runtime/src/reference.ts'))
 const { presetOf } = await import(join(REPO, 'packages/library/src/packs.ts'))
-const { checkTripleStashes, compileTheme, CSS_BUDGET_BYTES, THEME_MARKS } = await import(join(REPO, 'packages/theme-compiler/src/index.ts'))
+const { checkTripleStashes, compileTheme, CSS_BUDGET_BYTES, README_MARK, THEME_MARKS } = await import(join(REPO, 'packages/theme-compiler/src/index.ts'))
 // Story 7.8: AD-34's leak assertions have one spelling, the quality gate's `leftovers`
 const { leftovers } = await import(join(REPO, 'packages/theme-compiler/gate/index.ts'))
 const { JSDOM } = createRequire(join(REPO, 'packages/theme-compiler/package.json'))('jsdom')
@@ -232,7 +232,7 @@ export function compilePilots(words, { theme, postsPerPage = 12, find: given = l
   const pageTwo = overTwo ?? project.pageTwo
   // Story 7.21 — and `sections`, the fingerprint beside the files (FR-J16), so the drift recorder keeps the manifest the deploy keeps
   const { files, css, js, custom, sections } = compileTheme(new JSDOM('<body></body>').window.document, {
-    templates, pageTwo, library: find, pack: REFERENCE_PACK, assets: {}, postsPerPage, theme, pairing: PAPER.pairing, fonts: poolFonts, darkEnabled,
+    templates, pageTwo, library: find, pack: REFERENCE_PACK, assets: {}, postsPerPage, theme, pairing: PAPER.pairing, packName: PAPER.name, fonts: poolFonts, darkEnabled,
     modules, ghostCards: ghostCards(), ...(cardDesigns === undefined ? {} : { cardDesigns }),
     ...(settings === false ? {} : { settings: settings === true ? pilotSettings(templates) : settings }),
     ...(language === undefined ? {} : { language }), ...(strings === undefined ? {} : { strings }),
@@ -271,6 +271,13 @@ export function unmarked(text) {
   return JSON.stringify(rest, null, 2)
 }
 
+/** Story 7.26 — README.md without its one named mark (`README_MARK`): on the line that opens with its `before` and ends with its
+ *  `after`, both removed and the project's name between them kept — so the scan still reads the customer's words, and the
+ *  builder's name anywhere else in README is caught. */
+export function unreadme(text) {
+  return text.split('\n').map((l) => (l.startsWith(README_MARK.before) && l.endsWith(README_MARK.after) ? l.slice(README_MARK.before.length, l.length - README_MARK.after.length) : l)).join('\n')
+}
+
 /** Story 7.12 — a locale file without its `credit.*` keys: the catalog's locked credit (S7), which every locale file carries
  *  verbatim, each held equal to the catalog's own words here — so the scan exempts those exact strings and nothing else. */
 export function uncredited(text) {
@@ -297,6 +304,7 @@ export function textFailures(path, raw, instanceIds = []) {
   if (/^locales\/[^/]+\.json$/.test(path)) {
     try { body = uncredited(raw) } catch (e) { return [...out, `${path}: ${e.message}`] }
   }
+  if (path === 'README.md') body = unreadme(raw)
   if (/inflozo/i.test(body)) out.push(`${path}: the builder's name`)
   for (const id of instanceIds) if (body.includes(id)) out.push(`${path}: the instance id ${id}`)
   if (/\b(?:DW|AD|FR|NFR|R)-\d+\b|\bStory \d|ponytail/.test(body)) out.push(`${path}: an internal reference`)

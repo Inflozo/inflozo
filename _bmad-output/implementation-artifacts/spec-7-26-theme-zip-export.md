@@ -2,9 +2,10 @@
 title: 'Story 7.26 — Theme ZIP export'
 type: 'feature'
 created: '2026-11-27'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 review_loop_iteration: 0
+baseline_commit: '0e06d9b3e78fa041efa6566f42c2ebeff64aa521'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-25-rate-limits-the-compile-budget-and-the-advisory-lock.md']
 ---
 
@@ -277,106 +278,108 @@ it, and once a theme has been shipped or exported, its Theme settings keys lock 
 **Execution:**
 
 *The compile:*
-- [ ] `packages/theme-compiler/src/slug.ts` -- `RESERVED` (Windows' device names, Design Notes) taken in `claim`, with DW-336
+- [x] `packages/theme-compiler/src/slug.ts` -- `RESERVED` (Windows' device names, Design Notes) taken in `claim`, with DW-336
   in its comment.
-- [ ] `packages/theme-compiler/src/compile.ts` -- `CompileInput.packName`; README's three sections (Design Notes, Words) between
+- [x] `packages/theme-compiler/src/compile.ts` -- `CompileInput.packName`; README's three sections (Design Notes, Words) between
   Styles and Routes, the names on one line; `noC0` over `packName`.
-- [ ] Every `compileTheme` caller hands `packName` (Code Map's grep).
-- [ ] `apps/web/lib/style-pack.ts` -- `enginePackOf` answers the record's `name`.
+- [x] Every `compileTheme` caller hands `packName` (Code Map's grep).
+- [x] `apps/web/lib/style-pack.ts` -- `enginePackOf` answers the record's `name`.
 
 *The export run:*
-- [ ] `apps/web/server/deploy/project-input.ts` -- `compileInputOf` with `siteId: string | null` (Always).
-- [ ] `apps/web/server/deploy/run.ts`:
+- [x] `apps/web/server/deploy/project-input.ts` -- `compileInputOf` with `siteId: string | null` (Always).
+- [x] `apps/web/server/deploy/run.ts`:
   - `startExport`, `exportTheme`, `exportView`, and the shared pre-compile refusals;
   - `note`'s `warnings`; `failInfra`'s sentence;
   - `compileBudget` said with the export's sentence when the export asks (its log line unchanged);
   - Ship it's stamp after the bind;
   - `DeployIo.exports.insert` and `freeze`.
-- [ ] `apps/web/server/deploy/deploy-io.ts` -- the two members.
-- [ ] `apps/web/lib/deploy.ts`:
+- [x] `apps/web/server/deploy/deploy-io.ts` -- the two members.
+- [x] `apps/web/lib/deploy.ts`:
   - `EXPORT_WORDS`; `compileBudget`'s refusal (`compile_budget`) said with the export's sentence when the export asks;
   - `exportPath`, `exportHref`, `exportDownloadPath`;
   - the shared budget sentence;
   - DEPLOY_WORDS' S8a′ sentence.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/export/route.ts` (new) -- POST and GET (Always). Header: the deploy route's
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/export/route.ts` (new) -- POST and GET (Always). Header: the deploy route's
   pattern, the lock, the budget, AD-13.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/export/download/route.ts` (new) -- the signed download (Always).
-- [ ] `apps/web/server-wiring.test.ts` -- the download route joins the service-role list with its reason: the bucket has no
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/export/download/route.ts` (new) -- the signed download (Always).
+- [x] `apps/web/server-wiring.test.ts` -- the download route joins the service-role list with its reason: the bucket has no
   Storage policy (AD-29); whose export it is is read on the caller's session.
 
 *The editor:*
-- [ ] `apps/web/components/signed-download.tsx` (new) -- `SignedDownload` moved whole, with size 32 added. `deploy-wizard.tsx`
+- [x] `apps/web/components/signed-download.tsx` (new) -- `SignedDownload` moved whole, with size 32 added. `deploy-wizard.tsx`
   and `deploy-history.tsx` import it from there.
-- [ ] `apps/web/components/editor/export-dialog.tsx` (new) -- the window (Always), in S8's modal and S8b's rows.
-- [ ] `apps/web/components/editor/deploy-wizard.tsx`:
+- [x] `apps/web/components/editor/export-dialog.tsx` (new) -- the window (Always), in S8's modal and S8b's rows.
+- [x] `apps/web/components/editor/deploy-wizard.tsx`:
   - `ShipButton`'s Download theme row (`onExport`);
   - S8a′ in place of B15's panel on a Preview-only Destination, its Download theme calling `onExport`;
   - the Backup rows' line mounted empty first, in `text-danger-text` (DW-405).
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx`:
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx`:
   - `openExport`; D8g's second `LockTakeover` in export words;
   - `SHIP_AFTER` with `export`; `?export` on mount;
   - the window's mount, with focus back to Ship it.
-- [ ] `apps/web/lib/lock.ts` -- `LOCK_COPY.exportTitle`, `exportBody`, `exportConfirm`.
+- [x] `apps/web/lib/lock.ts` -- `LOCK_COPY.exportTitle`, `exportBody`, `exportConfirm`.
 
 *B15 and the Sites page:*
-- [ ] `apps/web/lib/probe-rule.ts` -- `PREVIEW_COPY.body` with its export clause, `exportZip`, `shipBlocked`; the comment's two
+- [x] `apps/web/lib/probe-rule.ts` -- `PREVIEW_COPY.body` with its export clause, `exportZip`, `shipBlocked`; the comment's two
   departures rewritten as built.
-- [ ] `apps/web/app/(app)/app/(authed)/sites/site-notices.tsx` -- B15's control row (Always); the header rewritten.
-- [ ] `apps/web/app/(app)/app/(authed)/sites/export-menu.tsx` (new, client) -- the several-projects popover, lifted from
+- [x] `apps/web/app/(app)/app/(authed)/sites/site-notices.tsx` -- B15's control row (Always); the header rewritten.
+- [x] `apps/web/app/(app)/app/(authed)/sites/export-menu.tsx` (new, client) -- the several-projects popover, lifted from
   `site-menu.tsx`.
-- [ ] `apps/web/app/(app)/app/(authed)/sites/(list)/page.tsx`:
+- [x] `apps/web/app/(app)/app/(authed)/sites/(list)/page.tsx`:
   - the projects read gains `id, name` (the tally unchanged);
   - each card's linked projects handed to `<SiteNotices>`;
   - `OriginalThemes`' Download becomes `SignedDownload` at 32.
 
 *Tests* (each new assertion seen red under a planted reversion):
-- [ ] `apps/web/deploy-run.test.ts`:
+- [x] `apps/web/deploy-run.test.ts`:
   - **the run:** the happy path (both gscans asked, 5 and 6; put with `replace`; the row's version; the freeze over the emitted
     keys only — a parked or unread row not frozen; `done`);
   - **blocked and refused:** each gate blocking (nothing put, recorded or frozen); a compile refusal; RTL; routing;
   - **the rest:** infra twice → the export's sentence; `exportView`'s stall;
   - **Ship it:** the stamp after the bind, and a failed stamp that leaves the ending untouched.
-- [ ] `apps/web/deploy-input.test.ts` -- `siteId: null` reads no site, deploys, binding or held names; the name `inflozo-{slug}`;
+- [x] `apps/web/deploy-input.test.ts` -- `siteId: null` reads no site, deploys, binding or held names; the name `inflozo-{slug}`;
   the version from exports rows (none → 1, `[3.0.0]` → 4).
-- [ ] `apps/web/deploy.test.ts`:
+- [x] `apps/web/deploy.test.ts`:
   - **the export route's source:** `holdsLock` → 423 before `compileBudget`, which comes before `startExport(`, and `json(429`;
   - **the download's source:** `signedAnswer`, `signInAnswer`, `NoSuchKey`;
   - **the words:** the two budget sentences share their first; `EXPORT_WORDS` derive from the constants.
-- [ ] `apps/web/probe-rule.test.ts` -- the flip: the body says it exports a theme zip, `exportZip` is "Export theme zip", and
+- [x] `apps/web/probe-rule.test.ts` -- the flip: the body says it exports a theme zip, `exportZip` is "Export theme zip", and
   "Creator" stays absent.
-- [ ] `apps/web/busy.test.ts` -- D8g's export confirm busy, the window's Download again busy (`SignedDownload`'s).
-- [ ] `apps/web/b15-export.test.ts` (new) -- B15's export control: one → the link, two → the menu's two links, none → absent;
+- [x] `apps/web/busy.test.ts` -- D8g's export confirm busy, the window's Download again busy (`SignedDownload`'s).
+- [x] `apps/web/b15-export.test.ts` (new) -- B15's export control: one → the link, two → the menu's two links, none → absent;
   the greyed Ship it carries its reason id.
-- [ ] `packages/theme-compiler/src/slug.test.ts` -- each reserved name and its suffix; `console`, `com10` and `lpt` untouched.
-- [ ] `packages/theme-compiler/src/compile.test.ts` -- README's sections in order, the pack's name and the faces, a name with a
+- [x] `packages/theme-compiler/src/slug.test.ts` -- each reserved name and its suffix; `console`, `com10` and `lpt` untouched.
+- [x] `packages/theme-compiler/src/compile.test.ts` -- README's sections in order, the pack's name and the faces, a name with a
   line break on one line, and the Routes section still after them.
-- [ ] `tools/keyboard/journey.spec.mjs` -- 7.26, keyboard only:
+- [x] `tools/keyboard/journey.spec.mjs` -- 7.26, keyboard only:
   - (a) ▾ Download theme → the window's rows → done → the download followed, then Download again;
   - (b) reading along → D8g in export words, opened on Wait;
   - (c) a 429 → the budget sentence;
   - (d) a blocked finding → the failed row;
   - (e) S8a′'s Download theme opens the window;
   - (f) the download answered 404 → the gone sentence, the editor unmoved.
-- [ ] `tools/keyboard/floor.spec.mjs` -- the window at 1440 and 820, and S8a′.
-- [ ] `tools/probe/run-verify-editor.cjs` -- step 126 and `STEP126_PLANT` (Verification), under `T1_WRITES=1`, written at Dev and
+- [x] `tools/keyboard/floor.spec.mjs` -- the window at 1440 and 820, and S8a′.
+- [x] `tools/probe/run-verify-editor.cjs` -- step 126 and `STEP126_PLANT` (Verification), under `T1_WRITES=1`, written at Dev and
   never run there.
 
 *Propagation* (standing rules 3 and 7; end with `grep -rn "ABSENT rather than greyed\|absent until Story 7.26\|Download theme is
 ABSENT\|7\.26's\|no \`frozen_at\` write" apps/web packages tools`):
-- [ ] PRD FR-J12 (`prd.md:434`), a dated note covering the job row, both gscans, the name and version, the one object per project,
+- [x] PRD FR-J12 (`prd.md:434`), a dated note covering the job row, both gscans, the name and version, the one object per project,
   and the record and freeze.
-- [ ] PRD FR-Q2, a dated note: the stamp is written at Ship it's accepted upload and at export.
-- [ ] PRD FR-J11, a dated line: DW-409 decided.
-- [ ] `ARCHITECTURE-SPINE.md` -- AD-13's signed export download and AD-29's layout, `{projectId}/export.zip`, each dated.
-- [ ] `EXPERIENCE.md`:
+- [x] PRD FR-Q2, a dated note: the stamp is written at Ship it's accepted upload and at export.
+- [x] PRD FR-J11, a dated line: DW-409 decided.
+- [x] `ARCHITECTURE-SPINE.md` -- AD-13's signed export download and AD-29's layout, `{projectId}/export.zip`, each dated.
+- [x] `EXPERIENCE.md`:
   - a "Theme Export" row in the Information Architecture (the window, extrapolated from S8b; its doors);
   - the Preview-Only Destination `:205` and Notice `:206` rows, dated, as built;
   - the Edit Lock row `:164`: D8g's export words.
-- [ ] `deferred-work.md`:
+- [x] `deferred-work.md`:
   - DW-60 (7.26's half done; 15.7's stays), DW-336, DW-346 and DW-405 done;
   - DW-409 won't-fix with its reason;
   - each with a resolution line.
-- [ ] MEASUREMENTS §93, from walk 126b and the README's Ghost Admin words read in both majors' source.
+- [x] MEASUREMENTS §93, from walk 126b and the README's Ghost Admin words read in both majors' source. *(Dev: the source half
+  written; walk 126b's upload and the `stage_timings` times can only run on the deployed sha, so they are appended to §93 as a dated
+  note when walk 126 runs at Review — Verification.)*
 
 **Acceptance Criteria:**
 - **Matches the frames.** Given journeys 7.26 and the floor, then:
@@ -403,6 +406,35 @@ ABSENT\|7\.26's\|no \`frozen_at\` write" apps/web packages tools`):
   - the Sites page's orphan Download with its object gone → the gone sentence, the page unmoved.
 
 ## Spec Change Log
+
+Story 7.26's Dev (2026-11-27) — routine calls, none of them a frozen decision moved:
+- **README's builder-naming sentence is a NAMED MARK** (`README_MARK`, exported by the compiler): the Words name Inflozo, and FR-J1's
+  "no builder fingerprints" scan (`tools/pilot-theme.mjs`' `textFailures`, `compile.test.ts`' `unmarked`) would refuse it. It is
+  exempted exactly as `package.json`'s three marks and a locale's `credit.*` are — the sentence's words removed from that one line,
+  the project's name between them still scanned — the reading 7.1 settled ("the specified marks are named exceptions"), and FR-J15
+  puts the name in README with the credit anyway.
+- **Each name on one line** replaces every run of white space AND every C0 character with one space (a superset of `\s+`): the
+  description reaches README, which passes `UserText.substitute`, whose markers are C0 characters. `noC0` refuses one in `packName`.
+- **`JobRow.site_id` is `string | null`**, with a `SiteJob` type for the deploy doors: `firstRead` hands them no export row, `view`
+  answers none, and the deploy route 404s one (so the two routes never move each other's rows).
+- **`tools/stress/compile.js` calls no `compileTheme`** (its adapter wraps the runtime and the gate), so it hands no `packName`.
+- **`tools/check-traces.mjs`** holds the export route's trace to the deploy route's files and both gscans' — the export compiles and
+  gates on Vercel exactly as Pre-flight does, and 7.18a's owner test found what a short trace costs.
+- **The window presses its own Download again** at done, so the first follow and every later one are the one `SignedDownload` — its
+  "Preparing…", its `role="status"` sentence (the gone sentence of journey (f)) — and the ready line shows only once a follow
+  answered null (`onFollowed`). `SignedDownload` gains `describedBy` for the Sites page's row (WCAG 2.4.4, as its link had).
+- **`?export` waits for the lock to settle** (this session acquired it, or another holds it): opened on mount it would race the
+  first acquire and meet a 423.
+- **The window's key is `export-{n}`:** keyed by a bare count beside the wizard's own count, React duplicated it when S8a′'s press
+  mounted it while the wizard was still closing (journey 7.26 (e), two windows) — two siblings with the key "1".
+- **S8a′'s block also stands over a refused upload's Preview-only** (R-270's line, the theme row and Run checks under it), as the
+  matrix's row says.
+- **The Backup rows' line keeps the marked theme's sentence in ink** — it is a fact, not a failure — and every failure in
+  `text-danger-text`; mounted empty (`empty:absolute`, so it stays in the accessibility tree and takes no room).
+- **B15's door rule is `lib/probe-rule.ts`' `exportDoor`/`exportAsk`**, beside `PREVIEW_COPY`, so `b15-export.test.ts` runs it in Node;
+  the card's wiring is read from its source (a server render with server actions).
+- **Walk step 126's promoted setting is planted with the service key** in step 104's row shape (Latest Post's Primary action, "Show
+  the button") rather than through the Promote form — the owner's test's setting, the same row.
 
 ## Design Notes
 
@@ -534,3 +566,62 @@ You sign in only as that account.
   - **Cleanup:** the plant accounts deleted, and T1 back on Casper with no `inflozo-` theme of the plant's.
 - Vercel `request-logs` for the export POST, its polls and the download -- expected: rows with durations; MEASUREMENTS §93
   records the compile and both gscans' times from `stage_timings`.
+
+**Executed — Dev (2026-11-27, Node 24):**
+- `pnpm check` -- green on the final tree: lint, typecheck and every package's tests (`apps/web` 1223 pass, 0 fail;
+  `packages/theme-compiler` 227), then `check-baseline`, `check-catalog` and `check-snapshots` (the pilot themes' README carries the
+  three sections; `themeFailures` clean, its builder's-name controls still caught).
+- `pnpm check`, again by the main session on the same tree before the commit (2026-11-28, Node 24.18.1) -- exit 0 in 3m30s.
+- **Each new assertion seen red under a planted reversion** (a script that plants, runs the one test file and restores): 22
+  reversions — `claim`'s `RESERVED` (slug and compile tests), README's sections, the one-line rule, `packName`'s `noC0`; the export's
+  freeze, gscan 5 asked, the first-error order, `put`'s `replace`, the export's infra sentence, Ship it's stamp and its best effort,
+  `exportView`'s stall; the null read reading a site, the export's version; the route's lock before the budget; the budget's words;
+  B15's body, the greyed Ship it, the one-project link; D8g's busy; the wiring list — every one red, every file restored.
+- `pnpm build` then `node tools/check-traces.mjs` -- green: the export route carries the deploy route's 273 files, bundles jsdom,
+  carries `gscan4` and `gscan6` with their links and every file each touches while it checks the pilot theme.
+- Keyboard: `bash tools/keyboard/run-keyboard-gate.sh -g "7\.26" --repeat-each 2` -- 17 passed, 1 failed: the run's FIRST test (the
+  1440 floor row) at `painted()` cold, the known cold start; its repeat passed. Journey (e) first found two windows (the duplicated
+  key, Spec Change Log); after the fix every 7.26 journey and floor row passed both repeats. The re-expected rows (7.18a's ▾ menu,
+  7.22 (d), 7.23b (e1)) passed.
+- Keyboard, wider: `-g "uses no pointer|7\.1[89]|7\.2[0-6]"` (174 tests) was VOIDED by the machine, not the code — another
+  user's processes held the 4-core machine at a load average of 26–38, and every failure (12 of the first 78) was the same
+  `painted()` / `data-painted` 5 s wait at page load, before any step of the test; a focused re-run with `--retries=1` failed the
+  same way on rows that had passed at lower load, so it was stopped. Two more journeys were RE-EXPECTED after that run's source read
+  (7.18a "no site to ship to … Preview-only" and 7.18b "R-270", both now S8a′'s block in place of B15's words) and journey 7.26 (g)
+  (unsent edits) was added — those three had not run when the subagent stopped. **The main session ran them (2026-11-28, Node 24, load
+  ~13):** `bash tools/keyboard/run-keyboard-gate.sh -g "no site to ship to|R-270: a site a refused|7\.26 · \(g\)" --repeat-each 2`
+  -- 6 passed; and (g) seen red under a planted reversion (the window's `unsent` check removed: `expect(locator).toHaveText` failed,
+  1 failed), the file restored and `cmp`-checked.
+- `python3 tools/doc-audit.py --check`, twice -- green (after `tools/story-board.py`).
+- The propagation grep -- in source, only lines that describe what is built ("Story 7.26's export …"); `new-project-sheet.tsx`,
+  `account/page.tsx`, the Sites page's ⋯ history and `run-verify-ghost-admin.py` say "ABSENT rather than greyed" of other controls.
+- **Read in source, both majors** (MEASUREMENTS §93): Ghost Admin's Theme card, Change theme, Upload theme and "Do you want to activate
+  it now?" in 6.58.0's and 5.130.6's built admin — README's Install words hold as written.
+
+**Not run at Dev, by the spec:**
+- Walk step 126 on production and T1 (written, `node --check` clean, `T1_WRITES=1`, `STEP126_PLANT`), and with it MEASUREMENTS §93's
+  126b half and the `stage_timings` times — the main session's, on the owner's in-session go (Ask First).
+- `cd tools/stress && npm install && node build.js && node gate.js theme` — the stress fixture compiles through the runtime's own
+  adapter, never `compileTheme` (no `packName` reaches it, nothing of this story changes it), and its `node_modules` is root-owned.
+- CI and the Vercel deployment of the Dev head (read at Review — R-81's push is the main session's).
+
+**The I/O matrix, row by row → the check that ran:**
+- Export, holder → `deploy-run` "7.26 the export, clean" (both gscans, `replace`, the row, the freeze over the emitted keys, done);
+  journey 7.26 (a) (the window's rows, the follow, `inflozo-pilot-sections.zip`); walk 126a.
+- No site → the same run test (the job's `site_id` null, the read with `siteId: null`); `deploy-input` "7.26" (no site, deploys,
+  binding or held names).
+- Second export → `deploy-input` "7.26" (`[3.0.0]` → 4.0.0); `deploy-run` "the version is the read's"; walk 126a (`2.0.0`).
+- Reading along → journey 7.26 (b); `busy.test.ts` "Story 7.26"; walk 126e.
+- Unsent edits → the window's `flush()` first (`export-dialog.tsx`), Run checks' own `flushForShip`; journey 7.26 (g) (green twice,
+  red under its planted reversion — see above) and 7.18a's unsent row, which holds the shared flush.
+- No lock at the route → `deploy.test.ts` "7.26 — the export's door" (423 before the budget and the insert); walk 126g.
+- Budget reached → journey 7.26 (c); `deploy.test.ts` words and `deployError(…, { for: 'export' })`; walk 126f.
+- Gate blocked → `deploy-run` "7.26 a gate blocks" (each gate, the order, nothing stored, recorded or frozen); journey 7.26 (d).
+- Compile refusal / RTL / routing → `deploy-run` "7.26 refused before or at the compile".
+- Infrastructure / killed invocation → `deploy-run` "7.26 infrastructure" (twice → the export's sentence; the poll past `STALLED_MS`).
+- Download gone / signed out / signing fails → journey 7.26 (f); `signed-download.test.ts` (the one follower, unchanged); walk 126h.
+- Layer named `con` → `slug.test.ts` and `compile.test.ts` "DW-336"; walk 126a.
+- Ship it accepted → `deploy-run` "7.26 Ship it stamps" (after the bind, before the ending; a failed stamp leaves the ending).
+- B15, one / several / none → `b15-export.test.ts`; walk 126c.
+- S8a′ / S8a′ refused plan → journey 7.26 (e), the floor's S8a′ row, journeys 7.18a and 7.18b (R-270) re-expected; walk 126d.
+- Sites original theme → `busy.test.ts` "Story 7.26" (the Sites page's `SignedDownload`); walk 126h.

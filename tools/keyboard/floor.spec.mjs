@@ -1644,3 +1644,88 @@ test.describe('7.18a · R-263 · the bar on a narrow touch screen', () => {
     await context.close()
   })
 })
+
+// ── Story 7.26 — the export window at 1440 and 820 (undrawn: S8's 520 modal and S8b's rows, `S8 Deploy.dc.html:89-99`), and S8a′ (`:245-262`):
+// the window's content 520 wide inside the viewport, its title S8's 22px display, its rows S8b's — a 20px mark, 13px words, the
+// compile's mono 11px meta at the right, the checks' result chip — and Download again the Kit's 40px secondary; nothing scrolls
+// sideways. S8a′: the sentence 12px ink-soft at 1.55, then Download theme (the Kit's 36px secondary, 500) and the plans link side by
+// side, 10 apart, no Run checks.
+const EXPORT_AT = '2026-10-18T10:00:00.000Z'
+const EXPORT_DONE = { job: { id: 'job-726', stage: 'done', error: null, timings: { compiling: { at: EXPORT_AT, ms: 1400, bytes: 240_000 }, checking: { at: EXPORT_AT, ms: 2100, warnings: 2 } } } }
+/** the export route and its download, answered: the export is done at once, and the download is a 404 (no file saved here) */
+async function plantDoneExport(page) {
+  await page.route((url) => /\/projects\/[^/]+\/export$/.test(url.pathname), (route) =>
+    route.fulfill({ status: route.request().method() === 'POST' ? 202 : 200, contentType: 'application/json', body: JSON.stringify(route.request().method() === 'POST' ? { job: 'job-726' } : EXPORT_DONE) }))
+  await page.route((url) => /\/projects\/[^/]+\/export\/download$/.test(url.pathname), (route) => route.fulfill({ status: 404, body: 'Not found' }))
+}
+test.describe('7.26 · the export window at 1440 and 820, and S8a′', () => {
+  test.use({ hasTouch: false, isMobile: false })
+  for (const width of [1440, 820]) {
+    test(`the window at ${width}`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 })
+      await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+      await plantDoneExport(page)
+      await page.goto(HARNESS)
+      await painted(page)
+      await page.locator('#editor-ship + button').click()
+      await page.locator('#editor-ship-menu li button').nth(2).click()
+      const win = page.locator('dialog#export-window')
+      await expect(win).toHaveAttribute('data-export-window', 'done', { timeout: 15_000 })
+      await expect(page.locator('#export-download-said')).not.toHaveText('', { timeout: 15_000 })
+      const m = await page.evaluate(() => {
+        const d = document.getElementById('export-window')
+        const cs = getComputedStyle(d)
+        const title = getComputedStyle(document.getElementById('export-title'))
+        const row = d.querySelector('svg[width="20"]')
+        const meta = [...d.querySelectorAll('span')].find((s) => /s · /.test(s.textContent ?? '') && /mono/i.test(getComputedStyle(s).fontFamily))
+        const again = document.getElementById('export-download')
+        return {
+          content: d.getBoundingClientRect().width - parseFloat(cs.paddingLeft) * 2,
+          right: d.getBoundingClientRect().right,
+          title: [title.fontSize, title.fontWeight],
+          mark: row === null ? null : row.getBoundingClientRect().width,
+          meta: meta === undefined ? null : getComputedStyle(meta).fontSize,
+          again: again.getBoundingClientRect().height,
+          scroll: document.documentElement.scrollWidth,
+          inner: window.innerWidth,
+        }
+      })
+      expect(m.content, 'S8\'s 520').toBe(520)
+      expect(m.right).toBeLessThanOrEqual(m.inner)
+      expect(m.title).toEqual(['22px', '700'])
+      expect(m.mark, 'S8b\'s 20px mark').toBe(20)
+      expect(m.meta, 'the compile\'s mono meta').toBe('11px')
+      expect(m.again, 'the Kit\'s 40px secondary').toBe(40)
+      expect(m.scroll, 'nothing scrolls sideways').toBeLessThanOrEqual(m.inner)
+    })
+  }
+  test('S8a′ on a Preview-only Destination', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'preview' })
+    await page.goto(HARNESS)
+    await painted(page)
+    await page.locator('#editor-ship').click()
+    const wizard = page.locator('dialog[data-deploy-wizard]')
+    await expect(wizard).toHaveAttribute('data-deploy-wizard', 'destination')
+    await expect(wizard.locator('#deploy-run')).toHaveCount(0)
+    const m = await page.evaluate(() => {
+      const block = document.querySelector('[data-preview-only]')
+      const sentence = block.querySelector('p')
+      const button = document.getElementById('deploy-export')
+      const link = block.querySelector('a[target="_blank"]')
+      const s = getComputedStyle(sentence)
+      const b = getComputedStyle(button)
+      return {
+        sentence: [s.fontSize, s.color, parseFloat(s.lineHeight) / parseFloat(s.fontSize)],
+        button: [button.getBoundingClientRect().height, b.fontWeight, b.borderTopColor],
+        gap: link.getBoundingClientRect().left - button.getBoundingClientRect().right,
+        sameRow: Math.abs(link.getBoundingClientRect().top + link.getBoundingClientRect().height / 2 - (button.getBoundingClientRect().top + button.getBoundingClientRect().height / 2)) <= 1,
+      }
+    })
+    expect(m.sentence.slice(0, 2)).toEqual(['12px', 'rgb(110, 106, 100)'])
+    expect(m.sentence[2]).toBeCloseTo(1.55, 2)
+    expect(m.button).toEqual([36, '500', 'rgb(231, 226, 219)'])
+    expect(m.gap, '10 apart').toBeCloseTo(10, 0)
+    expect(m.sameRow, 'side by side').toBe(true)
+  })
+})

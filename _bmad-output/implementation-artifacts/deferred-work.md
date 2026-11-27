@@ -1825,9 +1825,15 @@ plain: The blue "Preview-only" card tells someone on a restricted Ghost(Pro) pla
   deploy to anything. The card says what clears the restriction and offers **Re-check plan**, which does work.
   When the export and the deploy exist, the two buttons go back on this card.
 status: open
-owner: Stories 7.26 (Theme ZIP export) and 15.7 (The Ghost(Pro) launch gate), whose criteria each carry their half
-  word for word with its id — the Preview-only card at export, and the tier's name decided by the captured payload
-  (R-195). *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
+resolution: Story 7.26's Dev (2026-11-27) — its half done, deliberately left open for Story 15.7's: B15's control row is the frame's
+  (`site-notices.tsx`) — **Export theme zip** in ink (a link to the linked project's editor with the export asked, `exportDoor`; a menu
+  of the projects when several link the site, `sites/export-menu.tsx`; absent when none does), Re-check plan, and **Ship it** greyed
+  with `PREVIEW_COPY.shipBlocked` under it (P0-0) — and `PREVIEW_COPY.body` says "…and export a theme zip whenever you want." again;
+  `probe-rule.test.ts`' absence assertion flipped in the same change, and `b15-export.test.ts` holds the row. The tier's name (the
+  third departure below) stays Story 15.7's.
+owner: Story 15.7 (The Ghost(Pro) launch gate), whose criteria carry the tier's name word for word with its id, decided by the captured
+  payload (R-195). *(Story 5.24a's Dev, 2026-09-28: it had no owner line. Story 7.26's Dev, 2026-11-27: Story 7.26's half — the
+  Preview-only card at export — is built, see the resolution.)*
 severity: low
 origin: Story 3.3 spec (2026-09-08), Boundaries "Never" and the Acceptance Criteria — UX-DR3, "a control that
   could never act is ABSENT, not greyed"
@@ -9384,7 +9390,12 @@ reason: The marker is a specified mark, not an incidental fingerprint. It belong
 plain: A section's file is named after its name in Layers. A handful of names are reserved by Windows for devices, so
   a theme zip holding `partials/sections/home/con.hbs` cannot be unpacked on a Windows machine, though Ghost itself
   would serve it fine.
-status: open
+status: done 2026-11-27 (Story 7.26)
+resolution: Story 7.26's Dev (2026-11-27) — suffixed, never refused: `claim` (`packages/theme-compiler/src/slug.ts`) treats Windows'
+  device names (`RESERVED`: `con`, `prn`, `aux`, `nul`, `com0`–`com9`, `lpt0`–`lpt9`) as taken in every directory, so a layer named
+  `Con` is `con-2.hbs` — in the compile, so a deploy and an export of one project never differ. `partialSlug` already lowercases and
+  NFKD-folds (`COM¹` → `com1`). Held by `slug.test.ts` (each name, `console`, `com10` and `lpt` untouched) and `compile.test.ts` (the
+  partial and its invocation), each red under a planted reversion; walk step 126a reads `con-2.hbs` out of a real export.
 severity: low
 origin: Story 7.1's review (2026-10-06), the edge-case layer. `partialSlug` is §7.4's custom-template rule plus a cap,
   stated in the spec's Design Notes; a reserved-name rule would change that stated rule, and the download is 7.26's.
@@ -9592,7 +9603,13 @@ reason: FR-J3's 400 / 800 / 1600 + original set is bundled by Story 7.29 and mad
 plain: The plan says the theme's README tells you how to install it, which style pack and fonts it uses, and where to
   re-import it. Today the README has only its Scripts section; nobody had been given the rest. Story 7.26, where you
   download the theme as a zip and would read it, now has the job.
-status: open
+status: done 2026-11-27 (Story 7.26)
+resolution: Story 7.26's Dev (2026-11-27) — `README.md` carries three sections after Styles and before Routes: **Install** (Ghost
+  Admin's own path, read in 6.58.0's and 5.130.6's built admin: Settings → Theme → Change theme, Upload theme, "Do you want to activate
+  it now?" — MEASUREMENTS §93), **Style Pack and fonts** (`CompileInput.packName`, `enginePackOf`'s record name, and the pairing's two
+  families) and **Changing this theme** (the project's name, and where the design lives) — each name put on one line. The sentence
+  naming Inflozo is a named mark (`README_MARK`), exempted by the fingerprint scans as `package.json`'s marks are. Held by
+  `compile.test.ts`, each row red under a planted reversion.
 severity: low
 origin: Story 7.5's Create (2026-10-08): prd.md §7.4 ("`README.md` is a deliverable, not a placeholder: it states install
   steps, the FR-J15 credit…, the Style Pack and font pairing in use, and where to re-import") — the routes step is Story
@@ -10947,7 +10964,11 @@ reason: two sightings with no state recorded; a stopped walk publishes and chang
 
 plain: The Sites page's "download your original theme" link still swaps the page for a plain error page if the file is gone or the
   sign-in lapsed, and the Backup step's Theme Download says its failure in grey where the other Downloads say it in red.
-status: open
+status: done 2026-11-27 (Story 7.26)
+resolution: Story 7.26's Dev (2026-11-27) — one way, one shape: `SignedDownload` moved to `components/signed-download.tsx` (a 32px size
+  added), and the Sites page's original-theme Download is one (`followSigned`: "Preparing…", a 404's gone sentence under it, the page
+  staying); the export's Download again is one; the Backup step's two rows' line is mounted empty first, a `role="status"` in
+  `text-danger-text` (the marked theme's fact in ink). Journeys 7.26 (f) and 7.23b (e1) hold it; walk step 126h on production.
 severity: low
 origin: Story 7.23b's Review (2026-11-26; Verification Gap and Acceptance Auditor). DW-391 gave the editor's four Downloads one way to
   follow a signed URL (`followSigned`), and its scope was those four. The Sites page's original-theme row
@@ -11035,7 +11056,11 @@ plain: Inflozo stops one account at 60 theme builds an hour to keep a runaway sc
   counted by its job record, and a project's job records are deleted with the project, so someone who deliberately deletes and
   re-creates projects could build more than 60 an hour. An honest customer is never affected, and each build still costs well
   under a cent.
-status: open
+status: done 2026-11-27 (Story 7.26)
+resolution: Story 7.26's Create (2026-11-27) — decided WON'T FIX, no Schema: the budget keeps counting live `deploy_jobs` rows only (the
+  export rides one, as Run checks does). Each option — a per-account counter, or `on delete set null` on `deploy_jobs.project_id` —
+  costs the customer nothing, which is the card's own test, and the bypass needs deliberate project deletion at under $0.0005 a build;
+  R-295's budget is billing hygiene, not a wall. PRD FR-J11 carries the dated line.
 severity: low
 origin: Story 7.25's Review (2026-11-27), the Acceptance Auditor: `deploy_jobs.project_id … on delete cascade`
   (`supabase/migrations/20260904120000_complete_schema.sql:413`) — the Design Notes' "job rows are never deleted" holds only while

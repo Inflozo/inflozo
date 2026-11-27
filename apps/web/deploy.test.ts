@@ -12,6 +12,7 @@ import {
   isSnapshotError, movedFrom, MOVING, placeOf, refusalWords, SAFETY_PICTURE, SAFETY_WORDS, safetyOffered, SNAPSHOT_CODES, SNAPSHOT_WORDS, snapshotError, STAGE_NAMES, stepNumber, stepOf, STEPS,
   stepsFor, themeNameFor, themeNameOf, thrownCode, UNSTOPPABLE, uploadAnswer, versionLabel, versionNumber, versionOf, type ShipState,
   ACCOUNT_COMPILES_PER_HOUR, HOUR_MS, overLimit, SITE_DEPLOYS_PER_HOUR,
+  BUDGET_FIRST, EXPORT_WORDS, exportDownloadPath, exportHref, exportPath,
 } from './lib/deploy.ts'
 import { KEYS } from './lib/connect-rule.ts'
 import { keysPath } from './lib/connect-rule.ts'
@@ -514,6 +515,8 @@ test('7.23b (DW-391): the three signed-download routes answer through ONE helper
     snapshot: readFileSync('app/(app)/app/snapshots/[id]/download/route.ts', 'utf8'),
     deployLive: LIVE_ROUTE,
     historyLive: readFileSync('app/(app)/app/(authed)/projects/[id]/history/live/route.ts', 'utf8'),
+    // Story 7.26 (DW-405): the export's Download joins them
+    exportDownload: readFileSync('app/(app)/app/(authed)/projects/[id]/export/download/route.ts', 'utf8'),
   }
   for (const [name, source] of Object.entries(routes)) {
     const flat = flatOf(source)
@@ -609,7 +612,8 @@ test('7.23b: the history route — GET carries the LINKED site\'s saved original
 test('7.22 (DW-372): the next version is ONE function — `project-input.ts` and `shipStateOf` both read `nextVersion`, and nothing counts rows any more', () => {
   const input = readFileSync('server/deploy/project-input.ts', 'utf8')
   const deploy = readFileSync('lib/deploy.ts', 'utf8')
-  assert.match(input, /const n = nextVersion\(uploads\)/)
+  // RE-EXPECTED by Story 7.26: the export numbers from its own `exports` rows, through the same function
+  assert.match(input, /const n = siteId === null \? nextVersion\(\(must\(exported, 'the exports'\) \?\? \[\]\) as \{ version: string \}\[\]\) : nextVersion\(uploads\)/)
   assert.match(deploy, /n: nextVersion\(rows\),/)
   for (const [name, source] of [['project-input.ts', input], ['lib/deploy.ts', deploy]] as const) {
     assert.doesNotMatch(flatOf(source), /uploads\.length \+ 1|rows\.length \+ 1/, `${name} counts rows`)
@@ -654,7 +658,10 @@ test('7.25 — the two sentences, from the constants: 10 a site, 60 an account (
   const lib = readFileSync('lib/deploy.ts', 'utf8')
   const words = lib.slice(lib.indexOf('  siteLimit: (host'), lib.indexOf('\n', lib.indexOf('  budget: (minutes')))
   assert.match(words, /\$\{SITE_DEPLOYS_PER_HOUR\}/)
-  assert.match(words, /\$\{ACCOUNT_COMPILES_PER_HOUR\}/)
+  // RE-EXPECTED by Story 7.26 (R-170): the budget opens with `BUDGET_FIRST`, the one sentence the export's refusal shares — and
+  // that constant is the one carrying the number
+  assert.match(words, /\$\{BUDGET_FIRST\}/)
+  assert.match(lib, /export const BUDGET_FIRST = `Your account has built \$\{ACCOUNT_COMPILES_PER_HOUR\} themes in the last hour/)
   assert.doesNotMatch(words, /\b10 times|\b60 themes/, 'the numbers are the constants\' alone')
   assert.deepEqual(deployError('deploy_rate_limited', { host: 'ghost6.inflozo.com', minutes: 12 }), { code: 'deploy_rate_limited', message: DEPLOY_WORDS.siteLimit('ghost6.inflozo.com', 12) })
   assert.deepEqual(deployError('compile_budget', { host: '', minutes: 7 }), { code: 'compile_budget', message: DEPLOY_WORDS.budget(7) })
@@ -710,4 +717,76 @@ test('7.25 (the Review) — the reads the limits and DW-373 rest on, as `deploy-
   assert.doesNotMatch(started, /site_id/, 'any site or none: Story 7.26\'s export rides a row with a null site_id')
   assert.match(DEPLOY_ROUTE, /console\.error\('projects\/deploy: the compile budget could not be read', \{ code:/)
   assert.match(DEPLOY_ROUTE, /console\.error\('projects\/deploy: the deploy limit could not be read', \{ code:/)
+})
+
+// ── Story 7.26 — the export's door, its download, and its words ──
+
+const EXPORT_ROUTE = readFileSync('app/(app)/app/(authed)/projects/[id]/export/route.ts', 'utf8')
+const EXPORT_DOWNLOAD = readFileSync('app/(app)/app/(authed)/projects/[id]/export/download/route.ts', 'utf8')
+
+test('7.26 — the export\'s door: the lock (`holdsLock`) answers 423 BEFORE the budget is asked, and the budget — the same count, asked for the export\'s sentence — before `startExport(`; a 429 is the envelope as JSON, a failed count a 502; the work in `after()`; GET answers only this project\'s export row (site_id null)', () => {
+  const post = sliceOf(EXPORT_ROUTE, 'export async function POST', 'export async function GET')
+  const lock = post.indexOf("if (!(await holdsLock(projectId, session))) return no(423, ")
+  const budget = post.indexOf("await compileBudget({ userId: user.id, for: 'export' }, DEPLOY_IO)")
+  const insert = post.indexOf('startExport(')
+  assert.ok(lock > -1 && budget > -1 && insert > -1, 'the lock, the budget and the insert')
+  assert.ok(lock < budget && budget < insert, 'the lock, then the budget, then the row')
+  assert.match(post, /if \(budget === undefined\) return no\(502, /)
+  assert.match(post, /if \(budget !== null\) return json\(429, budget\)/)
+  assert.match(post, /after\(\(\) => exportTheme\(\{ jobId: made\.id, userId: user\.id \}, DEPLOY_IO\)\)/)
+  assert.match(post, /return json\(202, \{ job: made\.id \}\)/)
+  assert.match(EXPORT_ROUTE, /export const maxDuration = 300\n/)
+  assert.doesNotMatch(post, /plan|entitle|linked_site_id/, 'no plan, entitlement or site is asked: every plan exports, a project with no site too')
+  const get = sliceOf(EXPORT_ROUTE, 'export async function GET', '\n}\n')
+  assert.match(get, /row\.project_id !== projectId \|\| row\.site_id !== null\) return no\(404, 'Not found'\)/)
+  assert.match(get, /exportView\(\{ jobId, userId: user\.id \}, DEPLOY_IO\)/)
+  assert.match(get, /if \(row === undefined\) return no\(502, /, 'a failed read is a 502, never a 404')
+  // and the deploy route never moves an export's row
+  assert.match(DEPLOY_ROUTE, /row\.project_id !== projectId \|\| row\.site_id === null\) return no\(404, 'Not found'\)/)
+})
+
+test('7.26 — the export\'s download: signed out `signInAnswer`; the project and its newest `exports` row on the caller\'s OWN session (RLS), none a 404; the project\'s one object signed for 60 seconds as inflozo-{slug}.zip; NoSuchKey a 404, any other failure a 502; `signedAnswer`; no bytes through the function', () => {
+  const flat = flatOf(EXPORT_DOWNLOAD)
+  assert.match(flat, /if \(!\(await currentUser\(\)\)\) return signInAnswer\(request\)/)
+  assert.match(flat, /db\.from\('exports'\)\.select\('version'\)\.eq\('project_id', projectId\)\.order\('created_at', \{ ascending: false \}\)\.limit\(1\)/)
+  assert.match(flat, /const db = await supabaseServer\(\)/, 'whose export it is is RLS\'s to answer')
+  assert.match(flat, /\(exported\.data \?\? \[\]\)\.length === 0\) return no\(404, 'Not found'\)/)
+  assert.match(flat, /const SIGNED_URL_TTL_S = 60 /)
+  assert.match(flat, /createSignedUrl\(exportPath\(projectId\), SIGNED_URL_TTL_S, \{ download: `\$\{name\}\.zip` \}\)/)
+  assert.match(flat, /themeNameFor\(\{ slug: String\(project\.data\.slug\), bound: null, held: \[\] \}\)/)
+  assert.match(flat, /code === 'NoSuchKey'\) \{[\s\S]*?return no\(404, 'Not found'\)/)
+  assert.match(flat, /return no\(502, 'Could not prepare that download'\)/)
+  assert.match(flat, /return signedAnswer\(request, signed\.signedUrl\)/)
+  assert.doesNotMatch(flat, /\.download\(/, 'no bytes through a function body')
+})
+
+test('7.26 — the export\'s one object and its two addresses', () => {
+  assert.equal(exportPath(P), `${P}/export.zip`)
+  assert.equal(exportHref(P), `/projects/${P}/export`)
+  assert.equal(exportDownloadPath(P), `/projects/${P}/export/download`)
+})
+
+test('7.26 (R-170) — the words: the two budget sentences share their first (`BUDGET_FIRST`, from the constant) and part at when; EXPORT_WORDS as the spec writes them, its rows S8b\'s own; S8a′\'s sentence; `compile_budget` said in the export\'s words when it asks', () => {
+  assert.equal(BUDGET_FIRST, `Your account has built ${ACCOUNT_COMPILES_PER_HOUR} themes in the last hour, the most Inflozo builds in an hour.`)
+  assert.ok(DEPLOY_WORDS.budget(3).startsWith(`${BUDGET_FIRST} `) && EXPORT_WORDS.budget(3).startsWith(`${BUDGET_FIRST} `))
+  assert.equal(EXPORT_WORDS.budget(12), 'Your account has built 60 themes in the last hour, the most Inflozo builds in an hour. You can export again in 12 minutes.')
+  assert.equal(EXPORT_WORDS.budget(1), 'Your account has built 60 themes in the last hour, the most Inflozo builds in an hour. You can export again in 1 minute.')
+  const lib = readFileSync('lib/deploy.ts', 'utf8')
+  const exportWords = lib.slice(lib.indexOf('export const EXPORT_WORDS = {'), lib.indexOf('} as const', lib.indexOf('export const EXPORT_WORDS = {')))
+  assert.doesNotMatch(exportWords, /60 themes|Compiling your theme|Ghost will love it/, 'derived from the constants and S8b\'s own rows, never restated')
+  assert.equal(EXPORT_WORDS.row, 'Download theme')
+  assert.equal(EXPORT_WORDS.title, EXPORT_WORDS.row)
+  assert.equal(EXPORT_WORDS.caption, 'Zip of the compiled Ghost theme')
+  assert.equal(EXPORT_WORDS.body, 'We compile and check your theme, then your browser downloads it as a zip.')
+  assert.equal(EXPORT_WORDS.compilingRow, DEPLOY_WORDS.compilingRow)
+  assert.equal(EXPORT_WORDS.checkingRow, DEPLOY_WORDS.checkingRow)
+  assert.equal(EXPORT_WORDS.compiled, DEPLOY_WORDS.compiled)
+  assert.equal(EXPORT_WORDS.checked, DEPLOY_WORDS.checked)
+  assert.equal(EXPORT_WORDS.checkedMeta(2), DEPLOY_WORDS.checkedMeta(0, 2))
+  assert.equal(EXPORT_WORDS.ready, 'Your theme is downloading. The README inside says how to install it.')
+  assert.equal(EXPORT_WORDS.again, 'Download again')
+  assert.equal(EXPORT_WORDS.infrastructure, 'Something went wrong on our side while building your theme. Try again.')
+  assert.equal(DEPLOY_WORDS.previewOnly, "This site's Ghost(Pro) plan doesn't accept custom themes at all — not over the API, and not in Ghost Admin. Download your theme — it installs on a self-hosted Ghost, or on a Ghost(Pro) plan that allows custom themes.")
+  assert.deepEqual(deployError('compile_budget', { host: '', minutes: 7, for: 'export' }), { code: 'compile_budget', message: EXPORT_WORDS.budget(7) })
+  assert.deepEqual(deployError('compile_budget', { host: '', minutes: 7 }), { code: 'compile_budget', message: DEPLOY_WORDS.budget(7) }, 'the control: Run checks\' words')
 })

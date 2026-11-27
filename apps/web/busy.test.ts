@@ -476,7 +476,8 @@ test('Story 7.23b (R-98): Restore original says "Restoring…" with aria-busy an
 
 test('Story 7.23b (DW-391, R-98): a signed Download says "Preparing…" with aria-busy and aria-disabled while its fetch is out — never `disabled` — and a second press does nothing; the Backup step\'s Theme Download keeps its own "Preparing…" through the follow', () => {
   const wizard = readFileSync('components/editor/deploy-wizard.tsx', 'utf8')
-  const signed = wizard.slice(wizard.indexOf('export function SignedDownload('), wizard.indexOf('/** the routes file, saved as Ghost names it'))
+  // Story 7.26 (DW-405): moved to its own file, so the Sites page imports no wizard
+  const signed = readFileSync('components/signed-download.tsx', 'utf8')
   assert.match(signed, /aria-busy=\{out \|\| undefined\}/)
   assert.match(signed, /aria-disabled=\{out \|\| undefined\}/)
   assert.match(signed, /if \(out\) return\s+setOut\(true\)/)
@@ -498,4 +499,18 @@ test('R-291 (R-98): the check before a Roll back says its work — D3\'s running
   assert.doesNotMatch(confirm, /reading/, 'nor Esc, nor the backdrop')
   const words = readFileSync('lib/drift.ts', 'utf8')
   assert.match(words, /reading: 'Comparing with your live theme…'/)
+})
+
+test('Story 7.26 (R-98): D8g in export words is B5c\'s component, busy while the take-over runs; the export window\'s Download again is the one signed Download (busy "Preparing…"), the Sites page\'s original-theme Download is too, and the window starts on its own — no press of its own to be busy', () => {
+  const editor = readFileSync(join(AUTHED, 'projects', '[id]', '(editor)', 'editor.tsx'), 'utf8')
+  assert.match(editor, /<LockTakeover\s+dialog=\{exportTakeover\}[\s\S]*?confirm=\{LOCK_COPY\.exportConfirm\}\s+taking=\{lock\.taking\}\s+onConfirm=\{takeOverToExport\}/, 'D8g\'s export confirm says "Taking over…" while it runs')
+  // the take-over's landed reload keeps Ship it busy ("Opening…"), as Take over and ship does
+  assert.match(editor, /const takeOverToExport = \(\) =>\s+void takeOver\(exportTakeover, \(\) => \{\s+setShipOpening\(true\)/)
+  const dialog = readFileSync('components/editor/export-dialog.tsx', 'utf8')
+  assert.match(dialog, /<SignedDownload\s+id="export-download"[\s\S]*?label=\{E\.again\}/, 'Download again is the signed Download, whose busy label is its own')
+  assert.doesNotMatch(dialog, /\sdisabled(?=[\s=}>/])/)
+  const sites = readFileSync(join(AUTHED, 'sites', '(list)', 'page.tsx'), 'utf8')
+  assert.match(sites, /<SignedDownload\s+id=\{`\$\{SECTION_ID\}-\$\{row\.id\}-download`\}[\s\S]*?size=\{32\}/, 'the original theme\'s Download says "Preparing…" too')
+  const signed = readFileSync('components/signed-download.tsx', 'utf8')
+  assert.match(signed, /size\?: 40 \| 32 \| 28/)
 })

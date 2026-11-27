@@ -8602,3 +8602,28 @@ container half first (every container row held in both):
   Design Notes' remedy is built: `withSiteLock` runs `select 1` every `KEEP_ALIVE_MS` while its work runs. The recorder now asserts
   the silent holder on the container only and records it on the pooler as an observation, so its next `--pooler` run rewrites this
   section with H3k in the table.
+
+## 93. The exported theme's README against Ghost Admin's own words, read in both majors' built admin; the export on T1 and its timings (walk step 126b — owed) · source read · 2026-11-27
+
+**Why.** Story 7.26's README tells whoever opens an exported zip how to install it (DW-346), and its Install steps name Ghost Admin's
+own controls — a claim about an external platform, so a hypothesis until read in its source (standing rule 1). The spec's Design
+Notes give the words and say they are "checked in 6.58.0's and 5.130.6's admin source at Dev, and corrected to what both carry".
+
+**Command.** `curl -sSL https://registry.npmjs.org/ghost/-/ghost-6.58.0.tgz | tar -xz` and the same for `ghost-5.130.6.tgz` into the
+session's scratchpad (read-only; nothing sent to any Ghost), then `grep` over each tarball's `core/built/admin/assets/`.
+
+| Major | File | Read | The README says |
+|---|---|---|---|
+| 6.58.0 | `admin/assets/settings-KSWWQanQ.js` | a settings card `title:"Theme"`, `navid:"theme"`, described "Browse and install official themes or upload one", whose button is `Change theme` | "In Ghost Admin, open Settings → Theme → Change theme." |
+| 6.58.0 | `admin/assets/design-and-theme-modal-DWZguwWX.js` | the change-theme modal's `Upload theme` button (Official themes · Installed tabs); a plan without custom themes gets "Upgrade to enable custom themes" instead; after an upload, "{name} uploaded" and "Do you want to activate it now?" with **Activate theme** | "Choose Upload theme and pick this zip." · "Activate it when Ghost asks, or later from the same list." |
+| 5.130.6 | `admin/assets/admin-x-settings/index-BVxh86CD.mjs` | the same card: `title: "Theme"`, `navid: "theme"`, "Browse and install official themes or upload one", its button `label: "Change theme"` | the same |
+| 5.130.6 | `admin/assets/admin-x-settings/modals-B5dtfzsB.mjs` | `title: "Upload theme"` (Official themes · Installed tabs), "Upgrade to enable custom themes" on a plan without them, and "Do you want to activate it now?" after an upload | the same |
+
+- **The spec's words hold on both majors as written** — no correction was owed. The Installed tab is "the same list" the third step
+  names. Ghost(Pro)'s refusal in Ghost Admin is the same `customThemes` limit (EXPERIENCE.md:771), which is why S8a′ says "not in
+  Ghost Admin" either.
+- **What this does NOT say.** Nothing was uploaded here. Walk step 126b — the export's own zip POSTed to T1's `themes/upload/` with the
+  Admin key (200 `inflozo-{slug}`, never activated, then deleted; a zip with no `package.json` refused 422 as the control) — and the
+  compile's and both gscans' times from that export's `stage_timings` (`compiling.ms`, `checking.ms` — both gscans and the quality gate
+  run inside `checking`) are the main session's, on the owner's in-session go, and are appended here as a dated note when walk 126
+  runs. The Ghost 5 half of 126b waits for DW-326's pass at Story 15.7 (R-238); the export's own gscan 4.49.7 pass is its local stand-in.

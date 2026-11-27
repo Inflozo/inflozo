@@ -10,11 +10,11 @@
 
 export const name = '@inflozo/theme-compiler'
 export {
-  checkChromeText, checkGhostMarkup, checkTripleStashes, compileTheme, CSS_BUDGET_BYTES, POST_ARTICLE, REQUIRED_TEMPLATES, requiredTemplates, THEME_MARKER,
+  checkChromeText, checkGhostMarkup, checkTripleStashes, compileTheme, CSS_BUDGET_BYTES, POST_ARTICLE, README_MARK, REQUIRED_TEMPLATES, requiredTemplates, THEME_MARKER,
   THEME_MARKS, tidyLicence,
 } from './compile.ts'
 export type { CompiledTheme, CompileInput, CompileSetting, CssRecord, CustomRecord, JsRecord, SectionRecord } from './compile.ts'
-export { claim, partialSlug, sectionSlug, SLUG_MAX } from './slug.ts'
+export { claim, partialSlug, RESERVED, sectionSlug, SLUG_MAX } from './slug.ts'
 // Story 7.18a — the compile's customer-caused refusals, one list (`refusal.ts`; also `@inflozo/theme-compiler/refusal`)
 export { CompileRefusal, REFUSAL, refusalOf } from './refusal.ts'
 export type { RefusalKind, RefusalTag } from './refusal.ts'

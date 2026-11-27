@@ -7,9 +7,9 @@ import { randomBytes } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { CompileRefusal } from '@inflozo/theme-compiler/refusal'
 import type { Finding, QualityVerdict, Verdict } from '@inflozo/theme-compiler/gate'
-import { ACCOUNT_COMPILES_PER_HOUR, DEPLOY_WORDS, endingOf, SITE_DEPLOYS_PER_HOUR, SNAPSHOT_WORDS, stepOf } from './lib/deploy.ts'
+import { ACCOUNT_COMPILES_PER_HOUR, DEPLOY_WORDS, endingOf, EXPORT_WORDS, exportPath, SITE_DEPLOYS_PER_HOUR, SNAPSHOT_WORDS, stepOf } from './lib/deploy.ts'
 import type { RoutesOutcome } from './lib/routes-upload.ts'
-import { abandon, activate, cancel, compileBudget, preflight, preflightFacts, ship, siteLimit, start, uploadOnlyRefused, view, type DeployIo, type DeployRow, type JobRow } from './server/deploy/run.ts'
+import { abandon, activate, cancel, compileBudget, exportTheme, exportView, preflight, preflightFacts, ship, siteLimit, start, startExport, STALLED_MS, uploadOnlyRefused, view, type DeployIo, type DeployRow, type JobRow } from './server/deploy/run.ts'
 import type { ProjectRead } from './server/deploy/project-input.ts'
 import type { Snapshot, SnapshotAnswer } from './server/snapshot.ts'
 import { zipTheme } from './server/deploy/zip.ts'
@@ -63,6 +63,12 @@ function world(over: {
    *  wait (with a hook run while it "waits"), open (no serializing at all — the control), or not taken (a throw). Settable later */
   lock?: 'held' | 'never' | 'open' | 'throws'
   duringWait?: (jobs: Map<string, JobRow>) => void
+  /** Story 7.26 — each gscan's verdict by major (by default `gscan`'s), the stored custom settings the freeze stamps (key and
+   *  `frozen_at`), and the freeze's and the exports row's answers in turn (an Error throws) */
+  gscanBy?: Partial<Record<5 | 6, Verdict>>
+  settings?: { key: string; frozen_at: string | null }[]
+  freeze?: Array<Error | null>
+  exportsInsert?: Array<Error | null>
 } = {}) {
   let tick = Date.parse('2026-10-18T10:00:00Z')
   const jobs = new Map<string, JobRow>()
@@ -89,7 +95,13 @@ function world(over: {
   /** Story 7.25 — the lock's mode, and each key's tail: a holder enters once the one before it left */
   const locking = { mode: over.lock ?? 'held' }
   const chains = new Map<string, Promise<void>>()
-  const baseRead = (): ProjectRead => ({
+  /** Story 7.26 — the custom settings as stored, the `exports` rows, and the site each project read asked for */
+  const settings = (over.settings ?? []).map((r) => ({ ...r }))
+  const exported: { project_id: string; user_id: string; version: string; artifact_path: string }[] = []
+  const freezes = [...(over.freeze ?? [])]
+  const exportInserts = [...(over.exportsInsert ?? [])]
+  const readSites: (string | null)[] = []
+  const baseRead = (): ProjectRead & { site: NonNullable<ProjectRead['site']> } => ({
     input: { theme: { name: 'inflozo-notes', version: '1.0.0', description: 'Notes' }, language: 'en' } as ProjectRead['input'],
     reads: { project: 'p' },
     routing: { config: null, unreadable: false, problems: [] },
@@ -102,13 +114,19 @@ function world(over: {
     names: {},
   })
   const io: DeployIo = {
-    read: async () => (over.read ?? baseRead)(),
+    read: async ({ siteId }) => {
+      readSites.push(siteId)
+      return (over.read ?? baseRead)()
+    },
     compile: () => {
       events.push('compile')
       if (over.compile) over.compile()
       return { files: { ...(over.files ?? { 'package.json': '{}\n', 'index.hbs': 'x' }) }, css: {} as never, js: { bundled: [], atRest: [] }, custom: { emitted: [], parked: [] }, noindex: [], sections: over.sections ?? {} }
     },
-    gscan: async () => over.gscan ?? verdict(),
+    gscan: async (_files, major) => {
+      events.push(`gscan:${major}`)
+      return over.gscanBy?.[major] ?? over.gscan ?? verdict()
+    },
     quality: () => over.quality ?? quality(),
     zip: (files) => new TextEncoder().encode(Object.keys(files).join(',')),
     hash: async () => hashes.shift() ?? 'h1',
@@ -189,6 +207,7 @@ function world(over: {
       },
     },
     bind: async ({ themeName }) => {
+      events.push('bind')
       bound.push(themeName)
       return over.bind ?? 'ok'
     },
@@ -261,10 +280,25 @@ function world(over: {
       }
     },
     limits: { site: async () => ({ url: 'https://ghost6.inflozo.com', exempt: false }), accepted: async () => [], started: async () => [] },
+    exports: {
+      insert: async (row) => {
+        const e = exportInserts.shift()
+        if (e) throw e
+        events.push(`export:${row.version}`)
+        exported.push({ ...row })
+      },
+    },
+    // as `deploy-io.ts` writes it: `frozen_at` on the rows still null whose key is among `keys`
+    freeze: async ({ keys, at }) => {
+      const e = freezes.shift()
+      if (e) throw e
+      events.push(`freeze:${[...keys].join(',')}`)
+      for (const r of settings) if (r.frozen_at === null && keys.includes(r.key)) r.frozen_at = at
+    },
     now: () => new Date((tick += 1000)),
     log: () => {},
   }
-  return { io, jobs, deploys, bucket, events, calls, capability, bound, captured, liveReads, putOpts, baseRead, locking, advance: (ms: number) => (tick += ms) }
+  return { io, jobs, deploys, bucket, events, calls, capability, bound, captured, liveReads, putOpts, baseRead, locking, settings, exported, readSites, advance: (ms: number) => (tick += ms) }
 }
 
 const begin = async (w: ReturnType<typeof world>) => {
@@ -1761,4 +1795,146 @@ test('7.25: the way back is never counted — Re-activate, Cancel and the put-ba
     assert.doesNotMatch(body, /siteLimit|compileBudget|limits\./, door)
   }
   assert.doesNotMatch(readFileSync('server/deploy/put-back.ts', 'utf8'), /siteLimit|compileBudget|limits\./)
+})
+
+// ── Story 7.26: the export (FR-J12) and FR-Q2's stamp ─────────────────────────────────────────────────────────────────
+
+/** A compiled theme whose `package.json` declares `show_button` (a live promoted setting) and the built-in `color_scheme` */
+const EMITTED = { 'package.json': JSON.stringify({ name: 'inflozo-notes', version: '1.0.0', config: { custom: { show_button: { type: 'boolean', default: true }, color_scheme: { type: 'select', default: 'Auto' } } } }), 'index.hbs': 'x' }
+/** the project's stored settings: one shipped, one parked (not in `config.custom`), and one frozen before */
+const STORED = () => [{ key: 'show_button', frozen_at: null }, { key: 'parked_one', frozen_at: null }, { key: 'old_one', frozen_at: '2026-01-01T00:00:00.000Z' }]
+
+const exporting = async (w: ReturnType<typeof world>) => {
+  const job = await startExport({ projectId: P, userId: U }, w.io)
+  await exportTheme({ jobId: job.id, userId: U }, w.io)
+  return w.jobs.get(job.id) as JobRow
+}
+
+test('7.26 the export, clean: a job with no site, queued → compiling → checking → done; both pinned gscans asked (5, then 6) and the quality gate; the zip put at the project\'s one export object with replace; an exports row at the read\'s version; the freeze over the emitted keys only', async () => {
+  const w = world({ files: EMITTED, settings: STORED(), gscanBy: { 5: verdict([], [finding('warning', 'page_switch_unused')]), 6: verdict([], [finding('warning', 'page_switch_unused')]) }, quality: quality([], [finding('warning', 'contrast_low')]) })
+  const job = await exporting(w)
+  assert.equal(job.site_id, null, 'the schema\'s "null for FR-J12 export"')
+  assert.equal(job.stage, 'done')
+  assert.equal(job.error, null)
+  assert.deepEqual(w.readSites, [null], 'the project read with no site')
+  assert.deepEqual(w.events.filter((e) => e.startsWith('stage:')), ['stage:compiling', 'stage:checking', 'stage:done'])
+  assert.deepEqual(w.events.filter((e) => e.startsWith('gscan:')), ['gscan:5', 'gscan:6'], 'both majors, whichever Ghost the zip goes to')
+  // stored, then recorded, then frozen — and no deploy row, no Ghost call, no lock
+  const order = w.events.filter((e) => /^(put|export|freeze):/.test(e))
+  assert.deepEqual(order, [`put:${exportPath(P)}`, 'export:1.0.0', 'freeze:show_button,color_scheme'])
+  assert.deepEqual(w.putOpts.get(exportPath(P)), { replace: true })
+  assert.equal(exportPath(P), `${P}/export.zip`)
+  assert.deepEqual(w.exported, [{ project_id: P, user_id: U, version: '1.0.0', artifact_path: `${P}/export.zip` }])
+  assert.ok(!w.events.includes('deploy:insert') && w.calls.length === 0 && !w.events.some((e) => e.startsWith('lock:')))
+  // the parked row and one frozen earlier are untouched; the shipped one is stamped
+  assert.equal(typeof w.settings.find((r) => r.key === 'show_button')?.frozen_at, 'string')
+  assert.equal(w.settings.find((r) => r.key === 'parked_one')?.frozen_at, null)
+  assert.equal(w.settings.find((r) => r.key === 'old_one')?.frozen_at, '2026-01-01T00:00:00.000Z')
+  // the window's rows: the zip's size, and the distinct warning codes (gscan 5's and 6's page switch once, the contrast once)
+  assert.equal(job.stage_timings.compiling?.bytes, w.bucket.get(exportPath(P))?.length)
+  assert.equal(job.stage_timings.checking?.warnings, 2)
+  assert.ok((job.stage_timings.compiling?.ms ?? -1) >= 0 && (job.stage_timings.checking?.ms ?? -1) >= 0)
+})
+
+test('7.26 the version is the read\'s: a second export\'s read says 2.0.0, and its row and the replaced object follow', async () => {
+  const w = world({ files: EMITTED, read: () => ({ ...w.baseRead(), input: { ...w.baseRead().input, theme: { name: 'inflozo-notes', version: '2.0.0', description: 'Notes' } } }) })
+  await exporting(w)
+  assert.deepEqual(w.exported.map((r) => r.version), ['2.0.0'])
+})
+
+test('7.26 a gate blocks: gscan 5, gscan 6 or the quality gate — the export fails on the first error (gscan 6\'s before 5\'s, then quality\'s), and nothing is stored, recorded or frozen', async () => {
+  const five = finding('error', 'five_error')
+  const six = finding('error', 'six_error')
+  const q = finding('error', 'quality_error')
+  const cases: [Parameters<typeof world>[0], Finding][] = [
+    [{ gscanBy: { 5: verdict([five]) } }, five],
+    [{ gscanBy: { 6: verdict([six]) } }, six],
+    [{ quality: quality([q]) }, q],
+    [{ gscanBy: { 5: verdict([five]), 6: verdict([six]) }, quality: quality([q]) }, six],
+    [{ gscanBy: { 5: verdict([five]) }, quality: quality([q]) }, five],
+  ]
+  for (const [over, first] of cases) {
+    const w = world({ files: EMITTED, settings: STORED(), ...over })
+    const job = await exporting(w)
+    assert.equal(job.stage, 'failed', first.code)
+    assert.deepEqual(job.error, first, first.code)
+    assert.equal(w.bucket.size, 0, `${first.code}: nothing stored`)
+    assert.deepEqual(w.exported, [], `${first.code}: nothing recorded`)
+    assert.ok(!w.events.some((e) => e.startsWith('freeze:')), `${first.code}: nothing frozen`)
+    assert.equal(w.settings.find((r) => r.key === 'show_button')?.frozen_at, null)
+  }
+})
+
+test('7.26 refused before or at the compile: a refusal in its plain words, an unacknowledged RTL language and an unfit routing as Pre-flight says them — nothing compiled past the refusal, nothing stored', async () => {
+  const theirs = world({ compile: () => { throw new CompileRefusal('cardDesigns', 'card designs: nope') } })
+  const refused = await exporting(theirs)
+  assert.equal(refused.stage, 'failed')
+  assert.equal(refused.error?.code, 'compile_refused')
+  assert.equal(refused.error?.message, DEPLOY_WORDS.cardDesigns)
+  assert.equal(theirs.bucket.size, 0)
+  const ours = world({ compile: () => { throw new Error('a bug') } })
+  assert.equal((await exporting(ours)).error?.code, 'compile_failed')
+  const rtl = world({ read: () => ({ ...rtl.baseRead(), input: { ...rtl.baseRead().input, language: 'ar' }, rtlAckAt: null }) })
+  const r = await exporting(rtl)
+  assert.equal(r.error?.code, 'rtl_unacknowledged')
+  assert.equal(r.error?.message, DEPLOY_WORDS.rtlBlocked)
+  const unfit = world({ read: () => ({ ...unfit.baseRead(), routing: { config: null, unreadable: false, problems: [{ line: 4, at: 'x', message: 'Two routes share /x/.' }] } }) })
+  assert.deepEqual((await exporting(unfit)).error, { code: 'routes_invalid', message: DEPLOY_WORDS.routesLine(4, 'Two routes share /x/.') })
+  const unread = world({ read: () => ({ ...unread.baseRead(), routing: { config: null, unreadable: true, problems: [] } }) })
+  assert.equal((await exporting(unread)).error?.code, 'routes_unreadable')
+  for (const w of [rtl, unfit, unread]) assert.ok(!w.events.includes('compile'), 'nothing compiled')
+  // the control: acknowledged, it exports
+  const acked = world({ read: () => ({ ...acked.baseRead(), input: { ...acked.baseRead().input, language: 'ar' }, rtlAckAt: '2026-11-01T00:00:00Z' }) })
+  assert.equal((await exporting(acked)).stage, 'done')
+})
+
+test('7.26 infrastructure: storage failing twice fails the export in its own words — retried once first; a killed invocation\'s job is failed by the poll past STALLED_MS', async () => {
+  const w = world({ put: [new Error('storage'), new Error('storage')] })
+  const job = await exporting(w)
+  assert.equal(job.stage, 'failed')
+  assert.deepEqual(job.error, { code: 'deploy_infrastructure', message: EXPORT_WORDS.infrastructure })
+  assert.deepEqual(w.exported, [])
+  const once = world({ put: [new Error('storage')] })
+  assert.equal((await exporting(once)).stage, 'done', 'the control: one failure is retried')
+  // the poll: this user's export, as the window reads it; a deploy's row is not an export's
+  const s = world({})
+  const stuck = await startExport({ projectId: P, userId: U }, s.io)
+  assert.equal((await exportView({ jobId: stuck.id, userId: U }, s.io))?.job.stage, 'queued')
+  s.advance(STALLED_MS + 1000)
+  const gone = await exportView({ jobId: stuck.id, userId: U }, s.io)
+  assert.equal(gone?.job.stage, 'failed')
+  assert.deepEqual(gone?.job.error, { code: 'deploy_infrastructure', message: EXPORT_WORDS.infrastructure })
+  const deploy = await start({ projectId: P, siteId: S, userId: U }, s.io)
+  assert.equal(await exportView({ jobId: deploy.id, userId: U }, s.io), null, 'a deploy\'s row is no export')
+  assert.equal(await view({ jobId: stuck.id, userId: U }, s.io), null, 'an export\'s row is no deploy')
+  // and no deploy door moves an export's row
+  await preflight({ jobId: stuck.id, userId: U }, s.io)
+  assert.equal(s.jobs.get(stuck.id)?.stage, 'failed')
+})
+
+test('7.26 Ship it stamps FR-Q2\'s freeze at the upload Ghost accepts — after the bind, before the ending, over the shipped keys; a stamp that fails twice is logged and the ending is untouched', async () => {
+  const w = world({ files: EMITTED, settings: STORED(), siteBound: false, snapshot: [{ ok: true, id: 's', theme: 'casper', version: '5', bytes: 1 } as Snapshot] })
+  const job = await begin(w)
+  assert.ok(!w.events.some((e) => e.startsWith('freeze:')), 'Pre-flight never freezes')
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  const at = (e: string) => w.events.indexOf(e)
+  assert.ok(at('call:theme_upload') < at('bind') && at('bind') < at('freeze:show_button,color_scheme') && at('freeze:show_button,color_scheme') < at('call:theme_activate'), w.events.join(' '))
+  assert.deepEqual(w.bound, ['inflozo-notes'], 'the bind first')
+  assert.equal(typeof w.settings.find((r) => r.key === 'show_button')?.frozen_at, 'string')
+  assert.equal(w.settings.find((r) => r.key === 'parked_one')?.frozen_at, null)
+  assert.equal(w.jobs.get(job.id)?.stage, 'done')
+  // refused uploads freeze nothing
+  const refused = world({ files: EMITTED, settings: STORED(), upload: [bad(422, { errors: [{ type: 'ThemeValidationError' }] })] })
+  const r = await begin(refused)
+  await ship({ jobId: r.id, userId: U, mode: 'activate' }, refused.io)
+  assert.ok(!refused.events.some((e) => e.startsWith('freeze:')))
+  // a stamp that fails twice: the theme is live all the same
+  const broken = world({ files: EMITTED, settings: STORED(), freeze: [new Error('db'), new Error('db')] })
+  const b = await begin(broken)
+  await ship({ jobId: b.id, userId: U, mode: 'activate' }, broken.io)
+  const done = broken.jobs.get(b.id) as JobRow
+  assert.equal(done.stage, 'done')
+  assert.equal(done.error, null)
+  assert.equal(endingOf(done.stage, broken.deploys.get(b.deploy_id as string) as DeployRow, done.stage_timings), 'live')
+  assert.equal(broken.settings.find((r) => r.key === 'show_button')?.frozen_at, null)
 })

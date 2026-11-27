@@ -65,7 +65,7 @@ export const UNSTOPPABLE: readonly Stage[] = ['uploading', 'activating']
 
 /** What `stage_timings` holds: each stage's start and, once it ends, its duration; compiling records the zip's size, and
  *  Ship it's routes step its outcome (`RoutesEnding`) — NFR-9's structured deploy log, one object per job. */
-export type Timing = { at: string; ms?: number; bytes?: number }
+export type Timing = { at: string; ms?: number; bytes?: number; warnings?: number }
 /** STORY 7.20a — the capture's own record: the live theme's name and version and the zip's size, or `marked` (the live theme
  *  is already Inflozo's, nothing captured), or `skipped` (Deploy without a snapshot — no stage entered, so no `at`) */
 export type SnapshotTiming = { at?: string; ms?: number; bytes?: number; theme?: string; version?: string | null; marked?: true; skipped?: true }
@@ -169,6 +169,19 @@ export function overLimit(times: readonly string[], cap: number, now: Date): num
 }
 /** "1 minute", else "{n} minutes" */
 const inMinutes = (n: number): string => (n === 1 ? '1 minute' : `${n} minutes`)
+/** STORY 7.26 (R-170) — the budget's first sentence, ONE constant both refusals open with: Run checks' and the export's */
+export const BUDGET_FIRST = `Your account has built ${ACCOUNT_COMPILES_PER_HOUR} themes in the last hour, the most Inflozo builds in an hour.`
+
+// ── Story 7.26: the export's one object, its two addresses ─────────────────────────────────────────────────────────
+
+/** STORY 7.26 (FR-J12, AD-29) — THE PROJECT'S ONE EXPORT: one object per project in `deploy-artifacts`, replaced by each export —
+ *  bounded by construction, drained with the project's prefix at purge, and never touched by the prune or the sweep (they touch
+ *  only objects a `deploys` row names). An older `exports` row's `artifact_path` names the newest zip; only the newest is offered */
+export const exportPath = (projectId: string): string => `${projectId}/export.zip`
+/** …the export's door in the app (`projects/[id]/export`): POST starts one, GET `?job=` is the window's poll */
+export const exportHref = (projectId: string): string => `/projects/${projectId}/export`
+/** …and its signed download (`projects/[id]/export/download`, AD-13), the newest export's zip */
+export const exportDownloadPath = (projectId: string): string => `/projects/${projectId}/export/download`
 
 // ── the staleness hash ──────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -427,10 +440,13 @@ export const DEPLOY_WORDS = {
   running: 'Another deploy to this site is already running — try again in a moment.',
   // Story 7.25 (R-170, R-283): the two limits, each said once where it refuses — the numbers are the constants'
   siteLimit: (host: string, minutes: number) => `Inflozo ships to one site at most ${SITE_DEPLOYS_PER_HOUR} times an hour. You can ship to ${host} again in ${inMinutes(minutes)}.`,
-  budget: (minutes: number) => `Your account has built ${ACCOUNT_COMPILES_PER_HOUR} themes in the last hour, the most Inflozo builds in an hour. You can run checks again in ${inMinutes(minutes)}.`,
+  budget: (minutes: number) => `${BUDGET_FIRST} You can run checks again in ${inMinutes(minutes)}.`,
   ghostRefused: "Ghost's own theme check refused this theme, which our checks should have caught. It's our fault.",
   plan: "Your Ghost(Pro) plan doesn't accept custom themes — check or upgrade your plan (Publisher or higher).",
   plans: 'Which Ghost plans work? ↗',
+  /** STORY 7.26 — S8a′ (`S8 Deploy.dc.html:245-262`): Destination on a site whose plan refuses custom themes; beside it, Download
+   *  theme (`EXPORT_WORDS.row`) and `plans` → `GHOST_PLANS_HELP` in a new tab */
+  previewOnly: "This site's Ghost(Pro) plan doesn't accept custom themes at all — not over the API, and not in Ghost Admin. Download your theme — it installs on a self-hosted Ghost, or on a Ghost(Pro) plan that allows custom themes.",
   busy: (host: string) => `${host} is busy or down right now. Try again in a few minutes.`,
   unreachable: (host: string) => `We couldn't reach ${host}. Check it's online, then try again.`,
   moved: (host: string) => `${host} now answers at a different address. Reconnect it in Sites.`,
@@ -458,6 +474,32 @@ export const DEPLOY_WORDS = {
   sayChecked: (e: number, w: number) => `Checks finished: ${e} error${s(e)}, ${w} warning${s(w)}.`,
   sayUploading: 'Uploading to Ghost.',
   sayActivating: (n: number) => `Activating ${versionLabel(n)}.`,
+} as const
+
+/** STORY 7.26 — THE EXPORT'S WORDS (R-170): the ▾ row and its window's title (S4d `:384`), the window's lead, its two rows (S8b's own,
+ *  `DEPLOY_WORDS`), the ready line, Download again, the infrastructure sentence and the budget's (`BUDGET_FIRST`, then when). D8g's
+ *  are `LOCK_COPY.export*` (`lib/lock.ts`); B15's are `PREVIEW_COPY`'s (`lib/probe-rule.ts`) */
+export const EXPORT_WORDS = {
+  row: 'Download theme',
+  title: 'Download theme',
+  caption: 'Zip of the compiled Ghost theme',
+  body: 'We compile and check your theme, then your browser downloads it as a zip.',
+  compilingRow: DEPLOY_WORDS.compilingRow,
+  compiled: DEPLOY_WORDS.compiled,
+  compiledMeta: DEPLOY_WORDS.compiledMeta,
+  checkingRow: DEPLOY_WORDS.checkingRow,
+  checked: DEPLOY_WORDS.checked,
+  checkedMeta: (warnings: number) => DEPLOY_WORDS.checkedMeta(0, warnings),
+  ready: 'Your theme is downloading. The README inside says how to install it.',
+  again: 'Download again',
+  starting: DEPLOY_WORDS.starting,
+  editsUnsent: DEPLOY_WORDS.editsUnsent,
+  infrastructure: 'Something went wrong on our side while building your theme. Try again.',
+  budget: (minutes: number) => `${BUDGET_FIRST} You can export again in ${inMinutes(minutes)}.`,
+  close: DEPLOY_WORDS.close,
+  /** the polite region's lines (UX-DR12): each stage entered is said */
+  sayCompiling: DEPLOY_WORDS.sayCompiling,
+  sayChecking: DEPLOY_WORDS.sayChecking,
 } as const
 
 /** STORY 7.19 — THE FIRST DEPLOY'S SAFETY NET, every word D1b (the offer) and D1c (the decline) say, the frame's own
@@ -606,7 +648,7 @@ export const STAGE_NAMES: Readonly<Record<'compiling' | 'checking' | 'snapshotti
 
 /** THE SENTENCE AND THE FIX FOR EACH CODE THIS MODULE OWNS — AD-24's envelope as the wizard stores it. `host` is the site's
  *  host as the wizard names it (`hostOf`), `version` its `ghost_version`, `siteId` for Reconnect. */
-export function deployError(code: DeployCode, ctx: { host: string; version?: string; siteId?: string; detail?: string; projectId?: string; to?: string; request?: string; status?: number | null; minutes?: number }): DeployError {
+export function deployError(code: DeployCode, ctx: { host: string; version?: string; siteId?: string; detail?: string; projectId?: string; to?: string; request?: string; status?: number | null; minutes?: number; for?: 'export' }): DeployError {
   const { host } = ctx
   const with_ = (message: string, extra: Partial<DeployError> = {}): DeployError => ({ code, message, ...(ctx.detail === undefined ? {} : { detail: ctx.detail }), ...extra })
   switch (code) {
@@ -639,8 +681,9 @@ export function deployError(code: DeployCode, ctx: { host: string; version?: str
     // Story 7.25 — the two limits, with the minutes until the next one is allowed
     case 'deploy_rate_limited':
       return { code, message: DEPLOY_WORDS.siteLimit(host, ctx.minutes ?? 60) }
+    // Story 7.26 — the export asks the same budget and is told in its own words (`for: 'export'`)
     case 'compile_budget':
-      return { code, message: DEPLOY_WORDS.budget(ctx.minutes ?? 60) }
+      return { code, message: ctx.for === 'export' ? EXPORT_WORDS.budget(ctx.minutes ?? 60) : DEPLOY_WORDS.budget(ctx.minutes ?? 60) }
     // Story 7.20a — B12b's three causes, each with the request it failed on and Ghost's status
     case 'snapshot_needs_token':
     case 'snapshot_token_refused':
@@ -1039,6 +1082,10 @@ export type DeployView = {
   /** B16's file, `sites.routes_last_offered`, when the ending is a fallback */
   routesFile: string | null
 }
+
+/** STORY 7.26 — GET `projects/[id]/export?job=`'s answer: the export's job as the window reads it — its stage, its envelope when it
+ *  failed, and its timings (`compiling`'s zip size, `checking`'s distinct warning count) */
+export type ExportView = { job: { id: string; stage: Stage; error: DeployError | Finding | null; timings: Timings } }
 
 /** Routes' failure reason in the ending's line, per `RoutesFailure` code — Ghost's answer said plainly. The seven are the
  *  owner's approved words (R-265, 2026-10-19, Story 7.18a's Review): the failure screen's own words for the same causes. */

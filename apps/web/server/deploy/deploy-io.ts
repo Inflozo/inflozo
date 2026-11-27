@@ -29,6 +29,9 @@ import { zipTheme } from './zip.ts'
  *   - STORY 7.25 — THE SITE'S LOCK: `lock` is `server/site-lock.ts`' `withSiteLock`, its own pooler connection per hold. The two
  *     counts read `deploys.accepted_at`, `sites.deploy_rate_limit_exempt` (server-only, `rls.sql`) and `deploy_jobs.started_at`,
  *     each scoped by `user_id`.
+ *   - STORY 7.26 — THE EXPORT: `exports` rows are server-written (the tenant may only read its own), and `custom_settings.frozen_at`
+ *     is the server's to set (the column is outside the tenant's grant) — `freeze` stamps it, null → a time once (the guard trigger),
+ *     at export and at Ship it's accepted upload. The project's one export object is `deploy-artifacts`' `{projectId}/export.zip`.
  * The gates and JSDOM run here, in the one function AD-11 sizes; `gscan4` and `gscan6` are server externals
  * (`next.config.ts`) and their trees reach the route's trace (`tools/check-traces.mjs`). jsdom is BUNDLED, never an external:
  * Vercel refuses the require-of-ESM jsdom 30 is built on (the owner's test, 2026-10-19; `next.config.ts` says how).
@@ -134,8 +137,9 @@ export const DEPLOY_IO: DeployIo = {
   },
   artifacts: {
     // STORY 7.22 — IMMUTABLE (NFR-4): `upsert: false`, so a put over an existing key is refused (409 "The resource already exists",
-    // executed on production's bucket at 7.22's Dev with a new key as the control). `replace` is Story 7.21's live copy alone
-    // (`{projectId}/live/{siteId}.zip`), the one fixed key each found drift overwrites. ponytail: a put that landed but whose answer
+    // executed on production's bucket at 7.22's Dev with a new key as the control). `replace` is for the two fixed keys alone: Story
+    // 7.21's live copy (`{projectId}/live/{siteId}.zip`), which each found drift overwrites, and Story 7.26's export
+    // (`{projectId}/export.zip`), which each export replaces. ponytail: a put that landed but whose answer
     // was lost meets its own object on AD-20's retry and fails the job as ours — the upgrade reads the key back on a 409
     async put(path, bytes, opts) {
       ok(await supabaseAdmin().storage.from(BUCKET).upload(path, bytes, { contentType: 'application/zip', upsert: opts?.replace === true }), 'artifact upload')
@@ -211,6 +215,17 @@ export const DEPLOY_IO: DeployIo = {
       const rows = ok(await supabaseAdmin().from('deploy_jobs').select('started_at').eq('user_id', userId).gte('started_at', since), 'started jobs') as { started_at: string }[] | null
       return (rows ?? []).map((r) => r.started_at)
     },
+  },
+  // Story 7.26 — FR-J12's record: one row per finished export
+  exports: {
+    async insert(row) {
+      ok(await supabaseAdmin().from('exports').insert(row), 'export insert')
+    },
+  },
+  // Story 7.26 — FR-Q2's stamp, idempotent: only rows still unfrozen, only the keys the theme shipped. None shipped asks nothing
+  async freeze({ projectId, userId, keys, at }) {
+    if (keys.length === 0) return
+    ok(await supabaseAdmin().from('custom_settings').update({ frozen_at: at }).eq('project_id', projectId).eq('user_id', userId).is('frozen_at', null).in('key', [...keys]), 'freeze')
   },
   now: () => new Date(),
   log: (message, fields) => console.error(message, fields),

@@ -222,6 +222,43 @@ test('7.24: frozen on one site, a first ship to ANOTHER site resolves afresh the
   assert.ok(filters.includes('sites: url=https://other.example.com'), 'the held read is S2\'s address')
 })
 
+test('7.26: the export reads with siteId null — no site, deploys, binding or held names; the name is inflozo-{slug}; the version is 1 + the highest exports row (none → 1, 3.0.0 → 4); site null; the pack\'s name handed in', async () => {
+  const exportsRows: { version: string }[][] = [[], [{ version: '1.0.0' }, { version: '3.0.0' }, { version: 'junk' }]]
+  for (const [rows, want] of [[exportsRows[0], '1.0.0'], [exportsRows[1], '4.0.0']] as const) {
+    const filters: string[] = []
+    const db = fakeDb({
+      projects: { id: P, name: 'Export test', slug: 'export-test', dark_enabled: false, posts_per_page: 12, style_pack: { preset: 'paper' }, language: 'en' },
+      // were these read, the answer would carry a bound, frozen and held name and a site's deploy number
+      sites: { id: S, url: 'https://ghost6.inflozo.com', ghost_version: '6.58.0', capability: 'full', site_settings: null },
+      deploys: [{ version: '9.0.0', activated: true, activated_at: '2026-10-01T00:00:00Z' }],
+      project_site_bindings: { theme_name: 'inflozo-export-test-7' },
+      exports: rows,
+      project_templates: [], custom_settings: [], translation_overrides: [], custom_templates: [], routes_config: null,
+    }, filters)
+    const read = await compileInputOf({ projectId: P, siteId: null, userId: U }, db)
+    assert.ok(read !== null)
+    assert.equal(read.site, null)
+    assert.equal(read.bound, null)
+    assert.equal(read.themeName, 'inflozo-export-test')
+    assert.equal(read.input.theme.name, 'inflozo-export-test')
+    assert.equal(read.input.theme.version, want)
+    assert.equal(read.input.packName, 'Paper')
+    for (const table of ['sites', 'deploys', 'project_site_bindings']) assert.ok(!filters.some((f) => f.startsWith(`${table}:`)), `${table} is not read: ${filters.join(' | ')}`)
+    assert.ok(!filters.some((f) => f.includes('url=')), 'no held names read')
+    const exp = filters.find((f) => f.startsWith('exports:'))
+    assert.ok(exp !== undefined && exp.includes(`project_id=${P}`) && exp.includes(`user_id=${U}`), 'the exports read is owned')
+  }
+  // the control: a deploy's read still reads the site and never the exports
+  const filters: string[] = []
+  await compileInputOf({ projectId: P, siteId: S, userId: U }, fakeDb({
+    projects: { id: P, name: 'Export test', slug: 'export-test', dark_enabled: false, posts_per_page: 12, style_pack: null, language: 'en' },
+    sites: { id: S, url: 'https://ghost6.inflozo.com', ghost_version: '6.58.0', capability: 'full', site_settings: null },
+    project_site_bindings: { theme_name: 'inflozo-export-test' },
+    project_templates: [], custom_settings: [], translation_overrides: [], custom_templates: [], deploys: [], routes_config: null,
+  }, filters))
+  assert.ok(filters.some((f) => f.startsWith('sites:')) && !filters.some((f) => f.startsWith('exports:')))
+})
+
 const GSCAN_SOURCE = readFileSync(new URL('../../packages/theme-compiler/gate/gscan.ts', import.meta.url), 'utf8')
 
 test('the owner\'s test (2026-10-19): preloadChecks loads EVERY check file of each pinned checker by its literal name — the list and each pin\'s lib/checks/ never part, so the deploy route\'s trace follows every import a check makes', () => {

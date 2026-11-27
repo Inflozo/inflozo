@@ -40,6 +40,7 @@ const RETENTION_IO = join('server', 'retention-io.ts')
 const PUT_BACK = join('server', 'deploy', 'put-back.ts')
 const PUT_BACK_IO = join('server', 'deploy', 'put-back-io.ts')
 const HELD_NAMES_IO = join('server', 'deploy', 'held-names-io.ts')
+const EXPORT_DOWNLOAD_ROUTE = join('app', '(app)', 'app', '(authed)', 'projects', '[id]', 'export', 'download', 'route.ts')
 const SITE_LOCK = join('server', 'site-lock.ts')
 const MIGRATIONS = '../../supabase/migrations'
 
@@ -221,6 +222,10 @@ test('the service-role client is imported by the flag reader and by nothing else
   //   at the address of a site the caller OWNS (the first query carries `user_id`; none, and nothing more is read), and answers the
   //   theme NAMES alone — never an id, an account or a project. Whoever can connect the site holds its Admin key and already sees
   //   those themes in Ghost Admin. Pre-flight hands the same read its own (service-role) client through `project-input.ts`.
+  // The TWENTIETH, added by Story 7.26 with its reason — the THIRTEENTH's, for the export: the export's Download signs the project's
+  //   one export object (`deploy-artifacts/{projectId}/export.zip`), and that bucket has NO Storage policy at all (server-only, AD-29),
+  //   so the service role is its only reader. It never touches a user ROW: whose export it is — the project and its newest `exports`
+  //   row — is read on the caller's own session (RLS), and it signs only that project's key.
   const allowed = [
     join('lib', 'flags.ts'),
     SNAPSHOT_ROUTE,
@@ -241,6 +246,7 @@ test('the service-role client is imported by the flag reader and by nothing else
     PUT_BACK_IO,
     HISTORY_LIVE_ROUTE,
     HELD_NAMES_IO,
+    EXPORT_DOWNLOAD_ROUTE,
   ]
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))

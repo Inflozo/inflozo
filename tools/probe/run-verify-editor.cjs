@@ -20,6 +20,9 @@
 //   STEP123_PLANT=<email> T1_WRITES=1 …   # Story 7.23c: step 123 as Deploy's plant, in a cut copy (steps 1–5 and 123): a NEW
 //                   address — "Phone test" v1 then v2 live on T1 ("Version n" on Home), v2's files then given an invisible hand edit under
 //                   the frozen name, live — found by the owner's first Roll back on his phone (R-291)
+//   STEP126_PLANT=<email> T1_WRITES=1 …   # Story 7.26: step 126 as Deploy's plant, in a cut copy (steps 1–5 and 126): a NEW
+//                   address — "Export test" linked to T1 with "Show the button" promoted, T1's card marked Preview-only, an
+//                   orphan original theme whose file is gone, and nothing exported
 //   STEP124_PLANT=<a email>,<b email> T1_WRITES=1 …   # Story 7.24: step 124 as Deploy's plant, in a cut copy (steps 1–5 and 124):
 //                   two NEW addresses — A's "Name test" shipped Deploy only (`inflozo-name-test` on T1, unused); B's "Name test" linked
 //                   to T1, nothing shipped, its staff token stored through Manage keys and its Backup confirmed — B's Destination
@@ -505,6 +508,14 @@
 // DW-373 — a second Run checks flags the first, which ends cancelled leaving nothing; (b) Z's site limit — nine accepted uploads
 // planted, the tenth ships, the next refused in its sentence, then the exempt flag ships it; (c) Z's budget — jobs planted to 59,
 // the 60th starts, the next refused in its sentence (Vercel's log line noted for the main session). No plant.
+// Story 7.26 adds step 126, WRITING TO T1 and to production, so it runs only with `T1_WRITES=1` on the owner's in-session go:
+// THE THEME ZIP EXPORT (FR-J12, FR-Q2, DW-60, DW-336, DW-346, DW-405). A throwaway Free account E (`editor-harness-ex-…`) connects
+// T1 with a project "Export test" and a promoted setting: (a) the export twice through Ship it ▾ — two `deploy_jobs` rows with no
+// site, `exports` 1.0.0 and 2.0.0 at `{project}/export.zip`, the setting frozen (its key change refused 42501), the second zip's name,
+// version, `locales/en.json`, README's sections and a layer renamed `Con` at `con-2.hbs`; (b) that zip uploaded to T1 → 200, never
+// activated, deleted (no package.json → 422, the control); (c) B15 on Sites and its Export theme zip; (d) S8a′'s Download theme;
+// (e) a reader's D8g in export words; (g) a lockless POST's 423; (h) an orphan Download's gone sentence; (f) last, the budget's 429
+// in the export's words. `STEP126_PLANT=<address>` is Deploy's plant instead.
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -626,7 +637,7 @@ async function main() {
   const ids = []
   let browser = null
   let entitlementBack = null
-  // what a Deploy plant leaves on purpose (STEP120_PLANT, STEP121_PLANT, STEP122_PLANT, STEP123_PLANT, STEP124_PLANT), so the end-of-run counts expect it
+  // what a Deploy plant leaves on purpose (STEP120_PLANT, STEP121_PLANT, STEP122_PLANT, STEP123_PLANT, STEP124_PLANT, STEP126_PLANT), so the end-of-run counts expect it
   const plantKept = { users: 0, projects: 0 }
   try {
     // ── step 1 — the fixtures ──
@@ -17863,6 +17874,475 @@ async function main() {
         for (const ctx of ctxs125) await ctx.close().catch(() => {})
       }
       check('step 125 — the step\'s contexts recorded zero CSP violations', csp125.length === 0, JSON.stringify(csp125.slice(0, 3)))
+    }
+
+    /* ── step 126 — Story 7.26: THE THEME ZIP EXPORT (FR-J12, FR-Q2, DW-60, DW-336, DW-346, DW-405), WRITING TO T1 ──
+       Runs only with `T1_WRITES=1`, on the owner's in-session go worded for the whole run: one Free throwaway account E
+       (`editor-harness-ex-…`) connects T1 through the wizard at 1440 with a project "Export test" (step 1's fixture, slug
+       `export-test`) linked, and one promoted setting planted with the service key (Latest Post's Primary action as "Show the
+       button", `show_the_button`).
+       (a) THE EXPORT, TWICE, THROUGH THE UI (Ship it ▾ → Download theme): each a `deploy_jobs` row with `site_id` null ending `done`,
+           the browser saving `inflozo-export-test.zip`; two `exports` rows, `1.0.0` and `2.0.0`, both naming `{project}/export.zip`;
+           `frozen_at` on the promoted key after the first, and its key change refused `42501` by the guard trigger. Between the two,
+           the home doc's first layer renamed `Con` (the service key). The second zip read: `package.json` named
+           `inflozo-export-test` at `2.0.0`, `locales/en.json`, README's sections in order (Scripts, Styles, Install, Style Pack and
+           fonts, Changing this theme), and a section partial `…/con-2.hbs`, never `con.hbs`.
+       (b) GHOST TAKES IT: the second zip POSTed to T1's `themes/upload/` with the Admin key → 200 `inflozo-export-test`, never
+           activated; `DELETE themes/inflozo-export-test/` → 204; the live theme unchanged. The control: the same zip with
+           `package.json` removed is refused 422. The Ghost 5 half waits for DW-326 (R-238).
+       (c) B15 ON THE SITES PAGE: T1's record marked Preview-only (`probe`) — the body's export sentence, Export theme zip in ink,
+           Re-check plan, the greyed Ship it with its reason under it; Export theme zip → the editor with the export asked, `?export`
+           gone from the address, the window running, a third `exports` row.
+       (d) S8a′: Ship it → Destination's Preview-only block (its sentence, Download theme, the plans link, no Run checks); its
+           Download theme closes the wizard and opens the export window.
+       (e) A SECOND SESSION READING ALONG: its Ship it ▾ → Download theme opens D8g in export words, Wait focused.
+       (g) A POST with a session that holds no lock → 423, no row.
+       (h) DW-405 on Sites: a disconnected site's original theme planted with no object — its Download says the gone sentence under
+           it and the URL stays.
+       (f) LAST, R-295's budget: E's jobs planted up to 60 in the hour (the service key) → the export window says
+           `EXPORT_WORDS.budget` with its minutes, no job inserted; Vercel's `deploy: compile budget reached` line noted for the main
+           session.
+       FINALLY: every job at rest; T1 put back (its own theme active, every inflozo- theme the run uploaded deleted, routes.yaml byte
+       for byte) and read back; the account's objects removed, T1 disconnected through the product, the account deleted; users and
+       projects counted back. The start refuses a T1 holding an `inflozo-export-test*` theme or any binding of that name.
+       `STEP126_PLANT=<email>` (with `T1_WRITES=1`, in a cut copy of steps 1–5 and this one) is Deploy's plant for the owner's test
+       instead: that NEW account with "Export test" linked to T1 and the promoted setting, T1's card marked Preview-only, and an
+       orphan original theme whose file is gone — nothing exported, everything left in place. Keys are read in-process by NAME and
+       scrubbed; never printed. SELF-CONTAINED. */
+    if (process.env.T1_WRITES !== '1') {
+      note('step 126 — NOT RUN', 'it writes to T1 (one theme upload and delete through the Admin API) and to production (a throwaway account, exports, a planted setting, a Preview-only mark, an orphan row and 60 planted deploy_jobs rows): set T1_WRITES=1 on the owner\'s in-session go')
+    } else {
+      const imp126 = (f) => import(require('node:url').pathToFileURL(path.join(REPO, f)).href)
+      const [DEP126, CR126, PR126, AR126, RU126, ZIP126, TS126, RT126, LK126, SG126, OR126] = await Promise.all([
+        imp126('apps/web/lib/deploy.ts'), imp126('apps/web/lib/connect-rule.ts'), imp126('apps/web/lib/probe-rule.ts'), imp126('apps/web/server/ghost-admin/admin-rule.ts'),
+        imp126('apps/web/lib/routes-upload.ts'), imp126('apps/web/server/deploy/zip.ts'), imp126('apps/web/lib/theme-settings.ts'), imp126('packages/section-runtime/src/index.ts'),
+        imp126('apps/web/lib/lock.ts'), imp126('apps/web/lib/signed-download.ts'), imp126('apps/web/lib/orphan-rule.ts'),
+      ])
+      const { pilot: pilot126 } = await imp126('apps/web/lib/pilots.ts')
+      const EW126 = DEP126.EXPORT_WORDS
+      const until126 = async (read, test, ms) => {
+        const by = Date.now() + ms
+        for (;;) {
+          const v = await read()
+          if (test(v) || Date.now() > by) return v
+          await new Promise((r) => setTimeout(r, 500))
+        }
+      }
+      const ENV126 = {}
+      const NAMES126 = ['GHOST6_URL', 'GHOST6_ADMIN_API_KEY', 'GHOST6_CONTENT_API_KEY', 'GHOST6_STAFF_ACCESS_TOKEN']
+      for (const line of fs.readFileSync(path.join(REPO, 'tools/probe/.env'), 'utf8').split('\n')) {
+        const m = /^([A-Z0-9_]+)=(.*)$/.exec(line)
+        if (m && NAMES126.includes(m[1]) && m[2].trim()) ENV126[m[1]] = m[2].trim()
+      }
+      const missing126 = NAMES126.filter((k) => !ENV126[k])
+      if (missing126.length) throw new Error(`step 126: ${missing126.join(', ')} not in tools/probe/.env`)
+      const SECRETS126 = [ENV126.GHOST6_ADMIN_API_KEY, ENV126.GHOST6_STAFF_ACCESS_TOKEN].flatMap((k) => [k, k.split(':')[1] ?? '']).concat([ENV126.GHOST6_CONTENT_API_KEY, SECRET ?? '']).filter((x) => x.length >= 8)
+      const scrub126 = (x) => SECRETS126.reduce((t, k) => t.split(k).join('<key>'), String(x))
+      const URL126 = CR126.normaliseSiteUrl(ENV126.GHOST6_URL)
+      const SLUG126 = 'export-test'
+      const NAME126 = DEP126.themeNameFor({ slug: SLUG126, bound: null, held: [] })
+      const PLANT126 = (process.env.STEP126_PLANT ?? '').trim().toLowerCase()
+      const ghost126 = async (credential, method, p, body) => {
+        const { url, init } = AR126.adminRequest({ credential, siteUrl: ENV126.GHOST6_URL, method, path: p, body, major: 6 })
+        const r = await fetch(url, { ...init, signal: AbortSignal.timeout(90_000) })
+        const bytes = Buffer.from(await r.arrayBuffer())
+        let parsed = null
+        try { parsed = JSON.parse(bytes.toString('utf8')) } catch {}
+        return { ok: r.ok, status: r.status, body: parsed, bytes }
+      }
+      const staff126 = (method, p, body) => ghost126(ENV126.GHOST6_STAFF_ACCESS_TOKEN, method, p, body)
+      const themes126 = async () => {
+        const r = await staff126('GET', 'themes/').catch(() => null)
+        return r?.ok && Array.isArray(r.body?.themes) ? r.body.themes.map((t) => ({ name: t.name, active: t.active === true })) : null
+      }
+      const named126 = (ts) => (ts ?? []).filter((t) => t.name === NAME126 || t.name.startsWith(`${NAME126}-`)).map((t) => `${t.name}${t.active ? '*' : ''}`).sort()
+      const routesFile126 = async () => {
+        const r = await staff126('GET', RU126.ROUTES_PATH).catch(() => null)
+        return r?.ok ? r.bytes : null
+      }
+      const heldAtT1_126 = async () => {
+        const records = (await call('/rest/v1', `/sites?url=eq.${encodeURIComponent(URL126)}&select=id`)).body
+        if (!Array.isArray(records)) return null
+        if (records.length === 0) return []
+        const held = (await call('/rest/v1', `/project_site_bindings?site_id=in.(${records.map((r) => r.id).join(',')})&or=(theme_name.eq.${NAME126},theme_name.like.${NAME126}-*)&select=theme_name`)).body
+        return Array.isArray(held) ? held.map((b) => b.theme_name).sort() : null
+      }
+      const storage126 = { apikey: SECRET, Authorization: `Bearer ${SECRET}` }
+      const listed126 = (bucket, prefix) => fetch(`${SB}/storage/v1/object/list/${bucket}`, { method: 'POST', headers: { ...storage126, 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix, limit: 100, offset: 0 }) })
+        .then((r) => r.json()).then((l) => (Array.isArray(l) ? l.filter((o) => typeof o?.name === 'string' && o.id !== null) : [])).catch(() => [])
+      const removeObject126 = (bucket, key) => fetch(`${SB}/storage/v1/object/${bucket}/${key}`, { method: 'DELETE', headers: storage126 }).then((r) => r.status).catch(() => 0)
+      const text126 = (b) => (b === undefined ? null : Buffer.from(b).toString('utf8'))
+
+      const usersBefore126 = (await users())?.length ?? null
+      const projectsBefore126 = await projectCount()
+      const accounts126 = []
+      let prev126 = null
+      let start126 = []
+      let routesBefore126 = null
+      let planted126 = false
+      const ctxs126 = []
+      const csp126 = []
+
+      const JOB126 = 'id,stage,error,site_id,stage_timings,started_at,updated_at'
+      const exportJobs126 = async (acc) => (await call('/rest/v1', `/deploy_jobs?project_id=eq.${acc.project}&site_id=is.null&select=${JOB126}&order=started_at.desc`)).body ?? []
+      const exportsRows126 = async (acc) => (await call('/rest/v1', `/exports?project_id=eq.${acc.project}&select=version,artifact_path,created_at&order=created_at.asc`)).body ?? []
+      const setting126 = async (acc) => (await call('/rest/v1', `/custom_settings?project_id=eq.${acc.project}&key=eq.show_the_button&select=id,key,frozen_at`)).body?.[0] ?? null
+      const siteRow126 = async (acc) => (await call('/rest/v1', `/sites?id=eq.${acc.site}&select=id,disconnected_at,capability,capability_source`)).body?.[0] ?? null
+      const jobsSince126 = async (acc, since) => (await call('/rest/v1', `/deploy_jobs?user_id=eq.${acc.id}&started_at=gte.${encodeURIComponent(since)}&select=id`)).body ?? []
+      const atRest126 = (js) => (js ?? []).every((j) => !['queued', 'compiling', 'checking'].includes(j.stage))
+      const context126 = async (email) => {
+        const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 }, acceptDownloads: true }))
+        ctxs126.push(ctx)
+        await recorder(ctx, csp126)
+        const pg = steady(await ctx.newPage())
+        pg.on('pageerror', (e) => note('pageerror 126', scrub126(String(e))))
+        await pg.goto(await magic(email), { waitUntil: 'load' })
+        return pg
+      }
+      /** a NEW account (recorded for the finally first), T1 connected through the wizard, "Export test" seeded and linked (its slug read
+       *  back), and Latest Post's Primary action promoted as "Show the button" with the service key */
+      const account126 = async (email) => {
+        const made = await admin('/admin/users', { method: 'POST', body: JSON.stringify({ email, email_confirm: true }) })
+        const id = made.status === 200 ? made.body.id ?? null : null
+        if (!UUID.test(id ?? '')) throw new Error(`step 126: the account ${email} was not made`)
+        const acc = { email, id, site: null, project: null, pg: null, orphan: null }
+        accounts126.push(acc)
+        const pg = await context126(email)
+        acc.pg = pg
+        await pg.goto(at('/sites/connect?step=keys'), { waitUntil: 'load' })
+        await pg.locator('#s2b-api-url').fill(ENV126.GHOST6_URL)
+        await pg.locator('#s2b-admin-key').fill(ENV126.GHOST6_ADMIN_API_KEY)
+        await pg.locator('#s2b-content-key').fill(ENV126.GHOST6_CONTENT_API_KEY)
+        await pg.locator('form:has(#s2b-api-url) button[type="submit"]').click()
+        await pg.waitForURL((u) => !u.pathname.endsWith('/sites/connect'), { timeout: 60000 })
+        const use = pg.getByRole('button', { name: PR126.BRAND_COPY.use, exact: true })
+        if (await use.waitFor({ state: 'visible', timeout: 20000 }).then(() => true, () => false)) await use.click()
+        const linked = await until126(async () => (await call('/rest/v1', `/projects?user_id=eq.${id}&select=id,linked_site_id`)).body ?? [], (ps) => ps.some((p) => p.linked_site_id !== null), 45000)
+        acc.site = linked.find((p) => p.linked_site_id !== null)?.linked_site_id ?? null
+        if (acc.site === null) throw new Error(`step 126: T1 did not connect for ${email}`)
+        for (const p of linked) await call('/rest/v1', `/projects?id=eq.${p.id}`, { method: 'DELETE' })
+        const seeded = await seed({ email, name: 'Export test' })
+        if (!seeded?.created) throw new Error(`step 126: "Export test" was not seeded for ${email}`)
+        acc.project = seeded.id
+        await call('/rest/v1', `/projects?id=eq.${acc.project}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: acc.site }) })
+        const row = (await call('/rest/v1', `/projects?id=eq.${acc.project}&select=slug,linked_site_id`)).body?.[0] ?? null
+        if (row?.linked_site_id !== acc.site || row.slug !== SLUG126) throw new Error(`step 126: "Export test" was not linked with the slug ${SLUG126} (${row?.slug ?? 'unread'})`)
+        // the promoted setting, as the Promote form writes it (step 104's row), through the app's own rule for what is placed
+        const docs = Object.fromEntries(((await call('/rest/v1', `/project_templates?project_id=eq.${acc.project}&select=template_key,doc`)).body ?? []).map((r) => [r.template_key, RT126.parseDoc(r.doc, r.template_key)]))
+        const entries = Object.fromEntries(Object.values(docs).flatMap((d) => d.instances.map((i) => [i.designId, pilot126(i.designId)])))
+        const toggle = TS126.placedControls(docs, entries).find((c) => c.controlKey === 'primary-action')
+        if (!toggle) throw new Error('step 126: the seeded docs offer no Primary action to promote')
+        const promoted = await call('/rest/v1', '/custom_settings', { method: 'POST', body: JSON.stringify({
+          project_id: acc.project, user_id: id, key: 'show_the_button', label: 'Show the button', type: 'boolean', options: null, default_value: toggle.setting.default_value,
+          group_name: 'homepage', visibility_condition: null, bound_to: { kind: 'control', instanceId: toggle.instanceId, controlKey: 'primary-action' }, position: 1,
+        }) })
+        if (promoted.status !== 201) throw new Error(`step 126: the promoted setting was not planted (HTTP ${promoted.status})`)
+        return acc
+      }
+      const handBack126 = (pg, project) => pg?.evaluate(async (url) => {
+        const id = sessionStorage.getItem('inflozo-lock-session')
+        if (!id) return
+        await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ intent: 'release', session: id }) })
+      }, `${PREFIX}/projects/${project}/lock`).catch(() => {})
+      const editor126 = async (pg, project, query = '') => {
+        await pg.goto(at(`/projects/${project}${query}`), { waitUntil: 'load' })
+        await pg.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 }).catch(() => {})
+      }
+      const win126 = (pg) => pg.evaluate(() => {
+        const d = document.getElementById('export-window')
+        return d === null ? null : { at: d.getAttribute('data-export-window'), refused: document.getElementById('export-refused')?.textContent ?? null, ready: document.querySelector('[data-export-ready]')?.textContent ?? null }
+      }).catch(() => null)
+      const closeWin126 = async (pg) => {
+        if (!(await pg.locator('dialog#export-window').count().catch(() => 0))) return
+        await pg.keyboard.press('Escape').catch(() => {})
+        await pg.waitForFunction(() => !document.getElementById('export-window'), null, { timeout: 15000 }).catch(() => {})
+      }
+      /** an export run to its end from an open window: its job (the newest with no site after `was`) and the file the browser saved */
+      const ran126 = async (acc, was, saved) => {
+        const job = await until126(async () => (await exportJobs126(acc)).find((j) => !was.includes(j.id)) ?? null, (j) => j !== null && ['done', 'failed'].includes(j.stage), 330000)
+        const file = await saved
+        const bytes = file === null ? null : fs.readFileSync(await file.path())
+        await until126(() => win126(acc.pg), (w) => w?.at === 'done' || w?.at === 'failed', 30000)
+        return { job, name: file?.suggestedFilename() ?? null, bytes, win: await win126(acc.pg) }
+      }
+      /** Ship it ▾ → Download theme, then the run to its end */
+      const export126 = async (acc) => {
+        const was = (await exportJobs126(acc)).map((j) => j.id)
+        await editor126(acc.pg, acc.project)
+        const saved = acc.pg.waitForEvent('download', { timeout: 330000 }).catch(() => null)
+        await acc.pg.locator('#editor-ship + button').click()
+        await acc.pg.locator('#editor-ship-menu li', { hasText: EW126.row }).locator('button').first().click()
+        const out = await ran126(acc, was, saved)
+        await closeWin126(acc.pg)
+        return out
+      }
+      const minutesOf126 = (said, words) => Array.from({ length: 60 }, (_, i) => i + 1).find((n) => words(n) === said) ?? null
+      /** a disconnected site's original theme, its row planted with NO object (the file purged meanwhile) */
+      const orphan126 = async (acc) => {
+        const site = (await call('/rest/v1', '/sites', { method: 'POST', body: JSON.stringify({ user_id: acc.id, url: `https://gone-${stamp}.example`, title: 'gone.example', disconnected_at: new Date().toISOString() }) })).body?.[0]?.id ?? null
+        if (!UUID.test(site ?? '')) throw new Error('step 126: the disconnected site was not planted')
+        const row = (await call('/rest/v1', '/site_snapshots', { method: 'POST', body: JSON.stringify({ user_id: acc.id, site_id: site, storage_path: `site-snapshots/${acc.id}/${site}/${stamp}-casper.zip`, theme_name: 'casper', bytes: 22 }) })).body?.[0] ?? null
+        if (!UUID.test(row?.id ?? '')) throw new Error('step 126: the orphan original theme was not planted')
+        acc.orphan = { site, id: row.id }
+        return acc.orphan
+      }
+
+      try {
+        start126 = (await themes126()) ?? []
+        prev126 = start126.find((t) => t.active)?.name ?? null
+        routesBefore126 = await routesFile126()
+        const held0 = await heldAtT1_126()
+        check(`step 126 — T1's live theme read with the staff token at the start (${prev126 ?? 'unread'}), not an Inflozo theme, routes.yaml read, and no ${NAME126}* theme on T1 nor any binding of that name at its address`,
+          prev126 !== null && !/^inflozo-/.test(prev126) && routesBefore126 !== null && named126(start126).length === 0 && Array.isArray(held0) && held0.length === 0,
+          JSON.stringify({ themes: start126.map((t) => `${t.name}${t.active ? '*' : ''}`), held: held0 }))
+        if (prev126 === null || /^inflozo-/.test(prev126) || routesBefore126 === null) throw new Error('step 126: T1 is not on its own theme — ask the owner before restoring it')
+        if (named126(start126).length !== 0 || !Array.isArray(held0) || held0.length !== 0) throw new Error(`step 126: ${NAME126} is already on T1 or held at its address — ask the owner`)
+
+        if (PLANT126) {
+          // ── the PLANT for the owner's test: nothing exported, everything left in place ──
+          const all = (await users()) ?? []
+          if (all.some((u) => (u.email ?? '').toLowerCase() === PLANT126)) throw new Error(`step 126: the plant's address ${PLANT126} already has an account — it must be new`)
+          const E = await account126(PLANT126)
+          await call('/rest/v1', `/sites?id=eq.${E.site}`, { method: 'PATCH', body: JSON.stringify({ capability: 'preview_only', capability_source: 'probe' }) })
+          const orphan = await orphan126(E)
+          const site = await siteRow126(E)
+          planted126 = check(`step 126 (plant) — ${PLANT126}: "Export test" linked to T1 with "Show the button" promoted and unfrozen, T1's card marked Preview-only, an orphan original theme with no file, and no export yet`,
+            site?.capability === 'preview_only' && (await setting126(E))?.frozen_at === null && (await exportsRows126(E)).length === 0 && UUID.test(orphan.id), JSON.stringify({ capability: site?.capability }))
+          await handBack126(E.pg, E.project)
+          if (planted126) {
+            plantKept.users += 1
+            plantKept.projects += 1
+            note('step 126 — PLANT for the owner\'s test', `${PLANT126} · "Export test" <export-test-id> = ${E.project} · ${at(`/projects/${E.project}`)} · settings ${at(`/projects/${E.project}/settings`)} · Sites ${at('/sites')} (orphan row ${orphan.id})`)
+          }
+        } else {
+          const E = await account126(`editor-harness-ex-${stamp}@inflozo.com`)
+
+          // ── 126a — the export twice through the UI ──
+          const first = await export126(E)
+          const frozen1 = await setting126(E)
+          const renamed = await call('/rest/v1', `/custom_settings?id=eq.${frozen1?.id}`, { method: 'PATCH', body: JSON.stringify({ key: 'show_the_button_renamed' }) })
+          check(`step 126a — the first export: a deploy_jobs row with site_id null ended done, the browser saved ${NAME126}.zip, "Show the button" frozen, and its key change refused 42501`,
+            first.job?.stage === 'done' && first.job.site_id === null && first.name === `${NAME126}.zip` && typeof frozen1?.frozen_at === 'string' && renamed.body?.code === '42501',
+            JSON.stringify({ stage: first.job?.stage, error: first.job?.error, site: first.job?.site_id, name: first.name, frozen: frozen1?.frozen_at ?? null, rename: [renamed.status, renamed.body?.code] }))
+          // DW-336: the home doc's first layer renamed `Con` before the second export
+          const home = (await call('/rest/v1', `/project_templates?project_id=eq.${E.project}&template_key=eq.home&select=doc`)).body?.[0]?.doc ?? null
+          if (home === null || !Array.isArray(home.instances) || home.instances.length === 0) throw new Error('step 126: the home doc was not read')
+          const conDoc = { ...home, instances: home.instances.map((i, n) => (n === 0 ? { ...i, layerName: 'Con' } : i)) }
+          await call('/rest/v1', `/project_templates?project_id=eq.${E.project}&template_key=eq.home`, { method: 'PATCH', body: JSON.stringify({ doc: conDoc }) })
+          const second = await export126(E)
+          const rows = await exportsRows126(E)
+          const jobs = (await exportJobs126(E)).filter((j) => j.stage === 'done')
+          check(`step 126a — the second export: two deploy_jobs rows with site_id null, both done; two exports rows reading 1.0.0 and 2.0.0, both naming ${E.project}/export.zip`,
+            second.job?.stage === 'done' && jobs.length === 2 && JSON.stringify(rows.map((r) => r.version)) === JSON.stringify(['1.0.0', '2.0.0']) && rows.every((r) => r.artifact_path === `${E.project}/export.zip`),
+            JSON.stringify({ jobs: jobs.length, rows }))
+          const zip = second.bytes === null ? null : ZIP126.unzipTheme(new Uint8Array(second.bytes))
+          const pkg = zip === null ? null : JSON.parse(text126(zip['package.json']) ?? '{}')
+          const readme = zip === null ? '' : text126(zip['README.md']) ?? ''
+          const headings = readme.split('\n').filter((l) => /^## /.test(l))
+          const wantHeadings = ['## Scripts', '## Styles', '## Install', '## Style Pack and fonts', '## Changing this theme']
+          const partials = zip === null ? [] : Object.keys(zip).filter((p) => p.startsWith('partials/sections/'))
+          check(`step 126a — the second zip, as the browser saved it: package.json named ${NAME126} at 2.0.0, locales/en.json, README's sections in order with "Export test" named, and the layer renamed Con at …/con-2.hbs (DW-336), never con.hbs`,
+            pkg?.name === NAME126 && pkg?.version === '2.0.0' && zip?.['locales/en.json'] !== undefined && JSON.stringify(headings.filter((h) => wantHeadings.includes(h))) === JSON.stringify(wantHeadings) &&
+            readme.includes('“Export test”') && partials.some((p) => /\/con-2\.hbs$/.test(p)) && !partials.some((p) => /\/con\.hbs$/.test(p)),
+            JSON.stringify({ name: pkg?.name, version: pkg?.version, en: zip?.['locales/en.json'] !== undefined, headings, con: partials.filter((p) => /\/con/.test(p)) }))
+
+          // ── 126b — Ghost takes it: uploaded to T1 with the Admin key, not activated, then deleted; the control refused 422 ──
+          if (zip !== null) {
+            const form = new FormData()
+            form.append('file', new Blob([second.bytes], { type: 'application/zip' }), `${NAME126}.zip`)
+            const up = await ghost126(ENV126.GHOST6_ADMIN_API_KEY, 'POST', 'themes/upload/', form)
+            const listed = await themes126()
+            const del = await staff126('DELETE', `themes/${encodeURIComponent(NAME126)}/`)
+            const after = await themes126()
+            const bare = { ...zip }
+            delete bare['package.json']
+            const ctl = new FormData()
+            ctl.append('file', new Blob([ZIP126.zipTheme(bare)], { type: 'application/zip' }), `${NAME126}.zip`)
+            const refused = await ghost126(ENV126.GHOST6_ADMIN_API_KEY, 'POST', 'themes/upload/', ctl)
+            const end = await themes126()
+            check(`step 126b — Ghost takes the export: POST themes/upload/ → 200 ${NAME126}, never activated (${prev126} live); DELETE → 204, gone; the control, the same zip with no package.json, refused 422`,
+              up.status === 200 && up.body?.themes?.[0]?.name === NAME126 && up.body.themes[0].active !== true && listed?.find((t) => t.active)?.name === prev126 &&
+              del.status === 204 && named126(after).length === 0 && refused.status === 422 && named126(end).length === 0 && end?.find((t) => t.active)?.name === prev126,
+              JSON.stringify({ up: [up.status, up.body?.themes?.[0]?.name ?? null], del: del.status, control: refused.status, t1: named126(end) }))
+          }
+
+          // ── 126c — B15 on the Sites page, and its Export theme zip ──
+          await call('/rest/v1', `/sites?id=eq.${E.site}`, { method: 'PATCH', body: JSON.stringify({ capability: 'preview_only', capability_source: 'probe' }) })
+          await handBack126(E.pg, E.project)
+          await E.pg.goto(at('/sites'), { waitUntil: 'load' })
+          const b15 = await E.pg.evaluate((site) => {
+            const button = document.getElementById(`export-zip-${site}`)
+            const ship = document.getElementById(`ship-blocked-${site}`)
+            return {
+              body: document.querySelector(`#preview-${site}`)?.closest('section')?.textContent ?? '',
+              exportZip: button === null ? null : { text: button.textContent, href: button.getAttribute('href'), bg: getComputedStyle(button).backgroundColor },
+              ship: ship === null ? null : { text: ship.textContent, disabled: ship.getAttribute('aria-disabled'), described: ship.getAttribute('aria-describedby') },
+              reason: document.getElementById(`ship-blocked-${site}-reason`)?.textContent ?? null,
+            }
+          }, E.site)
+          check(`step 126c — B15 on Sites as the frame draws it: the body's export sentence, Export theme zip in ink linking ${E.project}'s editor with the export asked, Re-check plan, and the greyed Ship it with "${PR126.PREVIEW_COPY.shipBlocked}" under it`,
+            b15.body.includes(PR126.PREVIEW_COPY.body) && b15.body.includes(PR126.PREVIEW_COPY.recheck) && b15.exportZip?.text === PR126.PREVIEW_COPY.exportZip && b15.exportZip.href === PR126.exportAsk(E.project) &&
+            b15.exportZip.bg === 'rgb(28, 27, 26)' && b15.ship?.disabled === 'true' && b15.ship.described === `ship-blocked-${E.site}-reason` && b15.reason === PR126.PREVIEW_COPY.shipBlocked,
+            JSON.stringify({ ...b15, body: b15.body.slice(0, 80) }))
+          const wasC = (await exportJobs126(E)).map((j) => j.id)
+          const savedC = E.pg.waitForEvent('download', { timeout: 330000 }).catch(() => null)
+          await E.pg.locator(`#export-zip-${E.site}`).click()
+          await E.pg.waitForURL((u) => u.pathname.endsWith(`/projects/${E.project}`), { timeout: 30000 })
+          const third = await ran126(E, wasC, savedC)
+          const addressC = new URL(E.pg.url())
+          await closeWin126(E.pg)
+          check('step 126c — Export theme zip opened the editor with the export asked: `?export` gone from the address, the window ran to done, the zip saved, and a third exports row',
+            !addressC.searchParams.has('export') && third.job?.stage === 'done' && third.name === `${NAME126}.zip` && (await exportsRows126(E)).length === 3,
+            JSON.stringify({ address: addressC.pathname + addressC.search, stage: third.job?.stage, name: third.name, rows: (await exportsRows126(E)).map((r) => r.version) }))
+
+          // ── 126d — S8a′ in the wizard, its Download theme opening the window ──
+          await editor126(E.pg, E.project)
+          await E.pg.locator('#editor-ship').click()
+          await until126(() => E.pg.evaluate(() => document.querySelector('dialog[data-deploy-wizard]')?.getAttribute('data-deploy-wizard') ?? null), (a) => a === 'destination', 20000)
+          const s8a = await E.pg.evaluate(() => ({
+            block: document.querySelector('[data-preview-only]')?.textContent ?? null,
+            run: document.getElementById('deploy-run') !== null,
+            plans: document.querySelector('[data-preview-only] a[target="_blank"]')?.getAttribute('href') ?? null,
+          }))
+          const wasD = (await exportJobs126(E)).map((j) => j.id)
+          const savedD = E.pg.waitForEvent('download', { timeout: 330000 }).catch(() => null)
+          await E.pg.locator('#deploy-export').click()
+          const fourth = await ran126(E, wasD, savedD)
+          const wizardGone = (await E.pg.locator('dialog[data-deploy-wizard]').count()) === 0
+          await closeWin126(E.pg)
+          check(`step 126d — S8a′: Destination's Preview-only block says "${DEP126.DEPLOY_WORDS.previewOnly.slice(0, 40)}…", offers Download theme and the plans link (${DEP126.GHOST_PLANS_HELP}), no Run checks; its Download theme closed the wizard and the export ran to done`,
+            (s8a.block ?? '').includes(DEP126.DEPLOY_WORDS.previewOnly) && (s8a.block ?? '').includes(EW126.row) && s8a.plans === DEP126.GHOST_PLANS_HELP && !s8a.run && wizardGone && fourth.job?.stage === 'done',
+            JSON.stringify({ run: s8a.run, plans: s8a.plans, wizardGone, stage: fourth.job?.stage }))
+
+          // ── 126e — a second session reading along: D8g in export words ──
+          {
+            await editor126(E.pg, E.project)
+            const reader = await context126(E.email)
+            await editor126(reader, E.project)
+            await reader.locator('#editor-ship + button').click()
+            await reader.locator('#editor-ship-menu li', { hasText: EW126.row }).locator('button').first().click()
+            const d8g = await until126(() => reader.evaluate(() => {
+              const t = document.getElementById('editor-export-takeover-title')
+              const d = t?.closest('dialog')
+              return d?.open ? { title: t.textContent, body: d.textContent, focused: document.activeElement?.textContent?.trim() ?? null } : null
+            }).catch(() => null), (v) => v !== null, 20000)
+            check(`step 126e — the reader's Download theme opens D8g in export words ("${LK126.LOCK_COPY.exportTitle}"), on Wait; no export started`,
+              d8g?.title === LK126.LOCK_COPY.exportTitle && (d8g.body ?? '').includes(LK126.LOCK_COPY.exportBody) && (d8g.body ?? '').includes(LK126.LOCK_COPY.exportConfirm) && d8g.focused === LK126.LOCK_COPY.wait &&
+              (await reader.locator('dialog#export-window').count()) === 0,
+              JSON.stringify({ title: d8g?.title ?? null, focused: d8g?.focused ?? null }))
+            await reader.keyboard.press('Escape').catch(() => {})
+            await reader.goto('about:blank').catch(() => {})
+          }
+
+          // ── 126g — a POST whose session holds no lock: 423, no row ──
+          {
+            const before = (await exportJobs126(E)).length
+            const stale = await E.pg.evaluate(async (url) => {
+              const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ session: 'walk-126-stale-session' }) })
+              return r.status
+            }, `${PREFIX}${DEP126.exportHref(E.project)}`).catch(() => 0)
+            const after = (await exportJobs126(E)).length
+            check('step 126g — an export POST with a session that holds no lock is refused 423, and no job is inserted', stale === 423 && after === before, JSON.stringify({ status: stale, jobs: `${before} → ${after}` }))
+          }
+
+          // ── 126h — DW-405 on Sites: an original theme whose file is gone ──
+          {
+            const orphan = await orphan126(E)
+            await handBack126(E.pg, E.project)
+            await E.pg.goto(at('/sites'), { waitUntil: 'load' })
+            const url = E.pg.url()
+            const id = `${OR126.SECTION_ID}-${orphan.id}-download`
+            await E.pg.locator(`#${id}`).click()
+            const said = await until126(() => E.pg.locator(`#${id}-said`).textContent().catch(() => null), (t) => typeof t === 'string' && t !== '', 20000)
+            check(`step 126h — the orphan's Download with its file gone says "${SG126.SIGNED_WORDS.gone}" under it, the Sites page unmoved`,
+              said === SG126.SIGNED_WORDS.gone && E.pg.url() === url, JSON.stringify({ said, url: E.pg.url() === url }))
+          }
+
+          // ── 126f — LAST: R-295's budget, the export's sentence ──
+          {
+            const since = new Date(Date.now() - 3_600_000 + 60_000).toISOString()
+            const have = (await jobsSince126(E, since)).length
+            const fill = Math.max(0, DEP126.ACCOUNT_COMPILES_PER_HOUR - have)
+            const plantJobs = fill === 0 ? { status: 201 } : await call('/rest/v1', '/deploy_jobs', { method: 'POST', body: JSON.stringify(Array.from({ length: fill }, () => ({ project_id: E.project, user_id: E.id, site_id: E.site, stage: 'cancelled' }))) })
+            const sixty = (await jobsSince126(E, since)).length
+            await editor126(E.pg, E.project)
+            const budgetAt = new Date().toISOString()
+            await E.pg.locator('#editor-ship + button').click()
+            await E.pg.locator('#editor-ship-menu li', { hasText: EW126.row }).locator('button').first().click()
+            const refused = (await until126(() => win126(E.pg), (w) => typeof w?.refused === 'string' && w.refused !== '', 30000))?.refused ?? null
+            const minutes = minutesOf126(refused, (n) => EW126.budget(n))
+            const after = (await jobsSince126(E, since)).length
+            check(`step 126f — at ${DEP126.ACCOUNT_COMPILES_PER_HOUR} jobs in the hour (${have} real, ${fill} planted, HTTP ${plantJobs.status}) the export says the budget in its own words (minutes 1–60), and no job is inserted`,
+              sixty === DEP126.ACCOUNT_COMPILES_PER_HOUR && minutes !== null && after === sixty, JSON.stringify({ sixty, said: refused, minutes, after }))
+            note('step 126f — Vercel\'s log line, for the main session', `"deploy: compile budget reached" with user ${E.id}, from the export POST at ${budgetAt} (npx vercel@latest logs, the memory's way)`)
+            await closeWin126(E.pg)
+          }
+        }
+      } catch (e) {
+        check('step 126 — the step ran to its end', false, scrub126(String(e?.message ?? e).split('\n')[0]))
+      } finally {
+        for (const acc of accounts126) if (acc.project !== null) await handBack126(acc.pg, acc.project)
+        for (const acc of accounts126) if (acc.project !== null) await until126(() => exportJobs126(acc), atRest126, 330000).catch(() => {})
+        if (prev126 !== null) {
+          try {
+            const now = await themes126()
+            if (now !== null && now.find((t) => t.active)?.name !== prev126) await staff126('PUT', `themes/${encodeURIComponent(prev126)}/activate/`)
+            const startNames = new Set(start126.map((t) => t.name))
+            for (const t of (await themes126()) ?? []) if (/^inflozo-/.test(t.name) && !startNames.has(t.name)) await staff126('DELETE', `themes/${encodeURIComponent(t.name)}/`)
+            const routesNow = await routesFile126()
+            if (routesBefore126 !== null && routesNow !== null && Buffer.compare(routesBefore126, routesNow) !== 0) await staff126('POST', RU126.ROUTES_PATH, RU126.routesForm(routesBefore126.toString('utf8')))
+            const after = await themes126()
+            const routesAfter = await routesFile126()
+            check(`step 126 — finally: T1 put back with the staff token — ${prev126} active, every inflozo- theme the run uploaded deleted, routes.yaml byte for byte as at the start, read back`,
+              after !== null && after.find((t) => t.active)?.name === prev126 && after.every((t) => !/^inflozo-/.test(t.name) || startNames.has(t.name)) &&
+              routesAfter !== null && routesBefore126 !== null && Buffer.compare(routesAfter, routesBefore126) === 0,
+              JSON.stringify({ themes: (after ?? []).map((t) => `${t.name}${t.active ? '*' : ''}`), routes: `${routesBefore126?.length ?? 'unread'} → ${routesAfter?.length ?? 'unread'} bytes` }))
+          } catch (e) {
+            check('step 126 — finally: T1 put back', false, scrub126(String(e?.message ?? e).split('\n')[0]))
+          }
+        }
+        if (planted126) {
+          note('step 126 — the plant is left in place', `${PLANT126} keeps T1 (marked Preview-only), "Export test", its promoted setting and the orphan row; the owner's test ends with the account deleted on his go`)
+        } else {
+          const gone = []
+          for (const acc of accounts126) {
+            try {
+              const prefixes = acc.project === null ? [] : [acc.project, `${acc.project}/live`]
+              for (const prefix of prefixes) for (const o of await listed126('deploy-artifacts', prefix)) await removeObject126('deploy-artifacts', `${prefix}/${o.name}`)
+              if (acc.site !== null) for (const o of await listed126('site-snapshots', `${acc.id}/${acc.site}`)) await removeObject126('site-snapshots', `${acc.id}/${acc.site}/${o.name}`)
+              const row = acc.site === null ? null : await siteRow126(acc).catch(() => null)
+              if (row !== null && row.disconnected_at === null) {
+                const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
+                try {
+                  const pd = steady(await ctx.newPage())
+                  await pd.goto(await magic(acc.email), { waitUntil: 'load' })
+                  await pd.goto(at(`/sites/disconnect?site=${acc.site}`), { waitUntil: 'load' })
+                  await pd.locator('form').getByRole('button', { name: CR126.DISCONNECT.menu, exact: true }).first().click()
+                  await until126(() => siteRow126(acc), (r) => r?.disconnected_at != null, 30000)
+                } catch {} finally {
+                  await ctx.close().catch(() => {})
+                }
+              }
+              const left = (await Promise.all(prefixes.map((p) => listed126('deploy-artifacts', p)))).flat()
+              const disconnected = acc.site === null || (await siteRow126(acc).catch(() => null))?.disconnected_at != null
+              const del = await admin(`/admin/users/${acc.id}`, { method: 'DELETE', body: '{}' })
+              gone.push({ left: left.length, disconnected, del: del.status })
+            } catch (e) {
+              const del = await admin(`/admin/users/${acc.id}`, { method: 'DELETE', body: '{}' }).catch(() => ({ status: 0 }))
+              gone.push({ left: -1, disconnected: false, del: del.status, error: scrub126(String(e?.message ?? e).split('\n')[0]) })
+            }
+          }
+          const usersAfter = (await users())?.length ?? null
+          const projectsAfter = await projectCount()
+          if (accounts126.length) {
+            check(`step 126 — finally: no object left under the account's prefixes (the export's one object included), T1 disconnected, the account deleted (its jobs, exports, settings and planted rows with it), users and projects counted back`,
+              gone.every((g) => g.left === 0 && g.disconnected && g.del === 200) && usersBefore126 !== null && usersAfter === usersBefore126 && projectsBefore126 !== null && projectsAfter === projectsBefore126,
+              `${JSON.stringify(gone)}, users ${usersBefore126} → ${usersAfter}, projects ${projectsBefore126} → ${projectsAfter}`)
+          }
+        }
+        for (const ctx of ctxs126) await ctx.close().catch(() => {})
+      }
+      check('step 126 — the step\'s contexts recorded zero CSP violations', csp126.length === 0, JSON.stringify(csp126.slice(0, 3)))
     }
 
     // ── step 9 — the skeleton streams first ──

@@ -2,10 +2,10 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { Banner } from '@/components/kit/banner'
-import { buttonClasses } from '@/components/kit/button'
 import { ring } from '@/components/kit/greyed'
 import { ExternalLink, Refresh } from '@/components/kit/icons'
 import { ConnectSiteButton } from '@/components/shell/shell'
+import { SignedDownload } from '@/components/signed-download'
 import {
   checkedLabel,
   connectMessage,
@@ -161,9 +161,10 @@ type Row = NoticeSite & {
 
 /**
  * STORY 7.20b — "Original themes from disconnected sites": `/restore`'s rows (Story 2.5), word for word in
- * their classes, with the caption "{site} · deleted on {date}". Drawn only when there is a row. Download is
- * a LINK to the route's 303 (AD-13's signed URL), as on `/restore`: no work starts in the app, so no busy
- * label is owed (R-98).
+ * their classes, with the caption "{site} · deleted on {date}". Drawn only when there is a row. STORY 7.26
+ * (DW-405): Download is the one signed Download (`SignedDownload`, at the row's 32): still a link to the
+ * route's 303 (AD-13) with scripts off or a modified press, and a plain press followed in place — "Preparing…"
+ * while it is out, and a 404 (the file purged meanwhile), a 502 or the sign-in said under it, the page staying.
  */
 function OriginalThemes({
   rows,
@@ -186,13 +187,14 @@ function OriginalThemes({
             <span className="truncate text-helper-caption text-ink-soft">{ORPHANS.row(row.site, row.date)}</span>
           </span>
           {/* Described by its row, so a screen reader's list of links tells one Download from the next (WCAG 2.4.4). */}
-          <a
+          <SignedDownload
+            id={`${SECTION_ID}-${row.id}-download`}
             href={`/snapshots/${row.id}/download`}
-            aria-describedby={`${SECTION_ID}-${row.id}`}
-            className={`ml-auto shrink-0 ${buttonClasses('secondary', 32)}`}
-          >
-            {ORPHANS.download}
-          </a>
+            label={ORPHANS.download}
+            size={32}
+            describedBy={`${SECTION_ID}-${row.id}`}
+            className="ml-auto shrink-0 items-end"
+          />
         </div>
       ))}
     </section>
@@ -261,7 +263,8 @@ export default async function Sites({
         .order('created_at', { ascending: false }),
       // FR-B5: at most one site per project, so the card's "n projects" is a tally of this column.
       // Since Story 3.9 that is a partial unique index and not only a sentence (DW-69).
-      supabase.from('projects').select('linked_site_id'),
+      // Story 7.26 — and each project's id and name, for B15's Export theme zip (the tally is unchanged)
+      supabase.from('projects').select('id, name, linked_site_id'),
       /* STORY 3.7 — THE OPEN `site_health` ROWS, ONE READ FOR THE WHOLE LIST. `sites.health` says
          WHETHER a connection needs attention; this says WHY and SINCE WHEN, which is the record of
          the transition AD-25 requires this epic to write anyway — so the card's caption costs one
@@ -295,6 +298,11 @@ export default async function Sites({
   // (review, 2026-09-08). Logged without the id: logs carry no user content.
   if (projectsError) console.error('sites: projects read failed', { code: projectsError.code })
   const linked = projectCounts(projects ?? [])
+  /** Story 7.26 — the projects that link each site, by name: B15's Export theme zip (one link, or a menu of several) */
+  const linking = new Map<string, { id: string; name: string }[]>()
+  for (const p of (projects ?? []) as { id: string; name: string; linked_site_id: string | null }[]) {
+    if (p.linked_site_id) linking.set(p.linked_site_id, [...(linking.get(p.linked_site_id) ?? []), { id: p.id, name: p.name }])
+  }
   /* A FAILED NOTICE READ IS NOT A SITE WITH NO REASON, and it is not a reason to fail the list
      either: `sites.health` is the state and it came out of its own read, so an unhealthy card still
      wears its badge and simply says nothing under it. Logged without an id — logs carry no user
@@ -598,7 +606,7 @@ export default async function Sites({
                         {movedOld === 'live' ? KEYS.movedStillConnected : KEYS.movedDomains(ORPHAN_SNAPSHOT_DAYS)}
                       </Banner>
                     ) : null}
-                    <SiteNotices site={site} recheckFailed={recheckedId === site.id} />
+                    <SiteNotices site={site} recheckFailed={recheckedId === site.id} projects={linking.get(site.id) ?? []} />
                   </article>
                 )
               })}

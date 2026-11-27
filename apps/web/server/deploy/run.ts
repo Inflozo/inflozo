@@ -4,8 +4,8 @@ import { DEFAULT_LANGUAGE, isRtl } from '@inflozo/library/languages'
 import type { Finding, QualityVerdict, Verdict } from '@inflozo/theme-compiler/gate'
 import type { RoutesOutcome } from '../../lib/routes-upload.ts'
 import {
-  ACCOUNT_COMPILES_PER_HOUR, activateAnswer, CANCELLABLE, deployError, DEPLOY_WORDS, HOUR_MS, isMoving, isSnapshotError, overLimit, refusalWords, ROUTES_REASONS, SITE_DEPLOYS_PER_HOUR, snapshotError, thrownCode, uploadAnswer, versionNumber,
-  type DeployCode, type DeployError, type DeployStatus, type DeployView, type Locked, type Mode, type PreflightFacts, type RoutesEnding, type SnapshotTiming, type Stage, type Timings,
+  ACCOUNT_COMPILES_PER_HOUR, activateAnswer, CANCELLABLE, deployError, DEPLOY_WORDS, EXPORT_WORDS, exportPath, HOUR_MS, isMoving, isSnapshotError, overLimit, refusalWords, ROUTES_REASONS, SITE_DEPLOYS_PER_HOUR, snapshotError, thrownCode, uploadAnswer, versionNumber,
+  type DeployCode, type DeployError, type DeployStatus, type DeployView, type ExportView, type Locked, type Mode, type PreflightFacts, type RoutesEnding, type SnapshotTiming, type Stage, type Timings,
 } from '../../lib/deploy.ts'
 import { hostOf } from '../../lib/connect-rule.ts'
 import { compareManifests, contentManifest, labelOf, LIVE_COPY_MAX_BYTES, liveCopyPath, liveManifest, type ContentManifest, type DriftCause, type DriftFile, type DriftRecord, type ManifestEntry } from '../../lib/drift.ts'
@@ -34,13 +34,20 @@ import { unzipTheme } from './zip.ts'
  * Re-activate run everything after their first read inside it, so two writers to one Ghost serialize and each decision's read —
  * the link, the free name, the live project — is taken under it (`underLock`). Pre-flight takes none. The two counts are doors
  * the route asks before it hands work on: `siteLimit` at Ship it, `compileBudget` at Run checks.
+ *
+ * STORY 7.26 — THE EXPORT (FR-J12): `startExport` inserts a job with `site_id` null; `exportTheme` runs it `queued → compiling →
+ * checking → done` (or `failed`) on the project as it stands — the same refusals before the compile as Pre-flight, the compile,
+ * BOTH pinned gscans (the theme declares Ghost ≥ 5 and an exported zip goes to whichever Ghost the customer picks) and the quality
+ * gate — then the zip at the project's one export object (`exportPath`, replaced), the `exports` row and the freeze; `exportView`
+ * is its poll. FR-Q2's stamp (`freeze`) is Ship it's too, at the upload Ghost accepts, best effort there. No lock, no Cancel.
  */
 
 export type JobRow = {
   id: string
   project_id: string
   user_id: string
-  site_id: string
+  /** null on Story 7.26's export alone (the schema's "null for FR-J12 export") — every deploy door reads a `SiteJob` */
+  site_id: string | null
   stage: Stage
   cancel_requested: boolean
   deploy_id: string | null
@@ -71,6 +78,9 @@ export type DeployRow = {
   content_manifest?: ContentManifest | null
 }
 
+/** A deploy's row: its site always set. `firstRead` hands the deploy doors no other, so an export's row is never shipped */
+type SiteJob = JobRow & { site_id: string }
+
 /** The chokepoint's `call()`, as much of it as a deploy uses — handed in (`RoutesCall`'s shape). */
 export type DeployCall = (args: {
   siteId: string
@@ -82,8 +92,9 @@ export type DeployCall = (args: {
 }) => Promise<{ ok: boolean; status: number; body: unknown; text: string }>
 
 export type DeployIo = {
-  /** the project's compile input and every row it read, owned (`compileInputOf`); null when not the caller's */
-  read: (a: { projectId: string; siteId: string; userId: string }) => Promise<ProjectRead | null>
+  /** the project's compile input and every row it read, owned (`compileInputOf`); null when not the caller's. Story 7.26: `siteId`
+   *  null is the export's read — no site, deploys, binding or held names; `site` null */
+  read: (a: { projectId: string; siteId: string | null; userId: string }) => Promise<ProjectRead | null>
   compile: (input: CompileInput) => CompiledTheme
   gscan: (files: CompiledTheme['files'], major: 5 | 6) => Promise<Verdict>
   quality: (files: CompiledTheme['files'], input: CompileInput) => QualityVerdict
@@ -91,7 +102,7 @@ export type DeployIo = {
   /** `inputsHash(reads, release)` */
   hash: (reads: unknown) => Promise<string>
   jobs: {
-    insert: (row: { project_id: string; user_id: string; site_id: string }) => Promise<JobRow>
+    insert: (row: { project_id: string; user_id: string; site_id: string | null }) => Promise<JobRow>
     read: (id: string, userId: string) => Promise<JobRow | null>
     update: (id: string, userId: string, patch: Partial<JobRow>) => Promise<void>
     /** the same write, only while the row still stands at `from` — true when this call moved it. One Ship it (or one
@@ -175,6 +186,14 @@ export type DeployIo = {
      *  deleted while its project stands (a deleted project's jobs go with it: DW-409), and Story 7.26's export rides one */
     started: (a: { userId: string; since: string }) => Promise<string[]>
   }
+  /** STORY 7.26 — one row per finished export (FR-J12: project, version, timestamp), `user_id`-scoped */
+  exports: {
+    insert: (row: { project_id: string; user_id: string; version: string; artifact_path: string }) => Promise<void>
+  }
+  /** STORY 7.26 — FR-Q2's stamp: `custom_settings.frozen_at = at` on this project's rows whose `key` is among `keys` (the shipped
+   *  `config.custom`'s) and whose `frozen_at` is still null — idempotent, and the guard trigger allows null → a time once. Written at
+   *  export and at Ship it's accepted upload */
+  freeze: (a: { projectId: string; userId: string; keys: readonly string[]; at: string }) => Promise<void>
   now: () => Date
   log: (message: string, fields: Record<string, string | number | undefined>) => void
 }
@@ -198,7 +217,7 @@ class Ours extends Error {
 const isInfra = (e: unknown): boolean => e instanceof Infra || (e as { infra?: unknown } | null)?.infra === true
 
 /** The project read, with AD-20's rule applied to its infrastructure throws only. */
-async function readProject(io: DeployIo, at: { projectId: string; siteId: string; userId: string }): Promise<ProjectRead | null> {
+async function readProject(io: DeployIo, at: { projectId: string; siteId: string | null; userId: string }): Promise<ProjectRead | null> {
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       return await io.read(at)
@@ -291,8 +310,8 @@ function clock(io: DeployIo, job: JobRow) {
       if (moved) current = stage
       return moved
     },
-    /** a stage's own detail — the zip's size on compiling */
-    note(stage: Exclude<Stage, 'snapshotting'>, patch: { bytes?: number }) {
+    /** a stage's own detail — the zip's size on compiling; since Story 7.26 the export's distinct warning codes on checking */
+    note(stage: Exclude<Stage, 'snapshotting'>, patch: { bytes?: number; warnings?: number }) {
       const t = timings[stage]
       if (t !== undefined) timings[stage] = { ...t, ...patch }
     },
@@ -361,8 +380,8 @@ async function cancelled(io: DeployIo, job: JobRow, c: Clock): Promise<boolean> 
 }
 
 const errorCtx = (read: ProjectRead | null, siteId: string, detail?: string) => ({
-  host: read === null ? '' : hostOf(read.site.url),
-  ...(read?.site.ghost_version ? { version: read.site.ghost_version } : {}),
+  host: read?.site == null ? '' : hostOf(read.site.url),
+  ...(read?.site?.ghost_version ? { version: read.site.ghost_version } : {}),
   siteId,
   ...(detail === undefined ? {} : { detail }),
 })
@@ -382,18 +401,27 @@ export function preflightFacts(theme: Pick<CompiledTheme, 'files' | 'noindex'>):
   }
 }
 
+/** PRE-FLIGHT'S REFUSALS BEFORE ANY COMPILE, shared by Story 7.26's export: a right-to-left language ships only once acknowledged
+ *  (FR-Q6 — Translations' Understood writes `rtl_ack_at`), and the routing (S9b's line, R-261's way out). Null: compile. */
+function beforeCompile(read: ProjectRead, projectId: string, ctx: { host: string }): DeployError | null {
+  if (isRtl(read.input.language ?? DEFAULT_LANGUAGE) && read.rtlAckAt === null) return deployError('rtl_unacknowledged', { ...ctx, projectId })
+  if (read.routing.unreadable) return deployError('routes_unreadable', ctx)
+  const problem = read.routing.problems[0]
+  return problem === undefined ? null : { code: 'routes_invalid', message: DEPLOY_WORDS.routesLine(problem.line, problem.message) }
+}
+
 /**
  * COMPILING AND CHECKING, on the job's row — Pre-flight's whole work, and Ship it's again when the artefact is stale. Ends
  * with the artefact stored on the `deploys` row and the answer `clean`, or the job failed or cancelled.
  */
-async function compileAndCheck(io: DeployIo, job: JobRow, c: Clock, existing: DeployRow | null): Promise<{ kind: 'clean'; deploy: DeployRow; read: ProjectRead } | { kind: 'stopped' }> {
+async function compileAndCheck(io: DeployIo, job: SiteJob, c: Clock, existing: DeployRow | null): Promise<{ kind: 'clean'; deploy: DeployRow; read: ProjectRead } | { kind: 'stopped' }> {
   const at = { projectId: job.project_id, siteId: job.site_id, userId: job.user_id }
   // Story 7.21 — a re-made artefact starts with no drift verdict: the last check's record leaves with this first edge, so a
   // re-make that stops before the drift step never shows the old one beside its own findings (Story 7.21's Review)
   await c.drift(null)
   await c.enter('compiling')
   const read = await readProject(io, at)
-  if (read === null) {
+  if (read === null || read.site === null) {
     await fail(c, { code: 'site_not_found', message: DEPLOY_WORDS.noSite })
     return { kind: 'stopped' }
   }
@@ -402,20 +430,11 @@ async function compileAndCheck(io: DeployIo, job: JobRow, c: Clock, existing: De
     await fail(c, deployError('ghost_version_unsupported', errorCtx(read, job.site_id)))
     return { kind: 'stopped' }
   }
-  // Story 7.18b (FR-Q6): a right-to-left language ships only once acknowledged — a server verdict, before any compile, so
-  // nothing is stored (Translations' Understood writes `rtl_ack_at`)
-  if (isRtl(read.input.language ?? DEFAULT_LANGUAGE) && read.rtlAckAt === null) {
-    await fail(c, deployError('rtl_unacknowledged', { ...errorCtx(read, job.site_id), projectId: job.project_id }))
-    return { kind: 'stopped' }
-  }
-  // the routing, before any compile (S9b's line, R-261's way out)
-  if (read.routing.unreadable) {
-    await fail(c, deployError('routes_unreadable', errorCtx(read, job.site_id)))
-    return { kind: 'stopped' }
-  }
-  const problem = read.routing.problems[0]
-  if (problem !== undefined) {
-    await fail(c, { code: 'routes_invalid', message: DEPLOY_WORDS.routesLine(problem.line, problem.message) })
+  // Story 7.18b (FR-Q6) and the routing — server verdicts before any compile, so nothing is stored (`beforeCompile`, Story 7.26's
+  // one helper, which the export asks too)
+  const refused = beforeCompile(read, job.project_id, errorCtx(read, job.site_id))
+  if (refused !== null) {
+    await fail(c, refused)
     return { kind: 'stopped' }
   }
 
@@ -469,7 +488,7 @@ async function compileAndCheck(io: DeployIo, job: JobRow, c: Clock, existing: De
   const path = `${job.project_id}/${deploy.id}.zip`
   await twice(io, 'artifact put', () => io.artifacts.put(path, zip))
   const content_manifest = await contentManifest(theme.files, theme.sections)
-  const patch = { gscan, quality, preflight, artifact_path: path, artifact_bytes: zip.length, inputs_sha256: hash, settings_snapshot: read.site.site_settings ?? null, content_manifest }
+  const patch = { gscan, quality, preflight, artifact_path: path, artifact_bytes: zip.length, inputs_sha256: hash, settings_snapshot: read.site?.site_settings ?? null, content_manifest }
   await twice(io, 'deploy stored', () => io.deploys.update(deploy!.id, job.user_id, patch))
   deploy = { ...deploy, ...patch }
   // Story 7.21 — the drift check, still inside `checking`; a Cancel pressed while it read is honoured after it, as today
@@ -492,7 +511,7 @@ async function compileAndCheck(io: DeployIo, job: JobRow, c: Clock, existing: De
  *   - THE READ AND THE COMPARISON are `compareLive`, below — one function since Story 7.23a, shared with the check before a Roll
  *     back (R-291); this step keeps the baseline, the layers' current names, the live copy's key and the record's edges.
  */
-async function driftStep(io: DeployIo, job: JobRow, c: Clock, read: ProjectRead, own: string): Promise<void> {
+async function driftStep(io: DeployIo, job: SiteJob, c: Clock, read: ProjectRead, own: string): Promise<void> {
   // no record yet: `compileAndCheck` cleared the last check's at its first edge
   if (read.bound === null) return
   const baseline = await twice(io, 'drift baseline', () => io.deploys.baseline({ projectId: job.project_id, siteId: job.site_id, userId: job.user_id, except: own }))
@@ -626,15 +645,17 @@ export async function preflight(a: { jobId: string; userId: string }, io: Deploy
 }
 
 /** A door's first read, under AD-20's rule; null when the row is not there or cannot be read twice (a stalled row is
- *  `view`'s to fail, since nothing can be written to a row that cannot be read). */
-const firstRead = (io: DeployIo, a: { jobId: string; userId: string }): Promise<JobRow | null> =>
-  twice(io, 'job read', () => io.jobs.read(a.jobId, a.userId)).catch(() => null)
+ *  `view`'s to fail, since nothing can be written to a row that cannot be read) — and, since Story 7.26, null for an export's row,
+ *  which has no site and is never a deploy door's */
+const firstRead = (io: DeployIo, a: { jobId: string; userId: string }): Promise<SiteJob | null> =>
+  twice(io, 'job read', () => io.jobs.read(a.jobId, a.userId)).then((j) => (j === null || j.site_id === null ? null : (j as SiteJob))).catch(() => null)
 
-/** The last word on a throw no stage answered: infrastructure, said as ours. Never throws itself. */
-async function failInfra(io: DeployIo, job: JobRow, c: Clock, e: unknown): Promise<void> {
+/** The last word on a throw no stage answered: infrastructure, said as ours — Story 7.26's export hands its own sentence
+ *  (`EXPORT_WORDS.infrastructure`). Never throws itself. */
+async function failInfra(io: DeployIo, job: JobRow, c: Clock, e: unknown, infra: DeployError = deployError('deploy_infrastructure', { host: '' })): Promise<void> {
   io.log('deploy: the job failed', { job: job.id, stage: c.stage, infra: isInfra(e) ? 1 : 0 })
   // a stored doc the editor's door refuses is our fault in the compile's words; anything else is infrastructure
-  const error = e instanceof Ours ? refusalWords(e.thrown, { projectId: job.project_id }) : deployError('deploy_infrastructure', { host: '' })
+  const error = e instanceof Ours ? refusalWords(e.thrown, { projectId: job.project_id }) : infra
   try {
     await c.end('failed', { error })
   } catch {
@@ -753,6 +774,11 @@ async function shipHeld(a: { jobId: string; userId: string; mode: Mode; withoutS
         return void (await fail(c, deployError('deploy_running', ctx)))
       }
     }
+    // Story 7.26 (FR-Q2): the shipped setting keys freeze at the upload Ghost accepts, before either ending. Ghost already holds the
+    // theme, so this is bookkeeping: a stamp that fails twice is logged, never the job's failure
+    const shipped = Object.keys(deploy.preflight?.custom ?? {})
+    await twice(io, 'freeze', () => io.freeze({ projectId: job.project_id, userId: job.user_id, keys: shipped, at: io.now().toISOString() }))
+      .catch(() => io.log('deploy: the setting keys were not frozen', { job: job.id }))
     // clearing a refused plan's mark is bookkeeping: Ghost has the theme, so a failed write is logged, never the job's failure
     await twice(io, 'capability', () => io.capability({ siteId: job.site_id, userId: job.user_id, refused: false })).catch(() => io.log('deploy: the capability mark was not cleared', { job: job.id }))
     // R-264 (b): Ghost's answer says the upload is ALREADY live — it replaced the active theme's files under the frozen name
@@ -774,7 +800,7 @@ async function shipHeld(a: { jobId: string; userId: string; mode: Mode; withoutS
  *  moved it is anything more written: Ship it's deploy `failed` (`failDeploy`); Re-activate's stays `uploaded`. A row another
  *  invocation moved meanwhile (a double press) is left alone. Nothing is sent to Ghost, and the wait is never retried. The work
  *  never throws (each door's own `failInfra` answers), so a throw here is the lock's own. */
-async function underLock(io: DeployIo, job: JobRow, work: () => Promise<void>, failDeploy: boolean): Promise<void> {
+async function underLock(io: DeployIo, job: SiteJob, work: () => Promise<void>, failDeploy: boolean): Promise<void> {
   let error: DeployError
   try {
     if ((await io.lock(job.site_id, work)).held) return
@@ -814,18 +840,19 @@ export async function siteLimit(a: { siteId: string; userId: string }, io: Pick<
  *  or none), at `ACCOUNT_COMPILES_PER_HOUR` refused with the minutes until the next — and a log line naming the account, so a runaway
  *  is visible. Null: the Pre-flight may start. Billing hygiene, never capacity, and one budget on every plan. A read that fails
  *  throws (the route's 502). Story 7.26's export asks it first, on its own job row. */
-export async function compileBudget(a: { userId: string }, io: Pick<DeployIo, 'limits' | 'now' | 'log'>): Promise<DeployError | null> {
+export async function compileBudget(a: { userId: string; for?: 'export' }, io: Pick<DeployIo, 'limits' | 'now' | 'log'>): Promise<DeployError | null> {
   const now = io.now()
-  const minutes = overLimit(await io.limits.started({ ...a, since: hourBefore(now) }), ACCOUNT_COMPILES_PER_HOUR, now)
+  const minutes = overLimit(await io.limits.started({ userId: a.userId, since: hourBefore(now) }), ACCOUNT_COMPILES_PER_HOUR, now)
   if (minutes === null) return null
   io.log('deploy: compile budget reached', { user: a.userId, minutes })
-  return deployError('compile_budget', { host: '', minutes })
+  // Story 7.26: the same code and count, said in the export's words when the export asks (the log line unchanged)
+  return deployError('compile_budget', { host: '', minutes, ...(a.for === 'export' ? { for: 'export' as const } : {}) })
 }
 
 /** DW-374 (R-269) — THE PROJECT'S LINK, READ NOW: null while it is still the job's site, else the refusal naming the site the
  *  project now ships to and the one it left (or the one alone, when it is linked to none). Ship it and Re-activate both ask it,
  *  so a theme only ever goes to — or goes live on — the project's current site. */
-async function linkRefusal(io: DeployIo, job: JobRow): Promise<DeployError | null> {
+async function linkRefusal(io: DeployIo, job: SiteJob): Promise<DeployError | null> {
   const link = await twice(io, 'link', () => io.link({ projectId: job.project_id, siteId: job.site_id, userId: job.user_id }))
   if (link.now !== null && link.now.id === job.site_id) return null
   const was = hostOf(link.was ?? '')
@@ -869,7 +896,7 @@ async function activateHeld(a: { jobId: string; userId: string }, io: DeployIo):
 
 /** `activating`: `PUT themes/{name}/activate/`, then — only once it is live — the routes step (R-254). A refusal that is not
  *  the key's or the plan's leaves the theme uploaded and not live (D2e), and nothing is called failed. */
-async function activateStep(io: DeployIo, job: JobRow, c: Clock, deploy: DeployRow, read: ProjectRead): Promise<void> {
+async function activateStep(io: DeployIo, job: SiteJob, c: Clock, deploy: DeployRow, read: ProjectRead): Promise<void> {
   await c.enter('activating', { error: null })
   const ctx = errorCtx(read, job.site_id)
   const answer = await sendActivate(io, { siteId: job.site_id, themeName: deploy.theme_name, route: ROUTE })
@@ -890,7 +917,7 @@ async function activateStep(io: DeployIo, job: JobRow, c: Clock, deploy: DeployR
 /** THE DEPLOY IS LIVE — by its activation, or by Ghost's own answer to the upload (R-264 b): live, activated, stamped; every
  *  other deploy live on the site demoted; then the routes step (R-254) and `done`. `first` is the upload's own answer — the row's
  *  first write as a version, so the prune follows it (Story 7.22); an activation of an `uploaded` row was pruned for at its upload */
-async function goLive(io: DeployIo, job: JobRow, c: Clock, deploy: DeployRow, first = false): Promise<void> {
+async function goLive(io: DeployIo, job: SiteJob, c: Clock, deploy: DeployRow, first = false): Promise<void> {
   const now = io.now().toISOString()
   // Story 7.23a (DW-400): live by the upload's own answer is an upload Ghost accepted now; an activation of an `uploaded` row keeps
   // the time its upload was accepted
@@ -925,7 +952,7 @@ export async function uploadOnlyRefused(a: { projectId: string; siteId: string; 
 
 /** Story 7.17's step after activation (R-254): its outcome as the ending says it. A chokepoint error that escapes
  *  `offerRoutes` is retried once, then "failed"; the theme stays live either way. */
-async function routesStep(io: DeployIo, job: JobRow): Promise<RoutesEnding> {
+async function routesStep(io: DeployIo, job: SiteJob): Promise<RoutesEnding> {
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       return endingOfRoutes(await io.offerRoutes({ projectId: job.project_id, siteId: job.site_id, userId: job.user_id, route: ROUTE }))
@@ -978,8 +1005,10 @@ export async function cancel(a: { jobId: string; userId: string }, io: DeployIo)
 /** THE WIZARD'S READ: the job, its deploy, the version the site serves from this project, and B16's file. A moving job
  *  untouched past AD-11's budget belonged to a killed invocation and is failed here, so no wizard polls for ever. */
 export async function view(a: { jobId: string; userId: string }, io: DeployIo): Promise<DeployView | null> {
-  let job = await io.jobs.read(a.jobId, a.userId)
-  if (job === null) return null
+  const read = await io.jobs.read(a.jobId, a.userId)
+  // Story 7.26: an export's row is `exportView`'s, never a deploy's
+  if (read === null || read.site_id === null) return null
+  let job = read as SiteJob
   if (isMoving(job.stage) && io.now().getTime() - Date.parse(job.updated_at) > STALLED_MS) {
     const error = deployError('deploy_infrastructure', { host: '' })
     await io.jobs.update(job.id, job.user_id, { stage: 'failed', error })
@@ -999,4 +1028,82 @@ export async function view(a: { jobId: string; userId: string }, io: DeployIo): 
     previousCustom: await io.deploys.previousCustom({ projectId: job.project_id, siteId: job.site_id, userId: job.user_id, ...(deploy === null ? {} : { except: deploy.id }) }),
     routesFile: routes?.kind === 'fallback' ? await io.routesFile({ siteId: job.site_id, userId: job.user_id }) : null,
   }
+}
+
+// ── STORY 7.26: the export ──────────────────────────────────────────────────────────────────────────────────────────
+
+/** The export's infrastructure sentence, as AD-24's envelope */
+const exportInfra = (): DeployError => ({ code: 'deploy_infrastructure', message: EXPORT_WORDS.infrastructure })
+
+/** AN EXPORT'S ROW, before any work (AD-20: the row exists from `queued`): `site_id` null — the schema's "null for FR-J12 export" —
+ *  so R-295's budget, which counts every row by `user_id`, counts it (the route asks `compileBudget` first). Nothing is abandoned
+ *  or flagged: an export rests nowhere, and two at once both run (the later zip replaces the earlier). */
+export function startExport(a: { projectId: string; userId: string }, io: DeployIo): Promise<JobRow> {
+  return twice(io, 'job insert', () => io.jobs.insert({ project_id: a.projectId, user_id: a.userId, site_id: null }))
+}
+
+/** THE EXPORT (FR-J12): `queued → compiling → checking → done`, or `failed`, every edge through `clock`.
+ *   1. the project read with no site (`inflozo-{slug}`, 1 + the highest export's version);
+ *   2. Pre-flight's refusals before any compile (`beforeCompile`: RTL, the routing), with its sentences and actions;
+ *   3. the compile — a refusal said by `refusalWords` — then the zip, its size noted;
+ *   4. `checking`: gscan 4.49.7 (Ghost 5) and 6.4.2 (Ghost 6) and the quality gate. Anything blocked fails the job with the first
+ *      error finding, gscan 6's before 5's, then the quality gate's (Pre-flight's rule) — and nothing is stored, recorded or
+ *      frozen. The distinct warning codes are noted on `checking` (the window's "0 errors · N warnings");
+ *   5. the zip put at the project's one export object (`replace`), the `exports` row, the freeze over the shipped `config.custom`
+ *      keys, then `done`.
+ *  A throw no step answers fails it with the export's own sentence (`failInfra`). No lock: nothing is sent to any Ghost. */
+export async function exportTheme(a: { jobId: string; userId: string }, io: DeployIo): Promise<void> {
+  const job = await twice(io, 'job read', () => io.jobs.read(a.jobId, a.userId)).catch(() => null)
+  if (job === null || job.site_id !== null || job.stage !== 'queued') return
+  const c = clock(io, job)
+  try {
+    await c.enter('compiling')
+    const read = await readProject(io, { projectId: job.project_id, siteId: null, userId: job.user_id })
+    // the project is no longer the caller's (deleted meanwhile): nothing to build, said as ours
+    if (read === null) return void (await fail(c, exportInfra()))
+    const refused = beforeCompile(read, job.project_id, { host: '' })
+    if (refused !== null) return void (await fail(c, refused))
+    let theme: CompiledTheme
+    try {
+      theme = io.compile(read.input)
+    } catch (e) {
+      const error = refusalWords(e, { projectId: job.project_id, names: read.names, english: io.english })
+      if (error.code === 'compile_failed') io.log('export: the compile threw', { project: job.project_id })
+      return void (await fail(c, error))
+    }
+    const zip = io.zip(theme.files)
+    c.note('compiling', { bytes: zip.length })
+
+    await c.enter('checking')
+    const five = await io.gscan(theme.files, 5)
+    const six = await io.gscan(theme.files, 6)
+    const quality = io.quality(theme.files, read.input)
+    c.note('checking', { warnings: new Set([...six.warnings, ...five.warnings, ...quality.warnings].map((f) => f.code)).size })
+    if (five.blocked || six.blocked || quality.blocked) {
+      const first = six.errors[0] ?? five.errors[0] ?? quality.errors[0] ?? { code: 'theme_check_failed', message: DEPLOY_WORDS.fixErrors(1), level: 'error', fatal: false, refs: [] }
+      return void (await fail(c, first as Finding))
+    }
+
+    const path = exportPath(job.project_id)
+    await twice(io, 'export put', () => io.artifacts.put(path, zip, { replace: true }))
+    await twice(io, 'export row', () => io.exports.insert({ project_id: job.project_id, user_id: job.user_id, version: read.input.theme.version, artifact_path: path }))
+    const keys = Object.keys(preflightFacts(theme).custom ?? {})
+    await twice(io, 'freeze', () => io.freeze({ projectId: job.project_id, userId: job.user_id, keys, at: io.now().toISOString() }))
+    await c.end('done', { error: null })
+  } catch (e) {
+    await failInfra(io, job, c, e, exportInfra())
+  }
+}
+
+/** THE EXPORT WINDOW'S READ: the job, when it is this user's export (`site_id` null), else null. A moving job untouched past
+ *  `STALLED_MS` belonged to a killed invocation and is failed here, as `view()` fails one, in the export's own words. */
+export async function exportView(a: { jobId: string; userId: string }, io: DeployIo): Promise<ExportView | null> {
+  let job = await io.jobs.read(a.jobId, a.userId)
+  if (job === null || job.site_id !== null) return null
+  if (isMoving(job.stage) && io.now().getTime() - Date.parse(job.updated_at) > STALLED_MS) {
+    const error = exportInfra()
+    await io.jobs.update(job.id, job.user_id, { stage: 'failed', error })
+    job = { ...job, stage: 'failed', error }
+  }
+  return { job: { id: job.id, stage: job.stage, error: job.error, timings: job.stage_timings ?? {} } }
 }

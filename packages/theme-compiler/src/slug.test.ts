@@ -3,7 +3,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { LAYER_NAME_MAX } from '@inflozo/section-runtime'
-import { claim, partialSlug, sectionSlug, SLUG_MAX } from './slug.ts'
+import { claim, partialSlug, RESERVED, sectionSlug, SLUG_MAX } from './slug.ts'
 
 test('partialSlug: NFKD, marks dropped, lowercase, spaces and underscores to hyphens, the rest dropped, hyphens collapsed and trimmed', () => {
   const cases: [string, string][] = [
@@ -62,4 +62,19 @@ test('deterministic: the same name slugs alike every time, with no locale in the
   assert.equal(partialSlug('TITLE'), 'title')
   assert.equal(partialSlug('İstanbul'), 'istanbul')
   assert.equal(partialSlug('Hero'), partialSlug('Hero'))
+})
+
+test('DW-336 (Story 7.26): a Windows device name is never free — con, prn, aux, nul, com0–com9 and lpt0–lpt9 each take -2, in any case and after NFKD; console, com10 and lpt are untouched', () => {
+  const devices = ['con', 'prn', 'aux', 'nul', ...[...'0123456789'].flatMap((d) => [`com${d}`, `lpt${d}`])]
+  assert.deepEqual([...RESERVED].sort(), [...devices].sort())
+  for (const name of devices) {
+    assert.equal(claim(new Set(), name), `${name}-2`, name)
+    assert.equal(claim(new Set(), partialSlug(name.toUpperCase())), `${name}-2`, `${name} in capitals`)
+  }
+  // a layer named `Con` slugs to `con` and is claimed as `con-2`; a second `Con` in the same directory takes `con-3`
+  const taken = new Set<string>()
+  assert.deepEqual([claim(taken, partialSlug('Con')), claim(taken, partialSlug('CON'))], ['con-2', 'con-3'])
+  // NFKD folds a superscript digit before the rule sees it
+  assert.equal(claim(new Set(), partialSlug('COM¹')), 'com1-2')
+  for (const name of ['console', 'com10', 'lpt', 'connect', 'aux-1', 'nul2']) assert.equal(claim(new Set(), name), name, name)
 })

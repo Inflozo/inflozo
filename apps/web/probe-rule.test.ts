@@ -204,15 +204,17 @@ test('the flag off is the production seed: a Ghost(Pro) site is judged by nothin
 
 // ── B15's copy, and the two rules that bind it.
 
-test('B15 says Publisher or higher, never Creator, and promises no control that does not exist', () => {
+test('B15 says Publisher or higher, never Creator — and, since Story 7.26 (DW-60), offers the export the frame draws: the body promises a theme zip, Export theme zip is its control, and the greyed Ship it says why', () => {
   const words = JSON.stringify([PREVIEW_COPY, PLAN_COPY])
   assert.match(PREVIEW_COPY.clears[0], /Publisher or higher/)
   // EXPERIENCE.md:628 — the A9 correction of 2026-09-04. "Creator" is the wording it replaced.
   assert.doesNotMatch(words, /Creator/i)
   assert.match(PREVIEW_COPY.clears[1], /self-hosted/)
-  // UX-DR3: Export theme zip and Ship it are absent until E11 and E7, so the copy cannot offer
-  // either — the frame's body sentence did, and that half went with the button.
-  assert.doesNotMatch(words, /theme zip|Ship it|export/i)
+  // FLIPPED by Story 7.26 (DW-60): the export exists, so the frame's body sentence and its control are back
+  assert.equal(PREVIEW_COPY.body, 'Ghost restricts theme uploads on this plan, so we cannot deploy to this site. You can design and preview everything here, and export a theme zip whenever you want.')
+  assert.match(PREVIEW_COPY.body, /export a theme zip/)
+  assert.equal(PREVIEW_COPY.exportZip, 'Export theme zip')
+  assert.equal(PREVIEW_COPY.shipBlocked, "This site's plan doesn't accept custom themes, so Inflozo can't ship to it.")
   assert.equal(PREVIEW_COPY.chip, 'Preview-only')
   assert.equal(PREVIEW_COPY.recheck, 'Re-check plan')
 })

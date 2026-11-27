@@ -38,7 +38,7 @@ import { parseRoutesConfig, routesYaml } from '@inflozo/section-runtime/routes'
 import { OVERRIDE_WORDS } from '@inflozo/library/override'
 import { REFERENCE_PACK } from '@inflozo/section-runtime/reference'
 import {
-  checkChromeText, checkGhostMarkup, checkImportant, checkPageData, checkPaywallReached, checkSizes, checkTripleStashes, compileTheme, POST_ARTICLE, THEME_MARKER, THEME_MARKS, tidyLicence,
+  checkChromeText, checkGhostMarkup, checkImportant, checkPageData, checkPaywallReached, checkSizes, checkTripleStashes, compileTheme, POST_ARTICLE, README_MARK, THEME_MARKER, THEME_MARKS, tidyLicence,
 } from './compile.ts'
 import type { CompiledTheme, CompileInput, CompileSetting } from './compile.ts'
 import { REFUSAL, refusalOf, type RefusalKind } from './refusal.ts'
@@ -186,7 +186,7 @@ const GHOST_CARDS = {
 
 const THEME = { name: 'inflozo-field-notes', version: '1.4.0', description: 'Field Notes' }
 const input = (templates: Record<string, ProjectDoc>, over: Partial<CompileInput> = {}): CompileInput => ({
-  templates, library: (id) => LIB[id], pack: REFERENCE_PACK, assets: {}, postsPerPage: 12, theme: THEME, pairing: 'D1', fonts: poolFonts, darkEnabled: true,
+  templates, library: (id) => LIB[id], pack: REFERENCE_PACK, assets: {}, postsPerPage: 12, theme: THEME, pairing: 'D1', packName: 'Paper', fonts: poolFonts, darkEnabled: true,
   modules: { core: CORE }, ghostCards: GHOST_CARDS, ...over,
 })
 /** The whole compile: every file — a font's bytes too — and AD-14's record. */
@@ -463,6 +463,8 @@ function unmarked(path: string, body: string): string {
     }
     return JSON.stringify(rest, null, 2)
   }
+  // Story 7.26 — README's one named mark: its words around the project's name removed, the name kept
+  if (path === 'README.md') return body.split('\n').map((l) => (l.startsWith(README_MARK.before) && l.endsWith(README_MARK.after) ? l.slice(README_MARK.before.length, l.length - README_MARK.after.length) : l)).join('\n')
   if (path !== 'package.json') return body
   const rest = JSON.parse(body) as Record<string, unknown>
   for (const mark of THEME_MARKS) delete rest[mark]
@@ -1228,6 +1230,12 @@ const CARDS_STYLESHEET = '    <link rel="stylesheet" href="{{asset "css/cards.cs
 /** README's Styles section with no card designed — the widths alone. */
 const STYLES_NONE = "## Styles\n\n- `assets/css/screen.css` is this theme's own stylesheet.\n- `assets/css/cards.css` is this theme's own styling for the cards Ghost's editor puts in posts: their wide and full widths.\n"
 const SCRIPTS_LINE = "- `assets/js/main.js` is this theme's own code: a small runtime and one function for each behaviour its sections use. It carries no third-party code."
+/** Story 7.26 (DW-346) — README's three sections between Styles and Routes, for `THEME` ("Field Notes") in Paper on D1, written
+ *  out: the install steps, the pack and its pairing's two families, and where the design lives */
+const MIDDLE = (project = 'Field Notes', pack = 'Paper', fonts = 'Fraunces for headings, Inter for text') =>
+  '## Install\n\n1. In Ghost Admin, open Settings → Theme → Change theme.\n2. Choose Upload theme and pick this zip.\n3. Activate it when Ghost asks, or later from the same list.\n\n' +
+  `## Style Pack and fonts\n\n- Style Pack: ${pack}\n- Fonts: ${fonts}\n\n` +
+  `## Changing this theme\n\nThis theme was built in Inflozo from the project “${project}”. To change it, edit that project in Inflozo and export it again, or ship it from there. Inflozo builds the theme from the project, so edits made to these files by hand are not read back.\n`
 
 test('(7.5) no module declared: main.js is bundle([]) — core alone; one defer tag after the stylesheet; README is the Scripts section alone; no cards.js, licence or cards tag', () => {
   const { files } = build(project(), { pageTwo: projectTwo() })
@@ -1235,7 +1243,7 @@ test('(7.5) no module declared: main.js is bundle([]) — core alone; one defer 
   assert.deepEqual(bundledNames(mainOf(files)), ['core'])
   assert.ok(headOf(files).includes(`${STYLESHEET}\n    ${MAIN_JS_TAG}\n`), headOf(files))
   assert.equal((files['default.hbs'] as string).split(MAIN_JS_TAG).length, 2, 'the tag once')
-  assert.equal(files['README.md'], `## Scripts\n\n${SCRIPTS_LINE}\n\n${STYLES_NONE}`)
+  assert.equal(files['README.md'], `## Scripts\n\n${SCRIPTS_LINE}\n\n${STYLES_NONE}\n${MIDDLE()}`)
   for (const p of ['assets/js/cards.js', 'LICENSE-ghost.txt']) assert.ok(!(p in files), p)
   assert.ok(!(files['default.hbs'] as string).includes('js/cards.js'))
   assert.deepEqual(Object.keys(files).filter((p) => p.startsWith('assets/js/')), ['assets/js/main.js'])
@@ -1315,7 +1323,7 @@ test('(7.5, 7.13) a designed card with no script: no cards.js, no cards tag, no 
   // a divider alone copies nothing of Ghost's: no licence of Ghost's, and README's widths line
   const divider = build({}, { cardDesigns: { divider: { glyph: 'on' } } }).files
   assert.ok(!('LICENSE-ghost.txt' in divider))
-  assert.ok((divider['README.md'] as string).endsWith(STYLES_NONE.replace('their wide and full widths.', 'their wide and full widths, and its card settings.')), divider['README.md'] as string)
+  assert.ok((divider['README.md'] as string).endsWith(`${STYLES_NONE.replace('their wide and full widths.', 'their wide and full widths, and its card settings.')}\n${MIDDLE()}`), divider['README.md'] as string)
 })
 
 test('(7.14) FR-Q9: the card designs emit the same whatever the sections — project()\'s sections, the same templates each an empty doc, or every section hidden carry the same cards.css, card_assets, link, cards.js and its tag; no partials/pagination.hbs (Story 10.112\'s); the control: no card designed differs', () => {
@@ -2090,7 +2098,7 @@ const ROUTES = (() => {
 const ROUTES_SECTION = (file: string) => `## Routes\n\nGhost keeps this theme's routing outside the theme, in \`routes.yaml\`. Upload the file below wherever Ghost Admin accepts a routes file; Ghost's guide is https://docs.ghost.org/themes/routing/.\n\n${file.replace(/\n$/, '').split('\n').map((l) => `    ${l}`).join('\n')}\n`
 
 test('(7.17) README\'s routes step: handed routes, ## Routes follows ## Styles — the sentence, then the file every line four spaces in; the control — null or omitted — is no section', () => {
-  const bare = `## Scripts\n\n${SCRIPTS_LINE}\n\n${STYLES_NONE}`
+  const bare = `## Scripts\n\n${SCRIPTS_LINE}\n\n${STYLES_NONE}\n${MIDDLE()}`
   assert.equal(build(project(), { pageTwo: projectTwo(), routes: ROUTES }).files['README.md'], `${bare}\n${ROUTES_SECTION(ROUTES)}`)
   assert.ok(ROUTES.includes('\n\n'), 'the file carries blank lines, and each is four spaces in too')
   assert.equal(build(project(), { pageTwo: projectTwo(), routes: null }).files['README.md'], bare)
@@ -2099,6 +2107,40 @@ test('(7.17) README\'s routes step: handed routes, ## Routes follows ## Styles �
   const withRoutes = compileProject({ routes: ROUTES })
   const without = compileProject()
   assert.deepEqual(Object.keys(withRoutes).filter((p) => p !== 'README.md' && withRoutes[p] !== without[p]), [])
+})
+
+test('(7.26, DW-346) README\'s three sections: after Styles and before Routes — Install\'s three steps, the Style Pack by its name with its pairing\'s two families, and where the design lives, naming the project', () => {
+  const readme = build(project(), { pageTwo: projectTwo(), routes: ROUTES }).files['README.md'] as string
+  const headings = readme.split('\n').filter((l) => /^## /.test(l))
+  assert.deepEqual(headings, ['## Scripts', '## Styles', '## Install', '## Style Pack and fonts', '## Changing this theme', '## Routes'])
+  assert.ok(readme.includes(`\n${MIDDLE()}\n## Routes\n`), readme)
+  // the pack's own name and ITS pairing's families, never Paper's by default: D12 in a pack named by the customer
+  const d12 = pairingFonts('D12')
+  const other = build({}, { pairing: 'D12', pack: { ...REFERENCE_PACK, fonts: d12 } as Pack, packName: 'Night Shift' }).files['README.md'] as string
+  const [heading, body] = [d12.heading.family, d12.body.family].map((f) => f.replace(/^'([^']+)'.*$/, '$1'))
+  assert.ok(other.includes(`- Style Pack: Night Shift\n- Fonts: ${heading} for headings, ${body} for text\n`), other)
+  assert.notEqual(heading, 'Fraunces', 'the control: D12 is not D1, so the families are read from the pairing handed in')
+})
+
+test('(7.26, DW-336) a layer named Con compiles to con-2.hbs and is invoked by that name — the compile\'s rule, so a deploy and an export of one project agree', () => {
+  const files = textOf(build({ 'home.hbs': docOf(at('a22/1', 'Con', { content: NEWS }), at('a17/1', 'Post grid', { isMainFeed: true })) }).files)
+  // Home's page 2 copies page 1 (R-127), so the section is hoisted to shared/ — the rule is the directory's, wherever it lands
+  const partials = Object.keys(files).filter((p) => p.startsWith('partials/sections/'))
+  const con = partials.filter((p) => /\/con(-\d+)?\.hbs$/.test(p))
+  assert.equal(con.length, 1, partials.join(' '))
+  assert.match(con[0] as string, /^partials\/sections\/[a-z]+\/con-2\.hbs$/)
+  const name = (con[0] as string).replace(/^partials\/|\.hbs$/g, '')
+  assert.ok(Object.values(files).some((body) => body.includes(`{{> "${name}"}}`)), `${name} is invoked`)
+})
+
+test('(7.26) each name on one line: a project or pack name carrying line breaks, tabs or runs of spaces is put on one line, so no name opens a heading or a list in README; a C0 character in the pack\'s name is refused (AD-36)', () => {
+  const readme = build({}, { theme: { ...THEME, description: 'Field\n## Owned\r\n  notes' }, packName: 'My\n- pack  name' }).files['README.md'] as string
+  assert.ok(readme.includes('- Style Pack: My - pack name\n'), readme)
+  assert.ok(readme.includes('from the project “Field ## Owned notes”. To change it'), readme)
+  assert.ok(!readme.split('\n').includes('## Owned'), 'no heading opened by a name')
+  // the description's control characters never reach UserText's markers: one space each
+  assert.ok(String(build({}, { theme: { ...THEME, description: 'a\u0003b\u0004c' } }).files['README.md']).includes('project “a b c”'))
+  assert.throws(() => build({}, { packName: 'Pa\u0003per' }), /the Style Pack's name carries a control character/)
 })
 
 test('(7.17, AD-36) README\'s routes sink: a hostile file stays inside the indented code block or is refused; the legitimate file comes back byte for byte once the indent is taken off', () => {
@@ -2111,7 +2153,7 @@ test('(7.17, AD-36) README\'s routes sink: a hostile file stays inside the inden
   assert.ok(readme.endsWith(ROUTES_SECTION(hostile)), readme)
   const block = blockOf(readme)
   assert.ok(block.length > 1 && block.every((l) => l.startsWith('    ')), JSON.stringify(block))
-  assert.equal(readme.split('\n').filter((l) => /^#/.test(l)).length, 3, 'three headings at the margin: Scripts, Styles, Routes')
+  assert.equal(readme.split('\n').filter((l) => /^#/.test(l)).length, 6, 'six headings at the margin: Scripts, Styles, Install, Style Pack and fonts, Changing this theme (Story 7.26), Routes')
   assert.ok(!/^ {0,3}(<|```|\[)/m.test(readme), 'no HTML block, fence or link reference at the margin')
   // refused: a line ending CommonMark reads but the indent never reached (\r, \r\n), and every other C0 character
   for (const bad of ['routes:\r## Owned\n', 'routes:\r\n## Owned\r\n', 'routes:\n\t## Owned\n', 'routes:\u000b\n', `routes:${String.fromCharCode(0)}\n`, `routes:${U0}0${U1}\n`]) {

@@ -507,12 +507,12 @@ function allowlistOf(limit: unknown): string[] | null {
  * B15's OWN WORDS (`B Missing Surfaces.dc.html:1188-1225`), so the harness and the tests read the
  * app's copy rather than retyping it — `connect-rule.ts`'s `SITES_EMPTY` is the pattern.
  *
- * TWO DEPARTURES FROM THE FRAME, both forced by UX-DR3 ("a control that could never act is
- * ABSENT, not greyed"): the frame's **Export theme zip** and its greyed **Ship it** are gone,
- * because no export path and no deploy path exists in any epic yet (E11 and E7), and the frame's
- * body sentence promised the export in its second half — a promise with no control behind it — so
- * that half goes with the button. The rest is the frame: the sky panel, the cause attributed to
- * GHOST rather than to us, the two named routes out, and Re-check plan.
+ * STORY 7.26 (DW-60) — THE FRAME AS DRAWN, ITS TWO DEPARTURES ENDED. B15 shipped without the frame's **Export theme zip** and its
+ * greyed **Ship it**, and with the body's export half cut, because neither path existed yet (UX-DR3). Both exist now, so the
+ * control row is the frame's: **Export theme zip** (ink primary — `exportZip`, the export's door for this card's linked project,
+ * which opens its editor with the export asked), Re-check plan, and **Ship it** greyed with its reason under it (P0-0,
+ * `shipBlocked`); the body promises the export again. The rest is the frame: the sky panel, the cause attributed to GHOST
+ * rather than to us, the two named routes out.
  *
  * "PUBLISHER OR HIGHER", never "Creator" (EXPERIENCE.md:628 — the A9 correction of 2026-09-04).
  * The tier the site is ON is not named: `customThemes` says what the plan forbids, not what it is
@@ -521,16 +521,34 @@ function allowlistOf(limit: unknown): string[] | null {
 export const PREVIEW_COPY = {
   chip: 'Preview-only',
   title: 'This site’s Ghost(Pro) plan does not allow custom themes',
-  body: 'Ghost restricts theme uploads on this plan, so we cannot deploy to this site. You can design and preview everything here.',
+  body: 'Ghost restricts theme uploads on this plan, so we cannot deploy to this site. You can design and preview everything here, and export a theme zip whenever you want.',
   clearsTitle: 'What clears this',
   clears: [
     'Upgrade the site to Ghost(Pro) Publisher or higher, then re-check here',
     'Or move the site to self-hosted Ghost, where theme upload is always available',
   ],
   recheck: 'Re-check plan',
+  /** STORY 7.26 — the frame's primary (`:1221`): the export, for the linked project (or a menu of them when several link the site) */
+  exportZip: 'Export theme zip',
+  /** STORY 7.26 — the reason under the frame's greyed Ship it (P0-0; the button says `DEPLOY_WORDS.ship`) */
+  shipBlocked: "This site's plan doesn't accept custom themes, so Inflozo can't ship to it.",
   /** The banner the card shows when a re-check could not reach Ghost. */
   recheckFailed: 'We couldn’t re-check that plan just now. Try again in a moment.',
 } as const
+
+/** STORY 7.26 — where B15's Export theme zip goes: the project's editor with the export asked (`?export`, which the editor reads once
+ *  on mount and removes) — the export needs the edit lock, which lives in the editor, so it is never built from the Sites page */
+export const exportAsk = (projectId: string): string => `/projects/${projectId}?export=1`
+
+/** STORY 7.26 — B15's EXPORT CONTROL for the projects that link the site (`projects.linked_site_id`): none → no control (nothing to
+ *  export from this card); one → a link to its editor with the export asked; several — Pro only, Free holds one project — one link
+ *  per project by its name, in a menu (`sites/export-menu.tsx`) */
+export type ExportDoor = { href: string } | { links: readonly { id: string; name: string; href: string }[] } | null
+export function exportDoor(projects: readonly { id: string; name: string }[]): ExportDoor {
+  if (projects.length === 0) return null
+  if (projects.length === 1) return { href: exportAsk((projects[0] as { id: string }).id) }
+  return { links: projects.map((p) => ({ id: p.id, name: p.name, href: exportAsk(p.id) })) }
+}
 
 /**
  * THE ONE-TIME NOTICE. It merely TELLS, so it keeps the Banner's sentence and one button rather

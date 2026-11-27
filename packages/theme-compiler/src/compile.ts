@@ -81,6 +81,10 @@
 // Story 7.17 (FR-I5, AD-36, DW-346) adds FR-I5's two lints — no bundled module reads a modifier key (`searchKeyRefusals`),
 // and `{{ghost_head}}` carries no argument (`checkGhostMarkup`'s rule 1) — and README's routes step: handed the project's
 // `routes.yaml` (`routes`), `README.md` carries it after its Styles, as an indented code block Markdown cannot leave.
+//
+// Story 7.26 (FR-J12, DW-346, DW-336) gives README the rest of §7.4's: after Styles and before Routes, how to install the zip,
+// the Style Pack (`packName`) and the pairing's two families, and where the design lives — each name put on one line. And no
+// section partial is ever named after a Windows device (`claim`'s `RESERVED`), so the zip extracts everywhere.
 
 import {
   bundle, byCategory, CARDS_JS_TAG, cardsCss, cardsCssVersion, cardsJs, cardsVersion, categoryOf, checkThemeJs, checkThemeScripts, COMPILE_TARGETS, compilesTo,
@@ -92,7 +96,7 @@ import type { CardDesigns, IconLookup, Listed, ModuleSources, SectionRegistryEnt
 import { iconDrawing, TABLER_LICENSE } from '@inflozo/library/icons'
 import { DEFAULT_LANGUAGE, languageRefusal, scriptOf, type Script } from '@inflozo/library/languages'
 import { overrideRefusal } from '@inflozo/library/override'
-import { pairingFaces, pairingFonts, POOL } from '@inflozo/library/packs'
+import { pairingFaces, pairingFonts, pairingOf, POOL } from '@inflozo/library/packs'
 import {
   BASE_CSS, BUILT_IN_PATH, bindingOf, bindingState, builtInSettings, checkChromeLiterals, checkSetting, customPath, darkHook, darkOverrideCss, designate,
   feedQuery, ghostEntry, ghostName, gscanInert, iconSvg, isDesigned, keyRefusal, markupProps, packTokensCss, pageTwoStack, renderTheme, resolveControls,
@@ -152,6 +156,9 @@ export type CompileInput = {
   cardDesigns?: unknown
   /** the pack's pairing (`D1` …, Appendix D §D.c) — `pack.fonts` must be its `pairingFonts` (Story 7.4) */
   pairing: string
+  /** STORY 7.26 (DW-346) — the pack's own name as the customer sees it (`enginePackOf`'s `name`: a preset's, or the project's own
+   *  record's), for README's "Style Pack and fonts". Put on one line; refused when it carries a C0 character (AD-36) */
+  packName: string
   /** a font-pool file's bytes, by its path under `packages/library/fonts/` (`files/<file>`, a family's `licenceFile`),
    *  read by the shell (AD-1): the core reads no file */
   fonts: (path: string) => Uint8Array
@@ -298,6 +305,24 @@ const ROUTES_C0 = /[\u0000-\u0009\u000b-\u001f]/
  *  package reads no app's word list. The file follows the sentence as an indented code block. */
 const ROUTES_HEADING = '## Routes'
 const ROUTES_SENTENCE = "Ghost keeps this theme's routing outside the theme, in `routes.yaml`. Upload the file below wherever Ghost Admin accepts a routes file; Ghost's guide is https://docs.ghost.org/themes/routing/."
+
+/** STORY 7.26 (DW-346) — README's three sections between Styles and Routes, in the spec's words (Design Notes, "Words"). The
+ *  Admin path is the one both majors' admin draws (read in 6.58.0's and 5.130.6's built admin at Dev, MEASUREMENTS §93). */
+const INSTALL = ['## Install', '', '1. In Ghost Admin, open Settings → Theme → Change theme.', '2. Choose Upload theme and pick this zip.', '3. Activate it when Ghost asks, or later from the same list.', '']
+/** A name on one line: every run of white space, and any control character, one space (a name never breaks README's Markdown) */
+const oneLine = (name: string): string => name.replace(/[\s\u0000-\u001f\u007f]+/g, ' ').trim()
+const packSection = (packName: string, pairing: string): string[] => {
+  const p = pairingOf(pairing)
+  return ['## Style Pack and fonts', '', `- Style Pack: ${oneLine(packName)}`, `- Fonts: ${oneLine(p.heading.family)} for headings, ${oneLine(p.body.family)} for text`, '']
+}
+/** STORY 7.26 — README's ONE SENTENCE THAT NAMES THE BUILDER, around the project's name: a NAMED MARK, as `package.json`'s three
+ *  (`THEME_MARKS`) and a locale file's `credit.*` are — the spec's own words (FR-J15 puts the name in README with the credit too).
+ *  The fingerprint scans remove `before` and `after` from that one line and still read the name between them. */
+export const README_MARK = {
+  before: 'This theme was built in Inflozo from the project “',
+  after: '”. To change it, edit that project in Inflozo and export it again, or ship it from there. Inflozo builds the theme from the project, so edits made to these files by hand are not read back.',
+} as const
+const changingSection = (description: string): string[] => ['## Changing this theme', '', `${README_MARK.before}${oneLine(description)}${README_MARK.after}`, '']
 
 // ── package.json (Story 7.2, FR-J2) ──────────────────────────────────────────────────────────────────────────────────
 
@@ -947,6 +972,8 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   noC0('a string', Object.values(input.strings ?? {}))
   noC0('an asset URL', Object.values(input.assets))
   noC0('the routes file', input.routes == null ? [] : [input.routes], ROUTES_C0)
+  // Story 7.26 — the pack's name reaches README (a customer may name an own pack)
+  noC0("the Style Pack's name", [input.packName])
   // Story 7.10 — the settings, judged before anything renders, over every stored doc: each page 1, then each page 2
   const storedDocs = [
     ...Object.keys(input.templates).sort(byCode).map((f) => input.templates[f] as ProjectDoc),
@@ -1277,6 +1304,10 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
       ? `- \`assets/css/cards.css\` is this theme's own styling for the cards Ghost's editor puts in posts: their wide and full widths${ownSettings ? ', and its card settings' : ''}.`
       : `- \`assets/css/cards.css\` styles the cards Ghost's editor puts in posts. Its block from the comment naming Ghost to the comment "This theme's card settings" is Ghost's own stylesheet for these cards: ${copied.join(' · ')}, copied unchanged from Ghost ${sheetVersion} under the MIT licence in \`LICENSE-ghost.txt\`. The rest of the file is this theme's own: the cards' widths and its card settings. \`package.json\`'s \`card_assets\` switches off Ghost's own copy of these cards' styles.`,
     '',
+    // Story 7.26 (DW-346): install, the pack and its fonts, and where the design lives — after Styles, before Routes
+    ...INSTALL,
+    ...packSection(input.packName, input.pairing),
+    ...changingSection(input.theme.description),
     // Story 7.17 (DW-346, AD-36): the routes file, every line four spaces in — an indented code block, which no line of it
     // can leave, since none starts nearer the margin and `ROUTES_C0` let no line ending but `\n` through
     ...(input.routes == null ? [] : [ROUTES_HEADING, '', ROUTES_SENTENCE, '', ...input.routes.replace(/\n$/, '').split('\n').map((l) => `    ${l}`), '']),

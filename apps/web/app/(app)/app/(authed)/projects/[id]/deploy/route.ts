@@ -86,7 +86,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
 
   const row = await DEPLOY_IO.jobs.read(job as string, user.id).catch(() => null)
-  if (row === null || row.project_id !== projectId) return no(404, 'Not found')
+  // Story 7.26: an export's row (`site_id` null) is `projects/[id]/export`'s, never a deploy's
+  if (row === null || row.project_id !== projectId || row.site_id === null) return no(404, 'Not found')
 
   if (act === 'cancel') return (await cancel({ jobId: row.id, userId: user.id }, DEPLOY_IO)) ? json(200, { job: row.id }) : no(409, 'Past cancelling')
   if (act === 'ship') {

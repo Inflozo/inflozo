@@ -18,7 +18,7 @@ import { BusyLabel, Submit } from '@/components/kit/submit'
 import { glyphOf, LayerThumb } from '@/components/kit/layers-row'
 import { RoutesFallback } from '@/components/routes-fallback'
 import {
-  afterSafety, BACKUP_WORDS as BW, backupOwed, CANCELLABLE, CHECK_FAILED, checkRows, DEPLOY_WORDS as W, endingOf, isMoving, isSnapshotError, POSTS_CHECKED, SAFETY_PICTURE, SAFETY_WORDS as SN,
+  afterSafety, BACKUP_WORDS as BW, backupOwed, CANCELLABLE, CHECK_FAILED, checkRows, DEPLOY_WORDS as W, endingOf, EXPORT_WORDS, GHOST_PLANS_HELP, isMoving, isSnapshotError, POSTS_CHECKED, SAFETY_PICTURE, SAFETY_WORDS as SN,
   movedFrom, safetyOffered, SNAPSHOT_WORDS as SNAP, STAGE_NAMES, stepNumber, stepOf, stepsFor, themeSize, UNSTOPPABLE, uploadOnlyBlock, versionNumber, type DeployRequest, type DeployView, type Mode,
   type RailStep, type ShipState, type Stage, type Step, type Timings,
 } from '@/lib/deploy'
@@ -40,7 +40,8 @@ import { useSaid } from '@/lib/renders'
 import { resetRoutingPath } from '@/lib/routes'
 import { downloadHref, ROUTES_FALLBACK_WORDS as RW } from '@/lib/routes-upload'
 import { HISTORY_WORDS as HW } from '@/lib/retention'
-import { followSigned, followsHere, SIGNED_WORDS } from '@/lib/signed-download'
+import { followSigned } from '@/lib/signed-download'
+import { SignedDownload } from '@/components/signed-download'
 
 /* ───────── STORY 7.18a — SHIP IT AND THE DEPLOY WIZARD (FR-J8, AD-20's F-075), from the export (R-74):
  *
@@ -52,8 +53,9 @@ import { followSigned, followsHere, SIGNED_WORDS } from '@/lib/signed-download'
  * EXTRAPOLATED FROM THE NEAREST FRAME, in the same tokens and components: the running stages (S8c's row and its static ring
  * — never turning, so never a spinner, and no byte bar: no real byte count exists, routine call 8), a blocking Pre-flight
  * (S8b's rows with S8d′'s failed mark, Ship it greyed with its reason under it as P0-0 draws a greyed control — S8c's greyed
- * Cancel is the drawn instance), the no-site and Preview-only Destination (S8a's site card; B15's sky panel and words), and
- * R-260's row (S8b's top-level row; D2e's disc in the warning hue).
+ * Cancel is the drawn instance), the no-site Destination (S8a's site card), and R-260's row (S8b's top-level row; D2e's disc in
+ * the warning hue). STORY 7.26: the Preview-only Destination is S8a′ as drawn (`S8 Deploy.dc.html:245-262`), its Download theme the
+ * editor's export (`onExport`).
  *
  * EVERY STRING IS `DEPLOY_WORDS`' (R-170), the lock's are `LOCK_COPY`'s and B15's `PREVIEW_COPY`'s. A row whose label and meta
  * the frame draws apart but the list keeps as one sentence ("Uploaded to Ghost · 2.4 MB · 31s") is split at its first " · "
@@ -119,45 +121,6 @@ const twoLines = (title: string, caption?: string) => (
   </span>
 )
 
-/** STORY 7.23b (DW-391) — A SIGNED DOWNLOAD AS A LINK: D3a's "Download the live theme first", the Roll back confirm's and History's
- *  original-theme row's. It stays an `<a href>` — a press with a modifier, or scripts off, follows the route's 303 as before — and
- *  a plain press is followed by `followSigned` (`lib/signed-download.ts`): "Preparing…" while it is out (R-98), the zip as an
- *  attachment (the page stays), and a route's 404, 502 or the sign-in said under it in its own `role="status"` line, never in
- *  place of the editor. The Backup step's Theme Download is a button (it captures first) and follows the same way (`fetchRow`). */
-export function SignedDownload({ id, href, label, size = 40, className = '' }: { id: string; href: string; label: string; size?: 40 | 28; className?: string }) {
-  const [out, setOut] = useState(false)
-  const [said, setSaid] = useState<string | null>(null)
-  return (
-    <span className={`flex flex-col gap-[6px] ${className}`}>
-      <a
-        id={id}
-        href={href}
-        aria-busy={out || undefined}
-        aria-disabled={out || undefined}
-        aria-describedby={said === null ? undefined : `${id}-said`}
-        onClick={(event) => {
-          if (!followsHere(event)) return
-          event.preventDefault()
-          if (out) return
-          setOut(true)
-          setSaid(null)
-          void followSigned(href).then((words) => {
-            setSaid(words)
-            setOut(false)
-          })
-        }}
-        className={`self-start ${buttonClasses('secondary', size)}`}
-      >
-        <BusyLabel pending={out} busy={SIGNED_WORDS.preparing}>
-          <Download size={size === 28 ? 12 : 13} />
-          {label}
-        </BusyLabel>
-      </a>
-      <span id={`${id}-said`} role="status" data-signed-said className="text-[11.5px] leading-[1.5] text-danger-text empty:absolute [text-wrap:pretty]">{said}</span>
-    </span>
-  )
-}
-
 /** the routes file, saved as Ghost names it — the same `data:` bytes B16's download carries (routine call 10) */
 function saveRoutes(file: string) {
   const a = document.createElement('a')
@@ -168,12 +131,16 @@ function saveRoutes(file: string) {
 
 /* ─────────────────────────────────────────────── the bar's control ─────────────────────────────────────────────── */
 
-/** S4's Ship it with S4d's ▾ menu: Deploy & activate (⌘⏎), Deploy only, Download routes.yaml while the project has routing, and
- *  — since Story 7.22 — History (S4d `:387`'s clock row, last, at every width: the bar's clock hides where the bar is compact, so
- *  this row is the drawer's way in there; its caption is S4d's whole since Story 7.23a built Roll back). Download theme is
- *  ABSENT until Story 7.26 (UX-DR3). R-264 (a): Deploy only is GREYED while this project's theme is the one live on the site
- *  (`uploadOnlyBlock`), its reason in the row's caption slot, and a press on it opens nothing. */
-export function ShipButton({ ship, routes, busy, onShip, onHistory }: { ship: ShipState | undefined; routes: string | null; busy: boolean; onShip: (mode: Mode) => void; onHistory: () => void }) {
+/** S4's Ship it with S4d's ▾ menu: Deploy & activate (⌘⏎), Deploy only, Download theme, Download routes.yaml while the project has
+ *  routing, and — since Story 7.22 — History (S4d `:387`'s clock row, last, at every width: the bar's clock hides where the bar is
+ *  compact, so this row is the drawer's way in there; its caption is S4d's whole since Story 7.23a built Roll back). STORY 7.26 —
+ *  Download theme is S4d's row `:384` (its download glyph, "Zip of the compiled Ghost theme"), in S4d's order: after Deploy only,
+ *  before Download routes.yaml — the editor's `openExport`, on every plan and with or without a site. R-264 (a): Deploy only is
+ *  GREYED while this project's theme is the one live on the site (`uploadOnlyBlock`), its reason in the row's caption slot, and a
+ *  press on it opens nothing. */
+export function ShipButton({ ship, routes, busy, onShip, onExport, onHistory }: {
+  ship: ShipState | undefined; routes: string | null; busy: boolean; onShip: (mode: Mode) => void; onExport: () => void; onHistory: () => void
+}) {
   const n = ship?.n ?? 1
   const prev = ship?.prev ?? null
   const blocked = uploadOnlyBlock(ship)
@@ -188,6 +155,7 @@ export function ShipButton({ ship, routes, busy, onShip, onHistory }: { ship: Sh
     blocked === null
       ? { label: W.uploadOnly, icon: <ArrowUpGlyph />, contents: twoLines(W.uploadOnly, W.uploadOnlyCaption(n, prev)), onSelect: () => onShip('upload') }
       : { label: W.uploadOnly, icon: <ArrowUpGlyph />, greyed: blocked },
+    { label: EXPORT_WORDS.row, icon: <Download size={15} className="shrink-0 text-ink-soft" />, contents: twoLines(EXPORT_WORDS.row, EXPORT_WORDS.caption), onSelect: onExport },
     ...(routes === null ? [] : [{ label: W.downloadRoutes, icon: <FileGlyph />, contents: twoLines(W.downloadRoutes), onSelect: () => saveRoutes(routes) }]),
     { label: HW.open, icon: <HistoryClock size={15} className="shrink-0 text-ink-soft" />, contents: twoLines(HW.open, HW.menuCaption), onSelect: onHistory },
   ]
@@ -437,6 +405,7 @@ export function DeployWizard({
   confirmBackup,
   downloadTheme,
   downloadRoutes,
+  onExport,
   onClose,
 }: {
   request: ShipRequest
@@ -492,6 +461,8 @@ export function DeployWizard({
   downloadTheme: (siteId: string) => Promise<{ ok: true; id: string } | { said: string }>
   /** STORY 7.20a — the `routes.yaml` row's Download (`downloadRoutes`, R-282): the live file, or a sentence */
   downloadRoutes: (siteId: string) => Promise<{ ok: true; file: string } | { said: string }>
+  /** STORY 7.26 — S8a′'s Download theme: the editor's `openExport`, once this wizard has closed */
+  onExport: () => void
   /** the wizard closed; `shipped` when a job reached its ending, so the bar re-reads its label and versions */
   onClose: (shipped: boolean) => void
 }) {
@@ -1217,12 +1188,29 @@ export function DeployWizard({
             {switchLink}
           </div>
           {site.capability === 'preview_only' ? (
-            // B15's own words, in its sky panel — a plan that takes no custom theme has nothing to check (the matrix's row)
-            <div className="flex gap-[11px] rounded-thumb bg-sky-tint p-[13px_15px] text-sky-text">
-              <InfoCircle size={15} className="mt-[2px] shrink-0" />
-              <div className="flex flex-col gap-[6px]">
-                <h3 className="m-0 text-ui-dense font-semibold">{PREVIEW_COPY.title}</h3>
-                <p className="text-[12.5px] leading-[1.55]">{PREVIEW_COPY.body}</p>
+            // STORY 7.26 — S8a′ (`S8 Deploy.dc.html:245-262`) in place of B15's panel: the plan takes no custom theme, so the theme
+            // is downloaded instead — Download theme closes the wizard and opens the export (`onExport`), and Ghost's own guide to
+            // its plans opens in a new tab (FR-C2). A refused upload's mark (R-270) keeps Run checks below it, as before
+            <div data-preview-only className="-mt-2 flex flex-col gap-3">
+              <p className="text-[12px] leading-[1.55] text-ink-soft [text-wrap:pretty]">{W.previewOnly}</p>
+              <div className="flex flex-wrap items-center gap-[10px]">
+                <Button
+                  id="deploy-export"
+                  variant="secondary"
+                  size={36}
+                  weight="font-medium"
+                  onClick={() => {
+                    close()
+                    onExport()
+                  }}
+                >
+                  <Download size={13} strokeWidth={1.8} />
+                  {EXPORT_WORDS.row}
+                </Button>
+                <a href={GHOST_PLANS_HELP} target="_blank" rel="noreferrer" className={`inline-flex h-9 items-center rounded px-3 text-ui-dense font-medium text-ink-soft transition-colors hover:text-ink ${ring}`}>
+                  {W.plans}
+                  <span className="sr-only"> {W.newTab}</span>
+                </a>
               </div>
             </div>
           ) : null}
@@ -1929,7 +1917,9 @@ export function DeployWizard({
                   {row.help.words}
                   <span className="sr-only"> {W.newTab}</span>
                 </a>
-                {said === undefined ? null : <p id={`deploy-download-${row.download}-said`} role="status" className="ml-[30px] text-[11.5px] leading-[1.5] text-ink-soft">{said}</p>}
+                {/* DW-405 (Story 7.26): the line is mounted empty first, so its failure is announced the moment it is said — in
+                    the signed Downloads' own danger hue; the marked theme's line is a fact, said in the row's own ink */}
+                <p id={`deploy-download-${row.download}-said`} role="status" className={`ml-[30px] text-[11.5px] leading-[1.5] empty:absolute ${said === BW.marked ? 'text-ink-soft' : 'text-danger-text'}`}>{said ?? ''}</p>
               </div>
               {/* below `tablet` the Download stacks under its text, inside the wizard's own width */}
               <span className="ml-[30px] tablet:ml-0">{downloadOn(row.download)}</span>

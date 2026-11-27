@@ -157,11 +157,12 @@ export const presetRecord = (p: LibraryPreset): PackRecord => {
  *  own record where it has one (`ownPacksOf`), else the library's (`recordInForce`, the rule the editor's roster runs), with
  *  its pairing's fonts — what `compileTheme` takes as `pack` and `pairing`. An id with no record is Paper's (`packIdOf`
  *  never names one). Server only, like every reader of the presets here (DW-323). */
-export function enginePackOf(stylePack: unknown): { id: string; pack: Pack; pairing: string } {
+export function enginePackOf(stylePack: unknown): { id: string; pack: Pack; pairing: string; name: string } {
   const id = packIdOf(stylePack)
   const library = Object.fromEntries(LIBRARY_PRESETS.map((p) => [p.id, presetRecord(p)]))
   const record = recordInForce(id, ownPacksOf(stylePack), library) ?? (library[DEFAULT_PRESET] as PackRecord)
-  return { id, pack: packOfRecord(record, pairingFonts(record.pairing) as PackFonts), pairing: record.pairing }
+  // Story 7.26 (DW-346): and its name as the customer sees it — README's "Style Pack and fonts" (`CompileInput.packName`)
+  return { id, pack: packOfRecord(record, pairingFonts(record.pairing) as PackFonts), pairing: record.pairing, name: record.name }
 }
 
 /** EVERY PRESET'S HEADING FACES, for the app's own document, under `PACK_FAMILY_PREFIX` — so a pack cell's "Ag" is drawn

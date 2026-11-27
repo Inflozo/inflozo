@@ -8922,8 +8922,11 @@ test('7.18a · the ▾ menu: Deploy & activate (⌘⏎) and Deploy only with the
   await open(page)
   const plain = await menuRows()
   // Story 7.22 — History is the menu's last row at every width (RE-EXPECTED: it was absent until then)
-  expect(plain).toHaveLength(3)
-  expect(plain[2]).toContain(HISTORY_ROW)
+  // RE-EXPECTED by Story 7.26: Download theme is S4d's row after Deploy only, on every project
+  expect(plain).toHaveLength(4)
+  expect(plain[2]).toContain(DEPLOY.EXPORT_WORDS.row)
+  expect(plain[2]).toContain(DEPLOY.EXPORT_WORDS.caption)
+  expect(plain[3]).toContain(HISTORY_ROW)
   await page.keyboard.press('Escape')
   await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'shipped', 'x-inflozo-harness-routes': 'on' })
   await open(page)
@@ -8933,10 +8936,11 @@ test('7.18a · the ▾ menu: Deploy & activate (⌘⏎) and Deploy only with the
   expect(routed[0]).toContain('⌘⏎')
   expect(routed[1]).toContain(DW.uploadOnly)
   expect(routed[1]).toContain(DW.uploadOnlyCaption(3, 2))
-  expect(routed[2]).toContain(DW.downloadRoutes)
-  expect(routed[3]).toContain(HISTORY_ROW)
-  expect(routed, 'Download theme is absent until Story 7.26 (UX-DR3)').toHaveLength(4)
-  expect(routed.join(' ')).not.toMatch(/Download theme/)
+  // RE-EXPECTED by Story 7.26: S4d's order — Download theme after Deploy only, before Download routes.yaml
+  expect(routed[2]).toContain(DEPLOY.EXPORT_WORDS.row)
+  expect(routed[3]).toContain(DW.downloadRoutes)
+  expect(routed[4]).toContain(HISTORY_ROW)
+  expect(routed).toHaveLength(5)
   // ↓ to Deploy only, Enter: the wizard, with that card chosen
   await page.keyboard.press('ArrowDown')
   await expect(shipMenu(page).locator('li button').nth(1)).toBeFocused()
@@ -9162,7 +9166,7 @@ test('7.18a · an activation that did not complete ends on D2e, "Didn\'t complet
   await expect(wizard(page)).toHaveCount(0)
 })
 
-test('7.18a · no site to ship to: Destination says so and links to Sites, with no Run checks; a Preview-only site shows B15\'s words, with no Run checks', async ({ page }) => {
+test('7.18a · no site to ship to: Destination says so and links to Sites, with no Run checks; a Preview-only site shows S8a′ (B15\'s words until Story 7.26), with no Run checks', async ({ page }) => {
   await open(page)
   await openWizard(page)
   await expect(wizard(page)).toContainText(DW.noSite)
@@ -9172,9 +9176,9 @@ test('7.18a · no site to ship to: Destination says so and links to Sites, with 
   await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'preview' })
   await open(page)
   await openWizard(page)
-  const PROBE = await import(new URL('../../apps/web/lib/probe-rule.ts', import.meta.url).href)
-  await expect(wizard(page)).toContainText(PROBE.PREVIEW_COPY.title)
-  await expect(wizard(page)).toContainText(PROBE.PREVIEW_COPY.body)
+  // RE-EXPECTED by Story 7.26: S8a′'s block, as drawn, in place of B15's panel — its sentence and Download theme
+  await expect(wizard(page).locator('[data-preview-only]')).toContainText(DW.previewOnly)
+  await expect(wizard(page).locator('#deploy-export')).toBeVisible()
   await expect(page.locator('#deploy-run')).toHaveCount(0)
   // the control: a full site has Run checks
   await page.keyboard.press('Escape')
@@ -9751,12 +9755,12 @@ test('7.18c · R-276 (DW-381): the sites read failed — the picker says so as i
   await expect(wizard(page).locator('[data-sites-unread]')).toHaveCount(0)
 })
 
-test('7.18b · R-270: a site a refused upload marked Preview-only shows B15\'s panel, the line and Run checks; a probe\'s Preview-only has neither (the control)', async ({ page }) => {
-  const PROBE = await import(new URL('../../apps/web/lib/probe-rule.ts', import.meta.url).href)
+test('7.18b · R-270: a site a refused upload marked Preview-only shows S8a′\'s block (B15\'s panel until Story 7.26), the line and Run checks; a probe\'s Preview-only has neither (the control)', async ({ page }) => {
   await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'refused' })
   await open(page)
   await openWizard(page)
-  await expect(wizard(page)).toContainText(PROBE.PREVIEW_COPY.title)
+  // RE-EXPECTED by Story 7.26: S8a′'s block stands over a refused upload's mark too, R-270's line and Run checks under it
+  await expect(wizard(page).locator('[data-preview-only]')).toContainText(DW.previewOnly)
   await expect(wizard(page).locator('[data-plan-refused]')).toHaveText(DW.planRefused('harness.example'))
   await expect(page.locator('#deploy-run')).toBeVisible()
   await expect(wizard(page).locator('#deploy-switch'), 'Switch on the Preview-only card too (routine call 4)').toBeVisible()
@@ -9764,7 +9768,7 @@ test('7.18b · R-270: a site a refused upload marked Preview-only shows B15\'s p
   await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'preview' })
   await open(page)
   await openWizard(page)
-  await expect(wizard(page)).toContainText(PROBE.PREVIEW_COPY.title)
+  await expect(wizard(page).locator('[data-preview-only]')).toContainText(DW.previewOnly)
   await expect(wizard(page).locator('[data-plan-refused]')).toHaveCount(0)
   await expect(page.locator('#deploy-run')).toHaveCount(0)
 })
@@ -12077,7 +12081,8 @@ test('7.23b · (e1) DW-391 — the Backup step\'s Theme Download: Story 2.5\'s r
   await theme.focus()
   const [download] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')])
   expect(download.suggestedFilename()).toBe('harness-casper.zip')
-  await expect(page.locator('#deploy-download-theme-said')).toHaveCount(0)
+  // RE-EXPECTED by Story 7.26 (DW-405): the line stays mounted, empty, so its next failure is announced
+  await expect(page.locator('#deploy-download-theme-said')).toHaveText('')
 })
 
 test('7.23b · (e2) DW-391 — D3a\'s "Download the live theme first": `deploy/live` answering 404, 401 and 502 is said under it, D3a stays; 200 `{ url }` downloads the zip', async ({ page }) => {
@@ -12629,4 +12634,226 @@ test('7.25 · (c) a switch the chosen site\'s lock refused (DW-379): the running
   await page.locator('#deploy-pick-use').focus()
   await page.keyboard.press('Enter')
   await expect(sitePicker(page)).toHaveCount(0, { timeout: 15_000 })
+})
+
+/* ── Story 7.26 — the theme export (FR-J12; S4d's Download theme, S8a′, D8g in export words, the window from S8b's rows; DW-405;
+   UX-DR12, R-98) ────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   The harness has no database, so the export route never answers here: each journey answers `projects/[id]/export` through
+   `page.route` — its POST the job id (or a 429), each GET the next CANNED view (`ExportView`, the route's own wire) — and its signed
+   download through `fakeSigned`. The real route, both real gscans, the zip and T1 are walk step 126's. Pointer-free. */
+
+const EW = DEPLOY.EXPORT_WORDS
+const EXPORT_PATH = new RegExp(`/projects/${HARNESS_PROJECT_ID}/export$`)
+const EXPORT_DOWNLOAD = (url) => url.pathname.endsWith(`/projects/${HARNESS_PROJECT_ID}/export/download`)
+const EXPORT_ZIP = 'inflozo-pilot-sections.zip'
+const exportWindow = (page) => page.locator('dialog#export-window')
+const exportViewOf = (stage, timings, error = null) => ({ job: { id: 'job-726', stage, error, timings } })
+const EXPORT_RUN = [
+  exportViewOf('queued', {}),
+  exportViewOf('compiling', { compiling: { at: AT } }),
+  exportViewOf('checking', { compiling: TIMED.compiling, checking: { at: AT } }),
+]
+const EXPORTED = [...EXPORT_RUN, exportViewOf('done', { compiling: TIMED.compiling, checking: { ...TIMED.checking, warnings: 2 } })]
+
+/** the export route, answered: POST → `post` (by default 202 and the job id), each GET → the next of `views` (its last repeated) */
+async function plantExport(page, views, post = { status: 202, body: { job: 'job-726' } }) {
+  const sent = []
+  const polled = []
+  let n = 0
+  await page.route((url) => EXPORT_PATH.test(url.pathname), (route) => {
+    const req = route.request()
+    if (req.method() === 'POST') {
+      sent.push(req.postDataJSON())
+      return route.fulfill({ status: post.status, contentType: 'application/json', body: JSON.stringify(post.body) })
+    }
+    polled.push(new URL(req.url()).searchParams.get('job'))
+    const view = views[Math.min(n, views.length - 1)]
+    n += 1
+    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(view) })
+  })
+  return { sent, polled }
+}
+/** every sentence the export window's polite region says from now on, in order (the window mounts later, so the body is watched) */
+async function hearExport(page) {
+  await page.evaluate(() => {
+    window.__exportSaid = []
+    new MutationObserver(() => {
+      const words = document.querySelector('[data-export-said]')?.textContent ?? ''
+      if (words !== '' && window.__exportSaid.at(-1) !== words) window.__exportSaid.push(words)
+    }).observe(document.body, { childList: true, subtree: true, characterData: true })
+  })
+}
+const heardExport = (page) => page.evaluate(() => window.__exportSaid ?? [])
+/** Ship it ▾ → Download theme, from the keyboard: S4d's row after Deploy only */
+async function openExportRow(page) {
+  await page.locator('#editor-ship + button').focus()
+  await page.keyboard.press('Enter')
+  await expect(shipMenu(page).locator('li button').first()).toBeFocused() // focused a frame after it opens (`lib/menu.ts`)
+  const row = shipMenu(page).locator('li button').nth(2)
+  await expect(row).toContainText(EW.row)
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('ArrowDown')
+  await expect(row).toBeFocused()
+  await page.keyboard.press('Enter')
+}
+
+test('7.26 · (a) Ship it ▾ → Download theme: the window draws S8b\'s rows as the export runs — each stage said politely — and, done, the zip is followed at once and saved under the export\'s name, then the ready line and Download again, which downloads it again; Close gives focus back to Ship it', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  const { sent, polled } = await plantExport(page, EXPORTED)
+  const signed = await fakeSigned(page, EXPORT_DOWNLOAD, EXPORT_ZIP)
+  await open(page)
+  await hearExport(page)
+  const first = page.waitForEvent('download')
+  await openExportRow(page)
+  await expect(exportWindow(page)).toBeVisible()
+  await expect(page.locator('#export-title')).toHaveText(EW.title)
+  await expect(exportWindow(page)).toContainText(EW.body)
+  const download = await first
+  expect(download.suggestedFilename()).toBe(EXPORT_ZIP)
+  await expect(exportWindow(page)).toHaveAttribute('data-export-window', 'done')
+  // S8b's two rows, done: the compile's time and size, the checks' counts (0 errors — a blocked export never ends done)
+  await expect(exportWindow(page)).toContainText(EW.compiled)
+  await expect(exportWindow(page)).toContainText(EW.compiledMeta(1400, 240_000))
+  await expect(exportWindow(page)).toContainText(EW.checked)
+  await expect(exportWindow(page)).toContainText(EW.checkedMeta(2))
+  await expect(page.locator('[data-export-ready]')).toHaveText(EW.ready)
+  expect(sent, 'one export asked, with this tab\'s lock session').toHaveLength(1)
+  expect(typeof sent[0].session === 'string' && sent[0].session.length > 0).toBe(true)
+  expect(polled.every((job) => job === 'job-726')).toBe(true)
+  expect(signed.asked, 'the download asked once').toHaveLength(1)
+  // UX-DR12: each stage as it started, then the ready line
+  await expect.poll(async () => (await heardExport(page)).join(' | '), { timeout: 15_000 }).toContain(EW.ready)
+  const said = (await heardExport(page)).join(' ')
+  expect(said.indexOf(EW.sayCompiling)).toBeGreaterThanOrEqual(0)
+  expect(said.indexOf(EW.sayChecking)).toBeGreaterThan(said.indexOf(EW.sayCompiling))
+  expect(said.indexOf(EW.ready)).toBeGreaterThan(said.indexOf(EW.sayChecking))
+  // Download again: the same signed Download, followed again
+  const again = page.locator('#export-download')
+  await expect(again).toContainText(EW.again)
+  await again.focus()
+  const [second] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')])
+  expect(second.suggestedFilename()).toBe(EXPORT_ZIP)
+  expect(signed.asked).toHaveLength(2)
+  await page.locator('#export-close').focus()
+  await page.keyboard.press('Enter')
+  await expect(exportWindow(page)).toHaveCount(0)
+  await expect(shipIt(page)).toBeFocused()
+})
+
+test('7.26 · (b) reading along, Download theme opens D8g in export words on Wait; Esc closes it with no window, and a refused take-over keeps its sentence and opens nothing', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full', 'x-inflozo-harness-lock': 'reader' })
+  const { sent } = await plantExport(page, EXPORTED)
+  await open(page)
+  const d8g = page.locator('dialog:has(#editor-export-takeover-title)')
+  await openExportRow(page)
+  await expect(d8g).toBeVisible()
+  await expect(page.locator('#editor-export-takeover-title')).toHaveText(LOCK.LOCK_COPY.exportTitle)
+  await expect(d8g).toContainText(LOCK.LOCK_COPY.exportBody)
+  await expect(d8g.getByRole('button', { name: LOCK.LOCK_COPY.wait })).toBeFocused()
+  await page.keyboard.press('Escape')
+  await expect(d8g).toBeHidden()
+  await page.waitForTimeout(400)
+  await expect(exportWindow(page)).toHaveCount(0)
+  // the ship's D8g is not this one: its words never show
+  await expect(page.locator('dialog:has(#editor-ship-takeover-title)')).toBeHidden()
+  // asked again, Take over and export: the harness's lock route reaches no database, so the take-over is refused and said
+  await openExportRow(page)
+  await expect(d8g).toBeVisible()
+  const was = await said(page)
+  const confirm = d8g.getByRole('button', { name: LOCK.LOCK_COPY.exportConfirm })
+  await confirm.focus()
+  await page.keyboard.press('Enter')
+  await expect.poll(async () => { const s = await said(page); return s !== was && s === LOCK.LOCK_COPY.unreachable }, { timeout: 15_000 }).toBe(true)
+  await page.waitForTimeout(400)
+  await expect(exportWindow(page)).toHaveCount(0)
+  expect(sent, 'nothing exported').toEqual([])
+})
+
+test('7.26 · (c) the compile budget reached (429): the export\'s own sentence — the budget\'s first, then when it can export again — in the window, said politely; nothing polled', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  const words = EW.budget(12)
+  expect(words.startsWith(DEPLOY.BUDGET_FIRST)).toBe(true)
+  const { sent, polled } = await plantExport(page, EXPORTED, { status: 429, body: { code: 'compile_budget', message: words } })
+  await open(page)
+  await hearExport(page)
+  await openExportRow(page)
+  await expect(page.locator('#export-refused')).toHaveText(words, { timeout: 15_000 })
+  await expect(exportWindow(page)).toHaveAttribute('data-export-window', 'refused')
+  await expect.poll(async () => (await heardExport(page)).join(' ')).toContain(words)
+  expect(sent).toHaveLength(1)
+  expect(polled, 'no job, so nothing polled').toEqual([])
+  await expect(page.locator('#export-download')).toHaveCount(0)
+})
+
+test('7.26 · (d) a gate blocks: the window ends on S8d′\'s failed row — "Checking failed" — with the finding\'s message, said politely; nothing downloaded', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  await plantExport(page, [...EXPORT_RUN, exportViewOf('failed', { compiling: TIMED.compiling, checking: { ...TIMED.checking, warnings: 0 } }, ERROR)])
+  const signed = await fakeSigned(page, EXPORT_DOWNLOAD, EXPORT_ZIP)
+  await open(page)
+  await hearExport(page)
+  await openExportRow(page)
+  await expect(exportWindow(page)).toHaveAttribute('data-export-window', 'failed', { timeout: 15_000 })
+  await expect(exportWindow(page)).toContainText(DW.stageFailed('Checking'))
+  await expect(exportWindow(page).locator('[data-export-failed]')).toContainText(ERROR.message)
+  await expect(exportWindow(page)).toContainText(EW.compiled)
+  await expect.poll(async () => (await heardExport(page)).join(' '), { timeout: 15_000 }).toContain(ERROR.message)
+  await expect(page.locator('#export-download')).toHaveCount(0)
+  expect(signed.asked, 'nothing downloaded').toEqual([])
+})
+
+test('7.26 · (e) S8a′: Destination on a Preview-only site says the plan takes no custom theme, offers Download theme and Which Ghost plans work? ↗ and no Run checks; its Download theme closes the wizard and opens the export window', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'preview' })
+  await plantExport(page, EXPORTED)
+  await fakeSigned(page, EXPORT_DOWNLOAD, EXPORT_ZIP)
+  await open(page)
+  await openWizard(page)
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'destination')
+  const block = wizard(page).locator('[data-preview-only]')
+  await expect(block).toContainText(DW.previewOnly)
+  await expect(block.getByRole('link', { name: new RegExp(DW.plans.replace(/[?↗]/g, '.')) })).toHaveAttribute('href', DEPLOY.GHOST_PLANS_HELP)
+  await expect(wizard(page).locator('#deploy-run')).toHaveCount(0)
+  const download = page.locator('#deploy-export')
+  await expect(download).toContainText(EW.row)
+  await download.focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toHaveCount(0)
+  await expect(exportWindow(page)).toBeVisible()
+  await expect(exportWindow(page)).toHaveAttribute('data-export-window', 'done', { timeout: 15_000 })
+})
+
+test('7.26 · (g) unsent edits: the window flushes first, and work the flush cannot send says Run checks\' own sentence in the window — no export asked', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  const { sent } = await plantExport(page, EXPORTED)
+  // the save is refused, so the edit stays unsent (7.18a's own way)
+  await page.route('**/sync', (route) => route.fulfill({ status: 503, body: '' }))
+  await open(page)
+  const { page: own } = await rows(page)
+  await select(page, own[0])
+  await page.keyboard.press('ControlOrMeta+d')
+  await expect.poll(async () => (await rows(page)).page.length).toBe(own.length + 1)
+  await openExportRow(page)
+  await expect(page.locator('#export-refused')).toHaveText(DW.editsUnsent, { timeout: 20_000 })
+  await expect(exportWindow(page)).toHaveAttribute('data-export-window', 'refused')
+  expect(sent, 'no export was asked for').toEqual([])
+})
+
+test('7.26 · (f) DW-405: the export\'s download answered 404 — the gone sentence under Download again, no ready line, the editor where it was; Download again then downloads once the file is there', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  await plantExport(page, EXPORTED)
+  const plan = { status: 404 }
+  await fakeSigned(page, EXPORT_DOWNLOAD, EXPORT_ZIP, plan)
+  await open(page)
+  const url = page.url()
+  await openExportRow(page)
+  await expect(page.locator('#export-download-said')).toHaveText(SGW.gone, { timeout: 15_000 })
+  await expect(page.locator('[data-export-ready]')).toHaveCount(0)
+  expect(page.url(), 'the editor stays').toBe(url)
+  await expect(exportWindow(page)).toBeVisible()
+  plan.status = 200
+  const again = page.locator('#export-download')
+  await again.focus()
+  const [download] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')])
+  expect(download.suggestedFilename()).toBe(EXPORT_ZIP)
+  await expect(page.locator('#export-download-said')).toHaveText('')
+  await expect(page.locator('[data-export-ready]')).toHaveText(EW.ready)
 })

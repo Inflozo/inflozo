@@ -69,6 +69,15 @@ const canvas = [
 // Story 6.2 — the font pool's files, which `/canvas` serves by `?font=` (every canvas document's faces come from there)
 const fonts = set('packages/library/fonts/files')
 
+// Story 7.18a: what a route that compiles a stored project reads (`server/deploy/project-input.ts`) — every design (`pilot`,
+// `docRefusal`), the font pool's files AND each family's licence (the compile ships both), the module files `main.js` is
+// bundled from, and Ghost's vendored card scripts, stylesheets and licence
+const compiled = [
+  ...designs, ...fonts, ...set('packages/library/fonts/licences', 'packages/library/orbit-weekly/vendor'),
+  // the module files themselves, as `moduleSources` reads them (a registry name plus `.js`) — never their types or tests
+  ...set('packages/library/modules').filter((f) => /\/[a-z][a-z0-9-]*\.js$/.test(f)),
+]
+
 const ROUTES = [
   ['/canvas', 'canvas/route.js.nft.json', [...canvas, ...fonts]],
   ['/pilots', 'pilots/page.js.nft.json', canvas],
@@ -85,14 +94,9 @@ const ROUTES = [
   ['/style-guide', 'style-guide/page.js.nft.json', styleGuide],
   ['/style-guide/frame', 'style-guide/frame/route.js.nft.json', styleGuide],
   ['/style-guide/variations', 'style-guide/variations/page.js.nft.json', styleGuide],
-  // Story 7.18a: the deploy route compiles a stored project (`server/deploy/project-input.ts`) — every design (`pilot`,
-  // `docRefusal`), the font pool's files AND each family's licence (the compile ships both), the module files `main.js` is
-  // bundled from, and Ghost's vendored card scripts, stylesheets and licence
-  ['the deploy route', 'projects/[id]/deploy/route.js.nft.json', [
-    ...designs, ...fonts, ...set('packages/library/fonts/licences', 'packages/library/orbit-weekly/vendor'),
-    // the module files themselves, as `moduleSources` reads them (a registry name plus `.js`) — never their types or tests
-    ...set('packages/library/modules').filter((f) => /\/[a-z][a-z0-9-]*\.js$/.test(f)),
-  ]],
+  ['the deploy route', 'projects/[id]/deploy/route.js.nft.json', compiled],
+  // Story 7.26: the export route compiles the same stored project, the same way — every file the deploy route's compile reads
+  ['the export route', 'projects/[id]/export/route.js.nft.json', compiled],
 ]
 
 let failed = 0
@@ -120,18 +124,20 @@ for (const [route, file, needs] of ROUTES) {
 // AND JSDOM IS NOT ONE OF THEM (the owner's test, 2026-10-19): an external jsdom is `require()`d by Node, and jsdom 30
 // `require()`s ES modules, which Vercel's functions refuse (`ERR_REQUIRE_ESM`) — every deploy POST answered 500. So jsdom is
 // bundled (`transpilePackages`), and this fails if the route carries a jsdom link again.
-{
-  const trace = join(AUTHED, 'projects/[id]/deploy/route.js.nft.json')
+// STORY 7.26: and the export route, which runs both pinned gscans on the same compile — every row below holds for each route
+const CHECKERS = [['the deploy route', 'projects/[id]/deploy/route.js.nft.json'], ['the export route', 'projects/[id]/export/route.js.nft.json']]
+for (const [route, file] of CHECKERS) {
+  const trace = join(AUTHED, file)
   const carried = new Set(JSON.parse(readFileSync(trace, 'utf8')).files.map((f) => relative(REPO, resolve(dirname(trace), f))))
   const EXTERNALS = [
     ['gscan4', ['package.json', 'lib/checker.js', 'lib/specs/v5.js']],
     ['gscan6', ['package.json', 'lib/checker.js', 'lib/specs/v6.js']],
   ]
   const jsdomLinks = [...carried].filter((f) => /^apps\/web\/\.next\/node_modules\/jsdom-/.test(f))
-  if (jsdomLinks.length === 0) console.log('PASS  the deploy route bundles jsdom: no external jsdom for Node to require() on Vercel')
+  if (jsdomLinks.length === 0) console.log(`PASS  ${route} bundles jsdom: no external jsdom for Node to require() on Vercel`)
   else {
     failed++
-    console.log(`FAIL  the deploy route loads jsdom as an external (${jsdomLinks[0]}) — Vercel refuses its require() of ES modules; keep it in transpilePackages`)
+    console.log(`FAIL  ${route} loads jsdom as an external (${jsdomLinks[0]}) — Vercel refuses its require() of ES modules; keep it in transpilePackages`)
   }
   for (const [alias, entries] of EXTERNALS) {
     const real = realpathSync(join(REPO, 'apps/web/node_modules', alias))
@@ -141,11 +147,11 @@ for (const [route, file, needs] of ROUTES) {
     const own = JSON.parse(readFileSync(join(real, 'package.json'), 'utf8')).name
     const linked = [...carried].some((f) => f.startsWith('apps/web/.next/node_modules/') && realpathSync(join(REPO, f)) === real && f.slice('apps/web/.next/node_modules/'.length).startsWith(`${own}-`))
     if (missing.length === 0 && linked) {
-      console.log(`PASS  the deploy route carries ${alias} (${needs.length} entries and its link)`)
+      console.log(`PASS  ${route} carries ${alias} (${needs.length} entries and its link)`)
       continue
     }
     failed++
-    console.log(`FAIL  the deploy route: ${alias} is not shipped — ${[...missing, ...(linked ? [] : ['its .next/node_modules link'])].join(', ')}`)
+    console.log(`FAIL  ${route}: ${alias} is not shipped — ${[...missing, ...(linked ? [] : ['its .next/node_modules link'])].join(', ')}`)
   }
   // EVERY FILE EACH CHECKER TOUCHES WHILE IT CHECKS (the owner's test of Story 7.18a, 2026-10-19): gscan loads its checks by
   // listing `lib/checks/` and requiring each by a computed path, so the trace carried the check files but none of what they
@@ -205,10 +211,10 @@ gscan.check(dir, { checkVersion: process.env.GSCAN_SPEC }).then((t) => { gscan.f
         continue
       }
       const absent = touched.map((f) => relative(REPO, f)).filter((f) => !carried.has(f))
-      if (absent.length === 0) console.log(`PASS  the deploy route carries all ${touched.length} files ${alias} touches while it checks a theme`)
+      if (absent.length === 0) console.log(`PASS  ${route} carries all ${touched.length} files ${alias} touches while it checks a theme`)
       else {
         failed++
-        console.log(`FAIL  the deploy route lacks ${absent.length} of the ${touched.length} files ${alias} touches while it checks — ${absent.slice(0, 4).map((f) => f.replace(/^node_modules\/\.pnpm\//, '')).join(', ')}${absent.length > 4 ? ', …' : ''}`)
+        console.log(`FAIL  ${route} lacks ${absent.length} of the ${touched.length} files ${alias} touches while it checks — ${absent.slice(0, 4).map((f) => f.replace(/^node_modules\/\.pnpm\//, '')).join(', ')}${absent.length > 4 ? ', …' : ''}`)
       }
     }
   } finally {

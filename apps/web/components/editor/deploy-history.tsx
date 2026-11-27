@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
-import { DriftFound, DriftUnverified, PassRow, SignedDownload, StageRow } from '@/components/editor/deploy-wizard'
+import { DriftFound, DriftUnverified, PassRow, StageRow } from '@/components/editor/deploy-wizard'
+import { SignedDownload } from '@/components/signed-download'
 import { LiveBadge, ResultChip } from '@/components/kit/badge'
 import { Button, IconButton } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel } from '@/components/kit/dialog'

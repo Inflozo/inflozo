@@ -297,6 +297,11 @@ export const LOCK_COPY = {
   shipTitle: 'Take over to ship?',
   shipBody: 'Shipping needs the edit lock, and your other session is holding it.',
   shipConfirm: 'Take over and ship',
+  /** STORY 7.26 — D8g in export words: its own caption (`:489`) names Export. The export needs the edit lock as Run checks does
+   *  (FR-J12), and a session reading along meets this first, opened on Wait */
+  exportTitle: 'Take over to export?',
+  exportBody: 'Exporting needs the edit lock, and your other session is holding it.',
+  exportConfirm: 'Take over and export',
   /** the displaced session, announced assertively. "**This** session", not "that": it is read BY the session it is
    *  about, so one pronoun makes the sentence true from where it is read (R-189's routine judgement). */
   displaced: (n: number) => `This session had ${edits(n)}; they were not included.`,

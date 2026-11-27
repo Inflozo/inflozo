@@ -32,6 +32,11 @@ import { heldNamesIn } from './held-names.ts'
  *
  * EVERY READ IS OWNED: the handed client is the service role (it reads past RLS — `deploy-io.ts`), so each query carries
  * `user_id`, and a project or a site that is not the caller's — or a disconnected site — is no row, and the answer null.
+ *
+ * STORY 7.26 — THE EXPORT'S READ (FR-J12): `siteId: null`, and only an export reads with it. No site, no deploys, no binding and
+ * no held names are read: the name is `themeNameFor`'s base, `inflozo-{slug}` (an exported zip goes to whichever Ghost the
+ * customer picks, so no site's name is held against it), the version is 1 + the highest `exports.version` (exports number on
+ * their own — a site's deploy number means nothing for a zip with no site), and `site` is null. Every deploy caller is unchanged.
  * The library, the font pool, the modules and Ghost's card files come through `PACKAGES()` (`lib/style-guide.ts`'s one
  * finder, DW-269), the form Turbopack traces into the deployed function.
  */
@@ -42,7 +47,8 @@ export type ProjectRead = {
   /** the rows, as read — `inputsHash`'s input with the release */
   reads: Record<string, unknown>
   routing: { config: RoutesConfig | null; unreadable: boolean; problems: RouteProblem[] }
-  site: { url: string; ghost_version: string | null; capability: string; site_settings: unknown }
+  /** the site shipped to — null only on Story 7.26's export, which reads with `siteId: null` */
+  site: { url: string; ghost_version: string | null; capability: string; site_settings: unknown } | null
   version: { n: number; prev: number | null }
   themeName: string
   /** the bound name already claimed in `project_site_bindings`, or null before the first accepted upload */
@@ -99,23 +105,28 @@ function must<T>(answer: { data: T; error: { code?: string } | null }, what: str
 /* EVERY LIST READ IS ORDERED (the review, 2026-10-19): Postgres returns rows in no promised order, and the staleness hash
    is over these reads as read — two reads of unchanged rows in another order would hash apart and make Ship it re-compile.
    The settings keep the editor's own order (`read.ts`: position, then created_at), which is the order the compile is handed. */
-export async function compileInputOf(a: { projectId: string; siteId: string; userId: string }, db: SupabaseClient): Promise<ProjectRead | null> {
+export async function compileInputOf(a: { projectId: string; siteId: string | null; userId: string }, db: SupabaseClient): Promise<ProjectRead | null> {
   const { projectId, siteId, userId } = a
-  const [project, site, templates, settings, overrides, treatments, routing, customs, deploys, binding] = await Promise.all([
+  // Story 7.26 — what an export does not read answers as nothing, never as a query
+  const nothing = Promise.resolve({ data: null, error: null })
+  const none = Promise.resolve({ data: [], error: null })
+  const [project, site, templates, settings, overrides, treatments, routing, customs, deploys, binding, exported] = await Promise.all([
     db.from('projects').select('id, name, slug, dark_enabled, posts_per_page, style_pack, language, rtl_ack_at').eq('id', projectId).eq('user_id', userId).maybeSingle(),
-    db.from('sites').select('id, url, ghost_version, capability, site_settings').eq('id', siteId).eq('user_id', userId).is('disconnected_at', null).maybeSingle(),
+    siteId === null ? nothing : db.from('sites').select('id, url, ghost_version, capability, site_settings').eq('id', siteId).eq('user_id', userId).is('disconnected_at', null).maybeSingle(),
     db.from('project_templates').select('template_key, doc').eq('project_id', projectId).eq('user_id', userId).order('template_key'),
     db.from('custom_settings').select('key, type, group_name, visibility_condition, bound_to, position').eq('project_id', projectId).eq('user_id', userId).order('position').order('created_at'),
     db.from('translation_overrides').select('catalog_key, value').eq('project_id', projectId).eq('user_id', userId).order('catalog_key'),
     db.from('project_treatments').select('card_designs').eq('project_id', projectId).eq('user_id', userId).maybeSingle(),
     db.from('routes_config').select('config').eq('project_id', projectId).eq('user_id', userId).maybeSingle(),
     db.from('custom_templates').select('id, filename, display_name, kind, created_at').eq('project_id', projectId).eq('user_id', userId).eq('kind', 'routes').order('created_at'),
-    db.from('deploys').select('version, activated, activated_at').eq('project_id', projectId).eq('site_id', siteId).eq('user_id', userId).in('status', ['uploaded', 'live']),
-    db.from('project_site_bindings').select('theme_name').eq('project_id', projectId).eq('site_id', siteId).eq('user_id', userId).maybeSingle(),
+    siteId === null ? none : db.from('deploys').select('version, activated, activated_at').eq('project_id', projectId).eq('site_id', siteId).eq('user_id', userId).in('status', ['uploaded', 'live']),
+    siteId === null ? nothing : db.from('project_site_bindings').select('theme_name').eq('project_id', projectId).eq('site_id', siteId).eq('user_id', userId).maybeSingle(),
+    // Story 7.26 — the export's own numbering: every finished export of this project
+    siteId === null ? db.from('exports').select('version').eq('project_id', projectId).eq('user_id', userId) : none,
   ])
   const p = must(project, 'the project') as { name: string; slug: string; dark_enabled: boolean; posts_per_page: number; style_pack: unknown; language: string; rtl_ack_at?: string | null } | null
   const s = must(site, 'the site') as { url: string; ghost_version: string | null; capability: string; site_settings: unknown } | null
-  if (p === null || s === null) return null
+  if (p === null || (siteId !== null && s === null)) return null
   const rows = (must(templates, 'the templates') ?? []) as { template_key: string; doc: unknown }[]
   const settingRows = (must(settings, 'the custom settings') ?? []) as CompileSetting[]
   const overrideRows = (must(overrides, 'the translations') ?? []) as { catalog_key: string; value: string }[]
@@ -127,7 +138,7 @@ export async function compileInputOf(a: { projectId: string; siteId: string; use
   // Story 7.24 — before the first accepted upload, the names every other project holds on this Ghost (any account): the rule
   // suffixes past them. It rides `reads`, so a name claimed between Run checks and Ship it makes the artefact stale and Ship it
   // recompiles under the next free name. A frozen name reads nothing more: it never changes
-  const held = bound === null ? await heldNamesIn(db, { siteId, userId, projectId }) : []
+  const held = bound === null && siteId !== null ? await heldNamesIn(db, { siteId, userId, projectId }) : []
 
   // the routing, judged before the compile is asked anything: the same reader and validator the routes page saves through
   const rawRouting = routingRow?.config ?? {}
@@ -154,13 +165,14 @@ export async function compileInputOf(a: { projectId: string; siteId: string; use
     else docs[fileOfKey(key)] = doc
   }
 
-  const { pack, pairing } = enginePackOf(p.style_pack)
+  const { pack, pairing, name: packName } = enginePackOf(p.style_pack)
   const activated = uploads
     .filter((u) => u.activated && typeof u.activated_at === 'string')
     .sort((x, y) => (String(x.activated_at) < String(y.activated_at) ? 1 : -1))[0]
   const prev = activated === undefined ? Number.NaN : versionNumber(activated.version)
-  // Story 7.22 (DW-372): the highest number plus one — pruning keeps every row, so the number goes on
-  const n = nextVersion(uploads)
+  // Story 7.22 (DW-372): the highest number plus one — pruning keeps every row, so the number goes on. Story 7.26: an export's
+  // is the highest EXPORT plus one
+  const n = siteId === null ? nextVersion((must(exported, 'the exports') ?? []) as { version: string }[]) : nextVersion(uploads)
   const themeName = themeNameFor({ slug: p.slug, bound, held })
   const lists = config === null ? {} : Object.fromEntries([...listsOf(config)].map(([file, ls]) => [file, ls.map((l) => l.context)]))
   const input: CompileInput = {
@@ -170,6 +182,7 @@ export async function compileInputOf(a: { projectId: string; siteId: string; use
     library: libraryReader(),
     pack,
     pairing,
+    packName,
     assets: {},
     strings: resolveStrings(Object.fromEntries(overrideRows.map((r) => [r.catalog_key, r.value]))),
     language: p.language,
@@ -186,7 +199,7 @@ export async function compileInputOf(a: { projectId: string; siteId: string; use
     input,
     reads: {
       project: p,
-      major: s.ghost_version,
+      major: s?.ghost_version ?? null,
       templates: rows,
       settings: settingRows,
       overrides: overrideRows,

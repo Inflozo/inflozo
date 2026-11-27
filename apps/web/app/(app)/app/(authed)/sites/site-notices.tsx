@@ -1,14 +1,17 @@
 import type { ReactNode } from 'react'
 import { Banner } from '@/components/kit/banner'
-import { ring } from '@/components/kit/greyed'
+import { buttonClasses } from '@/components/kit/button'
+import { greyedProps, reason, ring } from '@/components/kit/greyed'
 import { ExternalLink } from '@/components/kit/icons'
 import { Submit } from '@/components/kit/submit'
 import { RoutesFallback } from '@/components/routes-fallback'
 import { hostOf } from '@/lib/connect-rule'
 import { adminAt, membersNotice, PAYWALL_WORDS } from '@/lib/paywall'
-import { INJECTION_COPY, PLAN_COPY, PORTAL_ANSWERS, PORTAL_COPY, PREVIEW_COPY, storedMembers } from '@/lib/probe-rule'
+import { DEPLOY_WORDS } from '@/lib/deploy'
+import { exportDoor, INJECTION_COPY, PLAN_COPY, PORTAL_ANSWERS, PORTAL_COPY, PREVIEW_COPY, storedMembers } from '@/lib/probe-rule'
 import { isFallback } from '@/lib/routes-upload'
 import { answerPlan, answerPortal, dismissInjectionNotice, recheckPlan } from './actions'
+import { ExportMenu } from './export-menu'
 
 /* ───────── STORY 3.3 — the four blocks the probes put on a Sites card, in this order: the
    one-time code-injection notice, the plan question, the Portal question, and B15's Preview-Only
@@ -33,10 +36,12 @@ import { answerPlan, answerPortal, dismissInjectionNotice, recheckPlan } from '.
 
    B15 IS NOT A BANNER. The frame draws it as its own bordered block with a sky panel inside it,
    an uppercase "What clears this" and a bottom control row above a rule, and that is what is built
-   here — from the frame, with **Export theme zip** and **Ship it** ABSENT rather than greyed,
-   because no export path and no deploy path exists in any epic yet (UX-DR3; they arrive with E11
-   and E7). `PREVIEW_COPY` in `lib/probe-rule.ts` holds every sentence, so the harness reads the
-   app's own words rather than retyping them.
+   here — from the frame. STORY 7.26 (DW-60) built its control row as drawn (`:1219-1225`): **Export
+   theme zip** in ink (the export's door — a link to the linked project's editor with the export
+   asked, a menu of them when several link the site, absent when none does), **Re-check plan**, and
+   at the right **Ship it** GREYED with its reason under it (P0-0) — the plan, not Inflozo, is what
+   refuses the ship. `PREVIEW_COPY` in `lib/probe-rule.ts` holds every sentence, so the harness reads
+   the app's own words rather than retyping them.
 
    DW-57 BINDS THE CHIP, NOT THIS FILE (its rule is at the top of `(list)/page.tsx`): the sky
    "Preview-only" chip is on the card's STATE LINE
@@ -136,7 +141,12 @@ function Ask({
   )
 }
 
-export function SiteNotices({ site, recheckFailed }: { site: NoticeSite; recheckFailed?: boolean }) {
+export function SiteNotices({ site, recheckFailed, projects = [] }: {
+  site: NoticeSite
+  recheckFailed?: boolean
+  /** STORY 7.26 — the projects that link this site, for B15's Export theme zip */
+  projects?: readonly { id: string; name: string }[]
+}) {
   const settings = site.site_settings ?? {}
   // The notice shows while the FACT is true and the COLUMN is null — one is what Ghost says, the
   // other is what the user said about it, and a re-probe rewrites only the first.
@@ -196,7 +206,7 @@ export function SiteNotices({ site, recheckFailed }: { site: NoticeSite; recheck
         </Ask>
       ) : null}
 
-      {preview ? <PreviewOnly siteId={site.id} recheckFailed={recheckFailed} /> : null}
+      {preview ? <PreviewOnly siteId={site.id} recheckFailed={recheckFailed} projects={projects} /> : null}
 
       {members.length > 0 && url ? (
         <Banner kind="info">
@@ -223,8 +233,12 @@ export function SiteNotices({ site, recheckFailed }: { site: NoticeSite; recheck
   )
 }
 
-/** B15, from the frame: the sky panel with its glyph, What clears this 1 and 2, and Re-check plan. */
-function PreviewOnly({ siteId, recheckFailed }: { siteId: string; recheckFailed?: boolean }) {
+/** B15, from the frame: the sky panel with its glyph, What clears this 1 and 2, and the control row — Export theme zip, Re-check
+ *  plan and the greyed Ship it (Story 7.26). */
+function PreviewOnly({ siteId, recheckFailed, projects }: { siteId: string; recheckFailed?: boolean; projects: readonly { id: string; name: string }[] }) {
+  const door = exportDoor(projects)
+  const ship = `ship-blocked-${siteId}`
+  const blocked = { reason: PREVIEW_COPY.shipBlocked }
   return (
     /* LABELLED BY ITS OWN HEADING, not by the chip's word: `aria-label="Preview-only"` repeated a
        string a screen reader had already announced on the state line and threw away the sentence
@@ -280,16 +294,31 @@ function PreviewOnly({ siteId, recheckFailed }: { siteId: string; recheckFailed?
         </ol>
       </div>
 
-      {/* The frame's control row above its rule. EXPORT THEME ZIP AND SHIP IT ARE ABSENT, not
-          greyed: neither path exists in any epic yet (UX-DR3) and a control that could never act
-          is absent. They arrive with E11 and E7. */}
+      {/* The frame's control row above its rule (`:1219-1225`), as drawn since Story 7.26 (DW-60): Export theme zip in ink — a
+          link to the linked project's editor with the export asked, a menu when several link the site, absent when none does —
+          then Re-check plan, and at the right the greyed Ship it with its reason under it (P0-0: focusable, never `disabled`). */}
       <div className="flex flex-col gap-2 border-t border-line pt-[14px]">
-        <form action={recheckPlan}>
-          <SiteField id={siteId} />
-          <Submit busy={RECHECKING} size={36} variant="secondary">
-            {PREVIEW_COPY.recheck}
-          </Submit>
-        </form>
+        <div className="flex flex-wrap items-start gap-[10px]">
+          {door === null ? null : 'href' in door ? (
+            <a id={`export-zip-${siteId}`} href={door.href} className={buttonClasses('primary', 36)}>
+              {PREVIEW_COPY.exportZip}
+            </a>
+          ) : (
+            <ExportMenu siteId={siteId} links={door.links} />
+          )}
+          <form action={recheckPlan}>
+            <SiteField id={siteId} />
+            <Submit busy={RECHECKING} size={36} variant="secondary">
+              {PREVIEW_COPY.recheck}
+            </Submit>
+          </form>
+          <span className="ml-auto flex max-w-[260px] flex-col items-end gap-[5px] text-right">
+            <button type="button" id={ship} {...greyedProps(ship, blocked)} className={`${buttonClasses('secondary', 36)} cursor-not-allowed border-0 bg-line text-ink-soft-aa opacity-45`}>
+              {DEPLOY_WORDS.ship}
+            </button>
+            {reason(ship, blocked)}
+          </span>
+        </div>
         {recheckFailed ? (
           <p role="status" className="text-helper-caption text-ink-soft">
             {PREVIEW_COPY.recheckFailed}

@@ -30,11 +30,17 @@ export function partialSlug(name: string): string {
 export const sectionSlug = (layerName: string, entry: { name: string; categoryTitle: string }): string =>
   partialSlug(layerName) || partialSlug(entry.name) || partialSlug(entry.categoryTitle) || 'section'
 
+/** STORY 7.26 (DW-336) — WINDOWS' RESERVED DEVICE NAMES: a file named `con.hbs` (or `nul`, `aux`, `prn`, `com0`–`com9`, `lpt0`–`lpt9`,
+ *  with any extension and in any case) cannot be extracted from a zip on Windows. `partialSlug` already lowercases and NFKD-folds
+ *  (`com¹` → `com1`), so treating these as TAKEN in `claim` suffixes every section partial that would meet one (`con` → `con-2`) —
+ *  in the compile, so a deploy and an export of one project never differ. `console`, `com10` and a bare `lpt` are no device. */
+export const RESERVED: ReadonlySet<string> = new Set(['con', 'prn', 'aux', 'nul', ...[...'0123456789'].flatMap((d) => [`com${d}`, `lpt${d}`])])
+
 /** The collision rule, over one directory's names: `slug` while it is free, else the first free `slug-2`, `slug-3`, … —
- *  and the name taken is recorded, so a later one never meets it. */
+ *  and the name taken is recorded, so a later one never meets it. A Windows device name (`RESERVED`) is never free. */
 export function claim(taken: Set<string>, slug: string): string {
   let name = slug
-  for (let n = 2; taken.has(name); n++) name = `${slug}-${n}`
+  for (let n = 2; taken.has(name) || RESERVED.has(name); n++) name = `${slug}-${n}`
   taken.add(name)
   return name
 }
