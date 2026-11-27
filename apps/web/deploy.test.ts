@@ -95,6 +95,14 @@ test('7.24 · R-294: the ending names a theme that landed under another name tha
   assert.equal(movedFrom(shown, null), null, 'no deploy read: nothing said')
   assert.equal(movedFrom(null, 'inflozo-name-test-3'), null)
   assert.equal(DEPLOY_WORDS.themeMoved('inflozo-name-test-3', 'inflozo-name-test-2'), 'It was uploaded as inflozo-name-test-3, because inflozo-name-test-2 was taken by another Inflozo project meanwhile.')
+  // Story 7.25's Review (walk 125a, run 2): the page re-read under the wizard knows the landed name — once the ship's own binding
+  // is written it says no theme is to be created at all — so the ending compares with the state frozen when Run checks left
+  // Destination, never the live prop
+  assert.equal(movedFrom({ newTheme: false, themeName: 'inflozo-name-test-3' }, 'inflozo-name-test-3'), null, 'why: the re-read state alone says nothing')
+  const wizard = readFileSync('components/editor/deploy-wizard.tsx', 'utf8')
+  const runChecks = wizard.slice(wizard.indexOf('const runChecks = async'), wizard.indexOf("setPressed('start')", wizard.indexOf('const runChecks = async')))
+  assert.match(runChecks, /shown\.current = ship\n/, 'frozen as Run checks leaves Destination')
+  assert.match(wizard, /const shownName = movedFrom\(shown\.current \?\? ship, movedName\)/)
 })
 
 test('the staleness hash: the same rows in any key order hash alike; a moved row or another release does not', async () => {
@@ -683,4 +691,23 @@ test('7.25 — the wizard keeps a 429\'s message and says it where a refusal is 
   const press = wizard.slice(wizard.indexOf('const press = async'), wizard.indexOf('const unstoppable ='))
   assert.match(press, /\(answer\.message \?\? W\.infrastructure\)/)
   assert.match(press, /setRefused\(why\)/)
+  // the Review (2026-11-27): only OUR two codes' sentence is kept — a 429 from anything in front of the route is never said
+  assert.match(post, /body\?\.code === 'deploy_rate_limited' \|\| body\?\.code === 'compile_budget'/)
+  assert.match(post, /\.\.\.\(ours \? \{ message: body\.message as string \} : \{\}\)/)
+})
+
+test('7.25 (the Review) — the reads the limits and DW-373 rest on, as `deploy-io.ts` writes them: `resting` returns the three moving Pre-flight stages beside `awaiting_ship`; each count is scoped by `user_id` (the site\'s also by `site_id`) over the right column; a failed count is logged by code at the route', () => {
+  const io = readFileSync('server/deploy/deploy-io.ts', 'utf8')
+  const member = (head: string) => io.slice(io.indexOf(head), io.indexOf('\n    },\n', io.indexOf(head)))
+  assert.match(member('async resting('), /\.in\('stage', \['awaiting_ship', 'queued', 'compiling', 'checking'\]\)/)
+  assert.match(member('async resting('), /\.eq\('project_id', projectId\)\.eq\('site_id', siteId\)\.eq\('user_id', userId\)/)
+  const site = member('async site({ siteId, userId })')
+  assert.match(site, /from\('sites'\)\.select\('url, deploy_rate_limit_exempt'\)\.eq\('id', siteId\)\.eq\('user_id', userId\)/)
+  const accepted = member('async accepted({ siteId, userId, since })')
+  assert.match(accepted, /from\('deploys'\)\.select\('accepted_at'\)\.eq\('site_id', siteId\)\.eq\('user_id', userId\)\.gte\('accepted_at', since\)/)
+  const started = member('async started({ userId, since })')
+  assert.match(started, /from\('deploy_jobs'\)\.select\('started_at'\)\.eq\('user_id', userId\)\.gte\('started_at', since\)/)
+  assert.doesNotMatch(started, /site_id/, 'any site or none: Story 7.26\'s export rides a row with a null site_id')
+  assert.match(DEPLOY_ROUTE, /console\.error\('projects\/deploy: the compile budget could not be read', \{ code:/)
+  assert.match(DEPLOY_ROUTE, /console\.error\('projects\/deploy: the deploy limit could not be read', \{ code:/)
 })

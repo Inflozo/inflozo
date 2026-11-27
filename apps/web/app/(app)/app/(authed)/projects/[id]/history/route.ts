@@ -34,8 +34,10 @@ import { PUT_BACK_IO } from '@/server/deploy/put-back-io'
  * opens: 200 `{ drift }` — D3's record, or null where there are not two manifests to compare — and the put-back's own refusals,
  * answered as above (404 gone, 409 `{ code }`), and 502 `{ code, message }` for ours. It writes no row; a found drift's live zip is
  * kept for `history/live`'s Download.
- * THE ACT BRANCH READS NO PLAN AND NO LOCK, and runs no gscan (FR-J9: a stored artefact already ran; rollback is exempt from the Pro
- * exit gating) — `put-back.test.ts` reads this branch's source, the check with it, and holds it so.
+ * THE ACT BRANCH READS NO PLAN AND NO EDIT LOCK, and runs no gscan (FR-J9: a stored artefact already ran; rollback is exempt from the
+ * Pro exit gating) — `put-back.test.ts` reads this branch's source, the check with it, and holds it so. Since Story 7.25 the put-back
+ * and the restore hold the SITE's advisory lock inside `put-back.ts` (`locked`), so a ship to the same Ghost waits for them, and
+ * they for it — past its wait, `busy`.
  *
  * STORY 7.23b — RESTORE ORIGINAL. GET adds `original`: the user's `site_snapshots` rows with their site's address, read on the
  * user's OWN session (RLS `site_snapshots_owner_read`), and the project's linked site's picked — never another site's (that site may
@@ -43,8 +45,8 @@ import { PUT_BACK_IO } from '@/server/deploy/put-back-io'
  * (a later capture keeps the id), checked before `deploy`, which it does not carry — is
  * `restoreOriginal` over the same io: activate the saved original by its name, and upload the saved zip only when Ghost no longer
  * holds it (R-292). Its answers are the act branch's own: 200 `{ outcome }` (`live` · `uploaded`), 404 gone, 409 `{ code }`
- * (`disconnected` · `busy`), 422 Ghost's check with its `detail`, 502 `{ code, message }`. THE RESTORE READS NO PLAN, NO LOCK AND
- * NO WORKING DOCUMENT, AND RUNS NO GSCAN: restoring an artefact that already ran is always allowed, on any plan, and redeploys a
+ * (`disconnected` · `busy`), 422 Ghost's check with its `detail`, 502 `{ code, message }`. THE RESTORE READS NO PLAN, NO EDIT LOCK
+ * AND NO WORKING DOCUMENT, AND RUNS NO GSCAN (the site's lock is `put-back.ts`' own, as the act branch's): restoring an artefact that already ran is always allowed, on any plan, and redeploys a
  * stored artefact, never the working document (the epic's criteria) — `put-back.test.ts` reads this branch's source too.
  *
  * NO EDIT LOCK. A pin and a put-back are history controls: they change no design, so they are live in a read-only editor
@@ -149,7 +151,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const { deploy, pinned, act, snapshot, captured } = body as Record<string, unknown>
 
   // ── Story 7.23b — Restore original: the saved original's id and when it was captured (a later capture keeps the id), never a
-  // deploy. No plan, no lock, no gscan (the header says why) ──
+  // deploy. No plan, no edit lock, no gscan (the header says why) ──
   if (act === 'restore') {
     if (typeof snapshot !== 'string' || !isUuid(snapshot) || typeof captured !== 'string' || Number.isNaN(Date.parse(captured))) return no(400, 'Bad snapshot')
     return answered(await restoreOriginal(PUT_BACK_IO, { userId: user.id, projectId, snapshotId: snapshot, captured, now: new Date() }))
@@ -158,7 +160,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   if (typeof deploy !== 'string' || !isUuid(deploy)) return no(400, 'Bad deploy')
 
-  // ── the act branch: Story 7.23a's put-back. No plan, no lock, no gscan (the header says why) ──
+  // ── the act branch: Story 7.23a's put-back. No plan, no edit lock, no gscan (the header says why) ──
   if (act !== undefined) {
     if (act !== 'live' && act !== 'check') return no(400, 'Bad act')
     const asked = { userId: user.id, projectId, deployId: deploy, now: new Date() }

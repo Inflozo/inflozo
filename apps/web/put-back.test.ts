@@ -832,6 +832,33 @@ test('7.25: the site\'s lock NOT HELD within its wait — the put-back and Resto
   }
 })
 
+test('7.25 (the Review): a switch that lands DURING THE WAIT — the project now linked to another site — answers `busy` from inside the lock, nothing sent: the site it would write to is not the one it locked; the control: no switch, the same version on the other site is `elsewhere` as before', async () => {
+  const switched = (w: ReturnType<typeof world>) => {
+    const { linked, lock } = w.io
+    w.io.lock = async (siteId, run) => {
+      w.io.linked = async (a) => {
+        const was = await linked(a)
+        return was === null ? null : { ...was, siteId: OTHER }
+      }
+      return lock(siteId, run)
+    }
+  }
+  // the put-back: a version of the OTHER site, which the project is linked to once the wait is over
+  const back = world({ rows: [row(1), row(2, { site_id: OTHER }), row(3, { status: 'live' })], upload: [ok(true)] })
+  switched(back)
+  assert.equal(await back.put('v2'), 'busy')
+  assert.ok(back.reads.includes(`lock:${S}`), 'the lock taken was the first site\'s')
+  assert.equal(back.calls.length, 0, 'nothing sent')
+  assert.deepEqual(back.updates, [], 'nothing written')
+  const control = world({ rows: [row(1), row(2, { site_id: OTHER }), row(3, { status: 'live' })], upload: [ok(true)] })
+  assert.equal(await control.put('v2'), 'elsewhere', 'the control: no switch')
+  const restore = world()
+  switched(restore)
+  assert.equal(await restore.restore(), 'busy')
+  assert.equal(restore.calls.length, 0, 'nothing sent')
+  assert.ok(!restore.reads.includes('original'), 'refused before the original is read')
+})
+
 test('7.25: `moving` is held as before — inside the lock a ship still moving (one killed mid-span) still refuses `busy`, nothing sent', async () => {
   const w = world({ moving: true })
   assert.equal(await w.put('v2'), 'busy')

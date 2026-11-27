@@ -46,7 +46,8 @@ import { AdminError } from './admin-rule.ts'
  * transaction held open over a whole Ship it, and Ship it's own `call()`s decrypt and audit through `sql()` — so a lock held
  * on `sql()`'s one connection would wait on its own upload (the `max: 1` rule above). Raising `max` instead would let
  * concurrent holders starve the decrypts their own spans need. So each hold opens its own client — the same URL, the same
- * pinned root, `prepare: false`, `max: 1` — and its caller ends it; it costs one TLS handshake per hold and starves nothing.
+ * pinned root, `prepare: false`, `max: 1` — and its caller ends it; it costs one TLS handshake per hold, and one pooler backend
+ * for as long as it is held (`site-lock.ts` names that ceiling, DW-408).
  * NO `idle_timeout` on it: postgres.js ends a connection idle that long even inside an open transaction (`index.js`' `move`
  * starts the timer whenever no query is queued), and the hold's connection is idle for the whole span by design. Its
  * notices are handed to the caller (`onnotice`), so a `COMMIT` that lands on a reconnected session — Postgres' `25P01`

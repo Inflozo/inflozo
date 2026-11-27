@@ -29,7 +29,8 @@ import { compareLive, sendActivate, sendUpload, STALLED_MS, twice, type Called, 
  * nothing. No row is inserted, copied or deleted, and nothing is pruned — a put-back adds no object.
  *
  * NO JOB ROW; THE SITE'S LOCK (Story 7.25, AD-19). A put-back is one request: at most two uploads of 120 s and an activation of 15 s,
- * inside the route's 300 s. It runs its WHOLE body under the site's advisory lock (`io.lock`, `server/site-lock.ts`, keyed on the
+ * inside the route's 300 s — and, since Story 7.25, a wait of up to `LOCK_WAIT_MS` (30 s) and a connection before them, which leaves
+ * about 13 s of the 300 for its reads and writes in the worst case (the Review, 2026-11-27). It runs its WHOLE body under the site's advisory lock (`io.lock`, `server/site-lock.ts`, keyed on the
  * project's linked site, read once for the key — `locked`), so a ship to the same Ghost, a second put-back or a Restore original
  * waits for it rather than interleaving, and its own reads run again inside, so a second press finds the first one's result (`live`
  * already). Not held within `LOCK_WAIT_MS`: `busy`, nothing sent. It still refuses while a ship of the same project × site is
@@ -161,12 +162,14 @@ export async function checkBeforePutBack(io: PutBackIo, a: Asked): Promise<Check
 /** STORY 7.25 — THE WHOLE BODY UNDER THE SITE'S LOCK, keyed on the project's linked site — read ONCE for the key, and again by the
  *  body inside (so the body's answers are unchanged). A project linked to no site runs the body unlocked: the body answers it as
  *  before (`elsewhere`, `gone`). Not held within the wait: `busy`, nothing sent. A key read failing twice, or the lock not taken at
- *  all, is ours, with nothing sent. The check before a Roll back takes none: it writes nothing to Ghost. */
-async function locked<T>(io: PutBackIo, a: { projectId: string; userId: string }, body: () => Promise<T>): Promise<T | 'busy' | { refused: DeployError }> {
+ *  all, is ours, with nothing sent. The check before a Roll back takes none: it writes nothing to Ghost. The body is handed the key,
+ *  and answers `busy` when its own read finds the project linked elsewhere since — a switch landed during the wait, and the site it
+ *  would write to is not the one locked (the Review, 2026-11-27). */
+async function locked<T>(io: PutBackIo, a: { projectId: string; userId: string }, body: (key: string | null) => Promise<T>): Promise<T | 'busy' | { refused: DeployError }> {
   try {
     const siteId = (await twice(io, 'linked site', () => io.linked(a)))?.siteId ?? null
-    if (siteId === null) return await body()
-    const held = await io.lock(siteId, body)
+    if (siteId === null) return await body(null)
+    const held = await io.lock(siteId, () => body(siteId))
     return held.held ? held.value : 'busy'
   } catch (e) {
     io.log('put-back: the site\'s lock was not taken', { code: (e as { code?: string } | null)?.code })
@@ -175,10 +178,10 @@ async function locked<T>(io: PutBackIo, a: { projectId: string; userId: string }
 }
 
 export async function putBack(io: PutBackIo, a: Asked): Promise<PutBackOutcome> {
-  return locked(io, a, () => putBackHeld(io, a))
+  return locked(io, a, (key) => putBackHeld(io, a, key))
 }
 
-async function putBackHeld(io: PutBackIo, a: Asked): Promise<PutBackOutcome> {
+async function putBackHeld(io: PutBackIo, a: Asked, key: string | null): Promise<PutBackOutcome> {
   let host = ''
   /** the version Ghost has acted on — an upload accepted or an activation made — once it has: a record failing after that is not
    *  "nothing reached your site" (`DEPLOY_WORDS.infrastructure`) but History failing to note what did */
@@ -188,6 +191,8 @@ async function putBackHeld(io: PutBackIo, a: Asked): Promise<PutBackOutcome> {
     const admitted = await admit(io, a)
     if (typeof admitted === 'string') return admitted
     const { row, linked, at } = admitted
+    // the site it would write to is the one whose lock it holds (`locked`)
+    if (linked.siteId !== key) return 'busy'
     host = hostOf(linked.url)
     const ctx = { host, siteId: row.site_id }
     const now = a.now.toISOString()
@@ -263,10 +268,10 @@ const GHOST_DEFAULTS: ReadonlySet<string> = new Set(['casper', 'source'])
  * every `live` row on the site demoted. No `deploys` row is ever written.
  */
 export async function restoreOriginal(io: PutBackIo, a: { userId: string; projectId: string; snapshotId: string; captured: string; now: Date }): Promise<RestoreOutcome> {
-  return locked(io, a, () => restoreHeld(io, a))
+  return locked(io, a, (key) => restoreHeld(io, a, key))
 }
 
-async function restoreHeld(io: PutBackIo, a: { userId: string; projectId: string; snapshotId: string; captured: string; now: Date }): Promise<RestoreOutcome> {
+async function restoreHeld(io: PutBackIo, a: { userId: string; projectId: string; snapshotId: string; captured: string; now: Date }, key: string | null): Promise<RestoreOutcome> {
   let host = ''
   /** whether Ghost has acted — an activation made or an upload accepted — so a record failing after it is said as what it is */
   let acted = false
@@ -275,6 +280,8 @@ async function restoreHeld(io: PutBackIo, a: { userId: string; projectId: string
     // A later capture keeps the row's id (an upsert on `site_id`), so the one History drew is its id AND its `captured_at`
     const linked = await twice(io, 'linked site', () => io.linked({ projectId: a.projectId, userId: a.userId }))
     if (linked === null) return 'gone'
+    // the site it would write to is the one whose lock it holds (`locked`)
+    if (linked.siteId !== key) return 'busy'
     const original = await twice(io, 'original theme', () => io.original({ siteId: linked.siteId, userId: a.userId }))
     if (original === null || original.id !== a.snapshotId || Date.parse(original.captured_at) !== Date.parse(a.captured)) return 'gone'
     // a row with no name (the column is nullable; the capture always writes one) is never sent to Ghost as `null`

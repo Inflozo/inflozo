@@ -12569,6 +12569,43 @@ test('7.25 · (b) Ship it over the site\'s limit (429): the limit\'s sentence in
   await expect(ship).not.toHaveAttribute('aria-busy', 'true')
 })
 
+test('7.25 · (d) the Review: a Ship it whose site\'s lock was held past the wait (`deploy_running`, nothing sent, no shipping stage entered) ends on S8d′ — the ship rail, "Uploading to Ghost failed" and the running sentence — never Check\'s greyed Ship it', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  const running = DEPLOY.deployError('deploy_running', { host: '' })
+  await plantDeploy(page, { preflight: PREFLIGHT, ship: [viewOf('failed', CHECKED, { error: running, deploy: deployOf({ status: 'failed' }) })] })
+  await open(page)
+  await openWizard(page)
+  await runChecks(page)
+  const ship = page.locator('#deploy-ship')
+  await expect(ship).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+  await ship.focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page).locator('#deploy-title')).toHaveText(DW.stageFailed(DEPLOY.STAGE_NAMES.uploading), { timeout: 15_000 })
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'ship')
+  await expect(wizard(page)).toContainText(DW.running)
+  await expect(page.locator('#deploy-ship-reason')).toHaveCount(0)
+})
+
+test('7.25 · (e) the Review: a Re-activate whose site\'s lock was held past the wait — the theme still uploaded — ends under "Activating failed" with the running sentence, nothing sent', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'shipped' })
+  const running = DEPLOY.deployError('deploy_running', { host: '' })
+  const uploaded = { deploy: deployOf({ version: '3.0.0', status: 'uploaded' }), previous: 2 }
+  const d2f = viewOf('done', { ...CHECKED, uploading: TIMED.uploading }, uploaded)
+  await plantDeploy(page, { preflight: PREFLIGHT, ship: [UPLOADING, d2f], activate: [d2f, viewOf('failed', { ...CHECKED, uploading: TIMED.uploading }, { ...uploaded, error: running })] })
+  await open(page)
+  await openWizard(page)
+  await runChecks(page)
+  const ship = page.locator('#deploy-ship')
+  await expect(ship).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+  await ship.focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page).locator('#deploy-title')).toHaveText(DW.uploadOnlyTitle, { timeout: 15_000 })
+  await page.locator('#deploy-reactivate').focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page).locator('#deploy-title')).toHaveText(DW.stageFailed(DEPLOY.STAGE_NAMES.activating), { timeout: 15_000 })
+  await expect(wizard(page)).toContainText(DW.running)
+})
+
 test('7.25 · (c) a switch the chosen site\'s lock refused (DW-379): the running sentence in the picker\'s refusal line, said politely, nothing linked — the picker still open', async ({ page }) => {
   await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'unlinked', 'x-inflozo-harness-switch': 'busy' })
   await open(page)

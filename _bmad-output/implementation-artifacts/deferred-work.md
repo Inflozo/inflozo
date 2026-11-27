@@ -11003,3 +11003,58 @@ owner: Story 15.1 (the E2E suite) — reopen as a product defect if Vercel's req
 location: `tools/probe/run-verify-editor.cjs` (step 121's `openDrawer121`, `putBack121`) · `apps/web/components/editor/deploy-history.tsx`
 reason: the Review's three runs under the owner's go were spent; the path is 7.23's and unchanged here, and the drawer passed its
   keyboard journeys in CI on this head.
+
+### DW-408: every ship holds one database connection open for its whole length, and nothing caps how many at once
+
+plain: To make ships to one Ghost take turns, each ship keeps one connection to our database open while it runs, and each one
+  waiting its turn keeps another for up to 30 seconds. The database has a fixed number of these (60 in all on the current plan).
+  If very many ships, roll backs and site switches ran at the same moment across all customers, everyone's database work would
+  queue for up to 30 seconds and some of the waiting ships would stop with "Another deploy to this site is already running".
+  Nobody is near that today.
+status: open
+severity: low
+origin: Story 7.25's Review (2026-11-27), three review layers (Blind, Edge Case and the verification-gap layer). Read on
+  production, read-only: `show max_connections` 60; the pooler's config answers `pool_mode: transaction` and `default_pool_size`
+  null (the platform's default for the compute size, not read). The transaction pooler hands a backend to a transaction until it
+  ends, so every `withSiteLock` hold pins one for its span (up to ~300 s), and every waiter one for up to `LOCK_WAIT_MS`.
+owner: Story 15.5 (reliability) — its card carries it: measure concurrent holds against the pool; upgrade to a lease row (site,
+  holder, expires_at) taken and released in two short statements, which pins nothing, or cap concurrent holds below the pool size.
+location: `apps/web/server/site-lock.ts` (its header's "WHAT A HOLD COSTS" ponytail) · `apps/web/server/ghost-admin/db.ts`
+  (`lockSql()`)
+reason: a capacity ceiling with no measured load near it; the lock as built is what the spec froze (a transaction-scoped
+  advisory lock on its own connection), and the ponytail names the ceiling and the upgrade.
+
+### DW-409: deleting a project frees its part of the hourly build budget
+
+plain: Inflozo stops one account at 60 theme builds an hour to keep a runaway script from running up our bill. A build is
+  counted by its job record, and a project's job records are deleted with the project, so someone who deliberately deletes and
+  re-creates projects could build more than 60 an hour. An honest customer is never affected, and each build still costs well
+  under a cent.
+status: open
+severity: low
+origin: Story 7.25's Review (2026-11-27), the Acceptance Auditor: `deploy_jobs.project_id … on delete cascade`
+  (`supabase/migrations/20260904120000_complete_schema.sql:413`) — the Design Notes' "job rows are never deleted" holds only while
+  the project stands. The comment on `DeployIo.limits.started` and PRD FR-J11's Review note now say so.
+owner: Story 7.26 (the export rides a job row and asks the same budget) — decide there whether the budget needs a row that
+  outlives its project (a per-account counter, or `on delete set null` on `deploy_jobs.project_id`), a Schema change.
+location: `apps/web/server/deploy/deploy-io.ts` (`limits.started`) · `apps/web/server/deploy/run.ts` (`compileBudget`)
+reason: R-295's budget is billing hygiene against runaways, and the bypass needs deliberate project deletion; closing it is a
+  schema change this story's spec forbids.
+
+### DW-410: a ship or re-activate that fails before reaching Ghost is titled by the wrong step
+
+plain: When a Ship it fails because our own systems could not be reached before anything was sent to Ghost (for example the
+  database connection behind the "one ship at a time" rule could not be opened, twice), the wizard's heading says "Checking
+  failed" although the check had passed; a Re-activate that fails the same way says "Uploading to Ghost failed". The sentence
+  under it is right ("Something went wrong on our side"), and nothing reached the site.
+status: open
+severity: low
+origin: Story 7.25's Review (2026-11-27), the Acceptance Auditor. The wizard's `lockWaited` lands a `deploy_running` failure
+  with no shipping stage on S8d′ (journey 7.25 (d), and (e) for Re-activate); a `deploy_infrastructure` failure with no shipping
+  stage takes `stepOf('failed', …)` to Check. That was already so for every infrastructure failure of Ship it before its first
+  stage (a deploy read failing twice, 7.18a) — the lock's "not taken at all" joins an existing class rather than starting one.
+owner: Story 15.1 (the E2E suite's wizard pass) — key the S8d′ landing on "this row was claimed by Ship it / Re-activate" rather
+  than on one error code (e.g. a `shipped_at` marker the claim writes), and title an infra failure before any stage by the press.
+location: `apps/web/components/editor/deploy-wizard.tsx` (`lockWaited`, `reactivateRefused`, `failedAt`)
+reason: pre-existing for the whole class; the row does not say which press it came from, and inferring it from timings is
+  what produced the class.

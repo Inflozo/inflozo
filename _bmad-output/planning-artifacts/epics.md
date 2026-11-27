@@ -4796,6 +4796,10 @@ said beside the button, never in place of the page; the Backup step's Theme row 
 pipeline, one job row per export — and asks `compileBudget` (`apps/web/server/deploy/run.ts`) first, so an account's exports and
 its Run checks share R-295's one budget (`ACCOUNT_COMPILES_PER_HOUR`, `apps/web/lib/deploy.ts`); `exports` rows are never what
 the budget counts. A refused export says `DEPLOY_WORDS.budget`'s first sentence, with when it can export again.
+**And** *(given an owner by Story 7.25's Review, 2026-11-27)* a project's job rows are deleted with the project
+(`deploy_jobs.project_id … on delete cascade`), so deleting projects frees budget: decide whether the budget counts a row that
+outlives its project (a per-account counter, or `on delete set null`) — a Schema change, asked of the owner if it costs the
+customer anything (DW-409)
 
 ### Story 7.27: Library updates and the consent step
 
@@ -9985,6 +9989,10 @@ back — it failed once in CI with focus never on the card's heading, 4 of 4 on 
 **And** *(given an owner by Story 7.24's Review, 2026-11-27)* walk step 121's History drawer presses that timed out on production
 at a different press in each of three runs (a Roll back's click twice, the drawer's loading once) are classified from Vercel's
 request rows for the `history` route at the stop — a slow or missing answer reopens it as a product defect (DW-407)
+**And** *(given an owner by Story 7.25's Review, 2026-11-27)* a Ship it or Re-activate that fails as ours before entering any
+shipping stage — a lock not taken at all, a deploy read failing twice — lands on S8d′ titled by the press, never "Checking failed"
+for a check that passed or "Uploading to Ghost failed" for a Re-activate: the landing keyed on which press claimed the row, not on
+one error code (DW-410)
 
 **Owner test:** none (automated). · **Verification:** production stack, T1–T3 (R-82).
 
@@ -10088,6 +10096,10 @@ which answers 500 when a theme failed) reaches a person as the account purge doe
 is told from one that may yet go (DW-392); its due query pages without naming every id it tried once noticed themes are
 counted in hundreds (DW-393); a site reconnected in the seconds before its warning is sent gets none (DW-394); and a late
 warning's words agree with its later date, in the owner's words (DW-395)
+**And** *(given an owner by Story 7.25's Review, 2026-11-27)* the per-site advisory lock's cost is measured against the pooler:
+every `withSiteLock` hold pins one pooler backend for its span and every waiter one for up to 30 s, with no cap on concurrent
+holds (`max_connections` 60 on production) — either concurrent holds are capped below the pool size, or the lock becomes a lease
+row taken and released in two short statements, which pins nothing (DW-408)
 **Owner test:** none. · **Verification:** a real restore drill on the production project (R-82).
 
 ### Story 15.6: G1 and G2, measured rather than asserted

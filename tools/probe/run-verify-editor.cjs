@@ -17522,7 +17522,7 @@ async function main() {
       const ctxs125 = []
       const csp125 = []
 
-      const JOB125 = 'id,stage,error,deploy_id,stage_timings,started_at,updated_at'
+      const JOB125 = 'id,stage,error,deploy_id,stage_timings,started_at,updated_at,cancel_requested'
       const job125 = async (project) => (await call('/rest/v1', `/deploy_jobs?project_id=eq.${project}&select=${JOB125}&order=started_at.desc&limit=1`)).body?.[0] ?? null
       const jobById125 = async (id) => (await call('/rest/v1', `/deploy_jobs?id=eq.${id}&select=${JOB125}`)).body?.[0] ?? null
       const deploy125 = async (id) => (id == null ? null : (await call('/rest/v1', `/deploys?id=eq.${id}&select=id,version,theme_name,status,activated,artifact_path,content_manifest`)).body?.[0] ?? null)
@@ -17540,6 +17540,7 @@ async function main() {
           name: q('[data-theme-name]')?.textContent ?? null,
           mode: q('input[name="deploy-mode"]:checked')?.value ?? null,
           refused: q('#deploy-refused')?.textContent ?? null,
+          fresh: q('[data-theme-new]') !== null,
           reading: q('#deploy-drift-reading') !== null,
           passes: rows ? [...rows.children].filter((c) => !c.hasAttribute('data-finding')).length : 0,
         }
@@ -17627,16 +17628,16 @@ async function main() {
         await until125(() => pg.locator('#deploy-ship').getAttribute('aria-disabled').catch(() => 'true'), (v) => v !== 'true', 60000)
         return pre
       }
-      /** Ship it pressed: true once its POST left (DW-404's silent press is recorded, never pressed again) */
+      /** Ship it pressed: the time (ms) its POST left, else null (DW-404's silent press is recorded, never pressed again) */
       const press125 = async (acc) => {
-        const sent = acc.pg.waitForRequest((r) => r.method() === 'POST' && /\/deploy$/.test(new URL(r.url()).pathname), { timeout: 20000 }).then(() => true, () => false)
+        const sent = acc.pg.waitForRequest((r) => r.method() === 'POST' && /\/deploy$/.test(new URL(r.url()).pathname), { timeout: 20000 }).then(() => Date.now(), () => null)
         await acc.pg.locator('#deploy-ship').click()
-        if (!(await sent)) {
+        const at = await sent
+        if (at === null) {
           await acc.pg.screenshot({ path: path.join(OUT, `step-125-ship-silent-${Date.now()}.png`) }).catch(() => {})
           note('step 125 — DW-404, a Ship it press sent nothing in 20 s', 'see the screenshot')
-          return false
         }
-        return true
+        return at
       }
       const ended125 = (id) => until125(() => jobById125(id), (j) => j !== null && ['done', 'failed', 'cancelled'].includes(j.stage), 330000)
       /** a ship from Destination to its end (Deploy only): the job, its deploy row */
@@ -17672,6 +17673,16 @@ async function main() {
         const namesAtCheck = [(await deploy125(preX.deploy_id))?.theme_name ?? null, (await deploy125(preY.deploy_id))?.theme_name ?? null]
         check(`step 125a — X's and Y's Destinations both name ${BASE125}, and both Pre-flights compiled it (nothing bound yet), each resting at awaiting_ship`,
           destX?.name === BASE125 && destY?.name === BASE125 && namesAtCheck.every((n) => n === BASE125), JSON.stringify({ x: destX?.name, y: destY?.name, compiled: namesAtCheck }))
+        // the Review (2026-11-27): every page re-read (an RSC fetch) and server action each page makes from the presses to the
+        // endings, so a ship state the page re-read under the wizard is SEEN, not guessed (R-294's line, run 2)
+        const rereads = { X: [], Y: [] }
+        const watch = (acc, who) => acc.pg.on('request', (r) => {
+          const h = r.headers()
+          if (h.rsc === '1' || h['next-action']) rereads[who].push(`${new Date().toISOString().slice(11, 23)} ${r.method()} ${new URL(r.url()).pathname.replace(/[0-9a-f-]{36}/g, ':id')}${h['next-action'] ? ' (action)' : ' (rsc)'}`)
+        })
+        watch(X, 'X')
+        watch(Y, 'Y')
+        const freshAtCheck = [(await wiz125(X.pg))?.fresh ?? null, (await wiz125(Y.pg))?.fresh ?? null]
         const pressedAt = new Date().toISOString()
         const [sentX, sentY] = await Promise.all([press125(X), press125(Y)])
         const [endX, endY] = await Promise.all([ended125(preX.id), ended125(preY.id)])
@@ -17687,37 +17698,55 @@ async function main() {
         const [boundEarly, boundLate] = [await binding125(early.acc), await binding125(late.acc)]
         const themesA = await themes125()
         const diffEarly = await liveDiff125(BASE125, rowEarly?.content_manifest)
-        check(`step 125a — both presses sent within a second, both jobs done with no error (no deploy_running, no taken): the earlier bound ${BASE125}, the later ${TAKEN125}; the later's uploading began after the earlier's last edge and its compiling ran again after the press (the stale re-make inside the lock), its ending saying R-294's moved line`,
-          sentX && sentY && endX?.stage === 'done' && endY?.stage === 'done' && endX.error === null && endY.error === null &&
+        // the Review (2026-11-27): the control that they RACED — both POSTs left within a second, and both before the earlier ship
+        // ended — so the later's wait was the lock's, not two ships one after the other
+        const sentApart = sentX !== null && sentY !== null ? Math.abs(sentX - sentY) : null
+        const overlapped = sentX !== null && sentY !== null && Math.max(sentX, sentY) < Date.parse(early.end?.updated_at ?? '')
+        check(`step 125a — the control: both presses sent within a second of each other, both before the earlier ship ended (they raced)`,
+          sentApart !== null && sentApart < 1000 && overlapped, JSON.stringify({ sentApart, overlapped, earlierEnded: early.end?.updated_at }))
+        check(`step 125a — both jobs done with no error (no deploy_running, no taken): the earlier bound ${BASE125}, the later ${TAKEN125}; the later's uploading began after the earlier's last edge and its compiling ran again after the press (the stale re-make inside the lock)`,
+          endX?.stage === 'done' && endY?.stage === 'done' && endX.error === null && endY.error === null &&
           boundEarly === BASE125 && boundLate === TAKEN125 && rowEarly?.theme_name === BASE125 && rowLate?.theme_name === TAKEN125 &&
-          upAt(late.end) >= (early.end?.updated_at ?? '9') && (late.end?.stage_timings?.compiling?.at ?? '') > pressedAt && late.moved === 1 && early.moved === 0,
-          JSON.stringify({ early: { who: early.acc === X ? 'X' : 'Y', bound: boundEarly, compiling: early.end?.stage_timings?.compiling?.at, uploading: upAt(early.end), last: early.end?.updated_at, moved: early.moved },
-            late: { bound: boundLate, compiling: late.end?.stage_timings?.compiling?.at, uploading: upAt(late.end), moved: late.moved, error: late.end?.error }, pressedAt }))
+          upAt(late.end) >= (early.end?.updated_at ?? '9') && (late.end?.stage_timings?.compiling?.at ?? '') > pressedAt,
+          JSON.stringify({ early: { who: early.acc === X ? 'X' : 'Y', bound: boundEarly, compiling: early.end?.stage_timings?.compiling?.at, uploading: upAt(early.end), last: early.end?.updated_at },
+            late: { bound: boundLate, compiling: late.end?.stage_timings?.compiling?.at, uploading: upAt(late.end), error: late.end?.error }, pressedAt }))
+        check(`step 125a — R-294 (Story 7.24): the later's ending says "uploaded as ${TAKEN125}, because ${BASE125} was taken", the earlier's nothing more`,
+          late.moved === 1 && early.moved === 0,
+          JSON.stringify({ late: late.moved, early: early.moved, freshAtCheck, rereads }))
         check(`step 125a — T1 (GET themes/, the staff token) lists both ${BASE125} and ${TAKEN125}, neither active (${prev125} live) — nothing overwritten — and the earlier's ${BASE125} downloaded equals its content_manifest`,
           JSON.stringify(named125(themesA)) === JSON.stringify([BASE125, TAKEN125]) && themesA?.find((t) => t.active)?.name === prev125 && none125(diffEarly),
           JSON.stringify({ t1: named125(themesA), diffEarly }))
 
-        // ── 125d — DW-373 on X (bound: four steps): a second Run checks while the first still checks ──
+        // ── 125d — DW-373 on X (bound: four steps): a second Pre-flight while the first still checks ──
+        // The Review (2026-11-27): a whole Pre-flight on production takes ~2.5–4 s, under the wizard's close-and-reopen, so a UI
+        // second press mostly met a check already RESTING and passed by the older abandon path (run 2). So the second Pre-flight is
+        // the server's half (the memory's way): the first by Run checks, the second POSTed from the tab with its own lock session the
+        // moment the first reads moving. It counts only when the first was FLAGGED (`cancel_requested`), never merely abandoned.
         {
           await handBack125(Y)
           await Y.pg.goto('about:blank')
           await destination125(X)
           const was = (await job125(X.project))?.id ?? null
+          const deploysBefore = ((await call('/rest/v1', `/deploys?project_id=eq.${X.project}&select=id`)).body ?? []).map((d) => d.id)
+          const objectsBefore = (await listed125('deploy-artifacts', X.project)).map((o) => o.name)
           await X.pg.locator('#deploy-run').click()
-          const first = await until125(() => job125(X.project), (j) => j !== null && j.id !== was && ['compiling', 'checking', 'awaiting_ship', 'failed'].includes(j.stage), 60000)
-          await closed125(X.pg)
-          await destination125(X, false)
-          const firstStage = (await jobById125(first.id))?.stage ?? 'unread'
-          await X.pg.locator('#deploy-run').click()
-          const second = await until125(() => job125(X.project), (j) => j !== null && j.id !== first.id && ['awaiting_ship', 'failed', 'cancelled'].includes(j.stage), 180000)
+          const first = await until125(() => job125(X.project), (j) => j !== null && j.id !== was && ['queued', 'compiling', 'checking', 'awaiting_ship', 'failed'].includes(j.stage), 60000)
+          const second = await X.pg.evaluate(async (url) => {
+            const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ intent: 'preflight', session: sessionStorage.getItem('inflozo-lock-session'), mode: 'upload' }) })
+            return { status: r.status, job: (await r.json().catch(() => ({}))).job ?? null }
+          }, `${PREFIX}/projects/${X.project}/deploy`).catch(() => ({ status: 0, job: null }))
+          const firstStage = first?.stage ?? 'unread'
+          const secondEnd = second.job === null ? null : await until125(() => jobById125(second.job), (j) => j !== null && ['awaiting_ship', 'failed', 'cancelled'].includes(j.stage), 180000)
           const firstEnd = await until125(() => jobById125(first.id), (j) => j !== null && !['queued', 'compiling', 'checking'].includes(j.stage), 60000)
-          const firstDeploy = first.deploy_id ?? firstEnd?.deploy_id ?? null
-          const deployLeft = firstDeploy === null ? [] : (await call('/rest/v1', `/deploys?id=eq.${firstDeploy}&select=id`)).body ?? []
-          const objects = (await listed125('deploy-artifacts', X.project)).map((o) => o.name).filter((n) => firstDeploy !== null && n.startsWith(firstDeploy))
-          if (firstStage === 'awaiting_ship') note('step 125d — the first check had already rested when Run checks was pressed again', 'it was abandoned as a resting one — the same ending, not DW-373\'s flag')
-          check(`step 125d — DW-373: Run checks, the wizard closed during Checking (the first at ${firstStage}), Run checks again: the first ends cancelled with no deploys row and no object, the second rests at awaiting_ship`,
-            firstEnd?.stage === 'cancelled' && deployLeft.length === 0 && objects.length === 0 && second?.stage === 'awaiting_ship',
-            JSON.stringify({ firstStage, firstEnd: firstEnd?.stage, deployLeft: deployLeft.length, objects: objects.length, second: second?.stage }))
+          const deploysAfter = ((await call('/rest/v1', `/deploys?project_id=eq.${X.project}&select=id`)).body ?? []).map((d) => d.id)
+          const objectsAfter = (await listed125('deploy-artifacts', X.project)).map((o) => o.name)
+          const newDeploys = deploysAfter.filter((d) => !deploysBefore.includes(d))
+          const newObjects = objectsAfter.filter((o) => !objectsBefore.includes(o))
+          const secondDeploy = secondEnd?.deploy_id ?? null
+          check(`step 125d — DW-373: Run checks, then a second Pre-flight while the first still moved (the first at ${firstStage}): the first FLAGGED (cancel_requested) and ended cancelled, leaving no deploys row and no object — the only new ones are the second's — and the second rests at awaiting_ship`,
+            ['queued', 'compiling', 'checking'].includes(firstStage) && second.status === 202 && firstEnd?.stage === 'cancelled' && firstEnd.cancel_requested === true &&
+            secondEnd?.stage === 'awaiting_ship' && secondDeploy !== null && JSON.stringify(newDeploys) === JSON.stringify([secondDeploy]) && newObjects.every((o) => o.startsWith(secondDeploy)),
+            JSON.stringify({ firstStage, post: second.status, firstEnd: firstEnd?.stage, flagged: firstEnd?.cancel_requested, second: secondEnd?.stage, newDeploys: newDeploys.length, newObjects: newObjects.length, theSecondsOnly: newObjects.every((o) => secondDeploy !== null && o.startsWith(secondDeploy)) }))
           await closed125(X.pg)
           await handBack125(X)
           await X.pg.goto('about:blank')
@@ -17797,6 +17826,8 @@ async function main() {
         }
         const gone = []
         for (const acc of accounts125) {
+          // the Review (2026-11-27): one account's cleanup failing never strands the others on production
+          try {
           if (acc.site !== null) for (const o of await listed125('site-snapshots', `${acc.id}/${acc.site}`)) await removeObject125('site-snapshots', `${acc.id}/${acc.site}/${o.name}`)
           const prefixes = acc.project === null ? [] : [acc.project, `${acc.project}/live`]
           for (const prefix of prefixes) for (const o of await listed125('deploy-artifacts', prefix)) await removeObject125('deploy-artifacts', `${prefix}/${o.name}`)
@@ -17817,6 +17848,10 @@ async function main() {
           const disconnected = acc.site === null || (await siteRow125(acc).catch(() => null))?.disconnected_at != null
           const del = await admin(`/admin/users/${acc.id}`, { method: 'DELETE', body: '{}' })
           gone.push({ left: left.length, disconnected, del: del.status })
+          } catch (e) {
+            const del = await admin(`/admin/users/${acc.id}`, { method: 'DELETE', body: '{}' }).catch(() => ({ status: 0 }))
+            gone.push({ left: -1, disconnected: false, del: del.status, error: scrub125(String(e?.message ?? e).split('\n')[0]) })
+          }
         }
         const usersAfter = (await users())?.length ?? null
         const projectsAfter = await projectCount()

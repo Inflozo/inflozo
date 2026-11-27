@@ -69,7 +69,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (error) return no(502, 'The project could not be read')
     if (!data) return no(404, 'Not found')
     if (typeof data.linked_site_id !== 'string') return no(409, 'No site to ship to')
-    const budget = await compileBudget({ userId: user.id }, DEPLOY_IO).catch(() => undefined)
+    const budget = await compileBudget({ userId: user.id }, DEPLOY_IO).catch((e: unknown) => {
+      console.error('projects/deploy: the compile budget could not be read', { code: (e as { code?: string } | null)?.code })
+      return undefined
+    })
     if (budget === undefined) return no(502, 'The compile budget could not be read')
     if (budget !== null) return json(429, budget)
     let made
@@ -97,7 +100,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // ship anyway — nothing is uploaded otherwise. `ship()` asks again after a stale re-make
     if (row.stage_timings?.drift?.kind === 'found' && overwrite !== true) return no(409, 'Drift found')
     // Story 7.25 — FR-J11: the site record's accepted uploads in the hour, unless exempt; the job keeps resting with its artefact
-    const limited = await siteLimit({ siteId: row.site_id, userId: user.id }, DEPLOY_IO).catch(() => undefined)
+    const limited = await siteLimit({ siteId: row.site_id, userId: user.id }, DEPLOY_IO).catch((e: unknown) => {
+      console.error('projects/deploy: the deploy limit could not be read', { code: (e as { code?: string } | null)?.code })
+      return undefined
+    })
     if (limited === undefined) return no(502, 'The deploy limit could not be read')
     if (limited !== null) return json(429, limited)
     after(() => ship({ jobId: row.id, userId: user.id, mode: mode as Mode, withoutSnapshot: withoutSnapshot === true, overwrite: overwrite === true }, DEPLOY_IO))

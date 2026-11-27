@@ -2,9 +2,9 @@
 title: 'Story 7.25 — Rate limits, the compile budget and the advisory lock'
 type: 'feature'
 created: '2026-11-27'
-status: 'in-progress'
+status: 'in-review'
 owner_test: none
-review_loop_iteration: 0
+review_loop_iteration: 1
 baseline_commit: '6d2a6c7bd95b19721587ffd753dcca1634a27f59'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-24-theme-naming-frozen-per-site.md']
 ---
@@ -21,7 +21,8 @@ sentence when they can go again, for example: "Inflozo ships to one site at most
 ghost6.inflozo.com again in 12 minutes."
 
 There is no owner's test: nothing new is drawn, and the epic's card says none. Walk step 125 proves the story on production and T1.
-The owner ruled the 60 on 2026-11-27 (Question 1, R-295); no question is open.
+The owner ruled the 60 on 2026-11-27 (Question 1, R-295). Question 2 (the Review's) is open: what a Ship it that waited too long
+should leave behind.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -398,6 +399,64 @@ in-session go for the production and T1 writes (Ask First).
 - **Nothing else takes it.** Given the tree, `grep -rn "withSiteLock" apps/web` finds it only in `site-lock.ts`, `deploy-io.ts`,
   `put-back-io.ts`, the editor's `actions.ts` and tests.
 
+### Review Findings
+
+*Story 7.25's Review (2026-11-27): five layers — Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier (its read-only half a subagent; every production and T1 call in the main session, on the owner's in-session goes) — then
+walk step 125 on the Dev head and the lock recorder at 290 s on the production pooler (Verification). One question for the owner
+(Question 2), three items deferred, twelve findings dismissed. Each patch is Spec Change Log "Review".*
+
+- [x] [Review][Patch] **A SILENT idle hold has lost its lock through the pooler** — §92's H3 rerun at 290 s on the owner's go: the
+  key taken by a waiter at 280 s, the holder's COMMIT on a new session (`25P01`); the same hold on Postgres 17 kept it, and a second
+  290 s run (the owner's second go) kept it on the pooler too — an intermittent loss, not a fixed timeout. A hold can be idle ~270 s
+  (a 30 s wait, then the rest of AD-11's 300), so a slow ship could lose its lock unseen. The Design Notes' remedy, built: the hold
+  beats `select 1` every `KEEP_ALIVE_MS` (20 s) while its work runs — H3k, held at 290 s on the pooler with its own waiter control
+  [`server/site-lock.ts` · `tools/probe/record-site-lock.mjs` · MEASUREMENTS §92's dated note]
+- [x] [Review][Patch] A Re-activate press on a job whose deploy is NOT uploaded (live already, or a check that failed its gate) was
+  claimed `failed`/`deploy_running` — its findings overwritten — whenever the lock was busy past its wait [`server/deploy/run.ts` `activate`]
+- [x] [Review][Patch] A lock that could not be TAKEN (the connection, not the wait) was never retried, against AD-20's rule
+  [`server/site-lock.ts`]; nor was DW-373's flag (`cancel()`'s reads) inside `start()` [`server/deploy/run.ts` `start`]
+- [x] [Review][Patch] The put-back and Restore original keyed the lock on a link read BEFORE the wait, then acted on the link read
+  after it: a switch landing during the wait had them write to a site whose lock they did not hold. They now answer `busy`
+  [`server/deploy/put-back.ts` `locked`]
+- [x] [Review][Patch] The wizard said ANY 429's `message` word for word, a 429 from in front of the route included; and the route's
+  two 502s on a failed count logged nothing [`components/editor/deploy-wizard.tsx` `post` · `deploy/route.ts`]
+- [x] [Review][Patch] **R-294's line did not show on production** — walk 125a run 2: the later ship landed as `inflozo-lock-test-2`
+  and its ending said nothing more. The ending compared the landed name with the LIVE ship state, which a page re-read under the
+  wizard updates (once the ship's own binding is written it says no theme is to be created at all). The wizard now freezes the
+  state D1a's box showed when Run checks leaves Destination [`components/editor/deploy-wizard.tsx` `shown`]
+- [x] [Review][Patch] Walk 125a had no control that the two presses RACED (two ships one after the other pass every term), and
+  bundled R-294 into the AC's check; 125d passed by the older abandon path, its "no deploys row, no object" vacuous when the first
+  job's deploy id was read null; one account's cleanup failing stranded the others [`tools/probe/run-verify-editor.cjs` step 125]
+- [x] [Review][Patch] Verification gaps: the S8d′ landings of a lock refusal untested (journeys 7.25 (d), (e)); DW-373's race
+  fallback untested; the "way back" source test sliced `activate`'s wrapper only; `deploy-io.ts`' `resting` stages and the counts'
+  scopes reached nothing but the walk (source rules) [tests]
+- [x] [Review][Patch] Words that overstated: the put-back's time budget (the wait comes out of the same 300 s); "a flagged job still
+  counts: it compiled"; "Roll backs included" (one row per version, its latest acceptance); "job rows are never deleted"; `db.ts`'
+  "starves nothing"; the History route's "no lock" (it means the edit lock); the recorder's secret list taking an empty part
+  [`put-back.ts`, `run.ts`, `db.ts`, `history/route.ts`, `prd.md` FR-J11, `record-site-lock.mjs`]
+- [ ] [Review][Decision] A Ship it whose wait ran out throws its checked artefact away: it ends on S8d′ ("Uploading to Ghost failed",
+  though nothing was sent) and the customer runs checks again — one more of the hour's 60 builds. As the frozen table built it.
+  Question 2, open.
+- [x] [Review][Defer] Every hold pins one pooler backend for its span, every waiter one for its wait; nothing caps concurrent holds
+  (production: `max_connections` 60) [`server/site-lock.ts`] — deferred, a capacity ceiling with no load near it (DW-408)
+- [x] [Review][Defer] A project's job rows are deleted with it, so deleting projects frees budget [`deploy_jobs.project_id … on
+  delete cascade`] — deferred to Story 7.26, a schema change this story forbids (DW-409)
+- [x] [Review][Defer] A Ship it or Re-activate failing as ours before any shipping stage (the lock not taken at all among them) is
+  titled by the wrong step [`deploy-wizard.tsx` `failedAt`] — deferred, pre-existing for the whole class since 7.18a (DW-410)
+
+Dismissed, each with its reason: a `Retry-After` header (no machine client; the sentence says when); the switch taking the chosen
+site's lock before its RLS read (a site id is an unguessable UUID never shown to another account, and the hold is one read long);
+two presses at a count's edge both passing (the counts are at the route by the spec — "a rate limit is not a mutex" — and bounded by
+concurrent presses); a Pre-flight killed mid-run re-flagged by each new one (one idempotent write, no effect); the wizard silent
+during the wait (the spec: the press's busy state, no "waiting" line, R-98); `STALLED_MS` imported from `run.ts` (the spec names it
+run.ts' own); no `application_name` on the lock connection (nothing reads it); `jobs.resting` keeping its name (its type's comment
+says what it returns); the switch's 35 s against the function's limit (the project's default is 300 s, read 2026-10-26); DW-373
+cancelling a Ship it's stale re-make from a second tab that took the edit lock (the newer request wins, before anything reaches
+Ghost); a double press re-running a ship that rested after B12b (the same press's own flags, the same outcome); a holder whose backend
+ends mid-work (the spec: logged, the value kept; bounded by H2 and H4, and now prevented for idleness by H3k); Restore original
+acting on another site after a switch (it answered `gone` — the snapshot is per site — and now `busy`).
+
 ## Spec Change Log
 
 Story 7.25's Dev (2026-11-27) — routine calls, none of them a frozen decision moved:
@@ -424,6 +483,33 @@ Story 7.25's Dev (2026-11-27) — routine calls, none of them a frozen decision 
   (`npx vercel@latest logs`, the memory's way); the walk never puts the Vercel token on argv.
 - **The recorder's H4** reads the abandoned holder's end by its own `COMMIT` — refused, or landing on a fresh session with
   `25P01` — rather than "its next statement refused", because postgres.js reconnects under an idle client.
+
+Story 7.25's Review (2026-11-27) — patches, each outside the frozen block (the frozen table's behaviour is unchanged; Question 2 asks
+about the one place it could change):
+- **The hold beats (H3 failed once).** On the owner's go the recorder held a silent transaction 290 s on the production pooler: its
+  key was taken by a waiter at 280 s and its COMMIT landed on a new session (`25P01`), while Postgres 17 alone kept it. On a second
+  go, the same silent hold KEPT its lock — the loss is intermittent (the pooler, or the network between the recorder and it), not a
+  fixed timeout. The Design Notes' own remedy: `withSiteLock` runs `select 1` every `KEEP_ALIVE_MS` (20 s) while the work runs,
+  stopped when it returns or throws; the second run's H3k held it 290 s on the pooler. The recorder now asserts the silent holder on
+  the container only and OBSERVES it on the pooler (its first H3k design made it a control that must lose there, and that run
+  voided when it did not); §92 carries a dated note with both runs, since neither wrote the section (Verification).
+- **AD-20 at the lock.** A lock that could not be TAKEN (a connection or statement error that is not `55P03`/`57014`) is tried once
+  more on a fresh connection before anything runs; a wait that ran out is still never retried. `start()`'s DW-373 flag runs through
+  `twice` like every other read there.
+- **Re-activate asks its deploy first.** `activate()` returns unless the job's deploy is `uploaded` (as `activateHeld` asks again
+  inside), so a stray press on a live or gate-failed job is never failed by a lock wait.
+- **The put-back and the restore hold the site they write to.** `locked` hands the key to the body, which answers `busy` when its own
+  link read (inside the lock) names another site — a switch that landed during the wait.
+- **Our 429s only.** `post` keeps a 429's `message` only for `deploy_rate_limited` and `compile_budget`; the route logs a failed
+  count's code before its 502.
+- **R-294, frozen at Run checks.** The ending's "It was uploaded as …" compares the landed name with the ship state as Run checks
+  left Destination (`shown`), never the live prop a page re-read replaces (walk 125a run 2 found the line missing on production).
+- **Walk step 125.** (a) records each POST's time and checks that they raced (under a second apart, both before the earlier ship
+  ended) as its own control, and checks R-294's line apart from the AC, printing every page re-read and server action from the
+  presses to the endings; (d) sends the second Pre-flight as the server's half — POSTed from the tab, with its lock session, the
+  moment the first reads moving — and counts only a first job FLAGGED (`cancel_requested`) whose deploys row and object are gone
+  (counted by the project before and after, not by an id that may read null); the cleanup's accounts each in their own try.
+- **The recorder's H3 is H3/H3k at 290 s**, two holders at once on two keys, one silent and one beating as the product does.
 
 ## Design Notes
 
@@ -486,7 +572,8 @@ manual step can time. Walk step 125 proves each one on production and T1.
 
 ## Questions for the owner
 
-Question 1 was ruled option 1 by the owner on 2026-11-27 (R-295). None is open. `ACCOUNT_COMPILES_PER_HOUR` holds it.
+Question 1 was ruled option 1 by the owner on 2026-11-27 (R-295). `ACCOUNT_COMPILES_PER_HOUR` holds it. Question 2 was raised at
+the Review (2026-11-27) and is open; nothing waits on it — the story ships as built, and option 2 would be built in this story.
 
 ### Question 1 — How many theme builds may one account run in an hour?
 
@@ -507,6 +594,26 @@ of a whole deploy; a build alone costs about a third of it.
 
 **Ruled: option 1 (owner, 2026-11-27) — R-295.** *"1"*, which is *"60 an hour, on every plan — one build a minute for a whole
 hour; at most about $18.45 a month per account."*
+
+### Question 2 — When your Ship it has to wait more than 30 seconds for another deploy to the same site, should it keep your check?
+
+Inflozo now ships to one Ghost site one deploy at a time. When a second deploy to the same site is pressed while the first is still
+running, the second waits. If it is still waiting after 30 seconds, it gives up and sends nothing. Today it then shows the failure
+screen — "Uploading to Ghost failed" and "Another deploy to this site is already running — try again in a moment." — and to try
+again you go back and press **Run checks** again (about 4 seconds; it counts as one of the 60 builds an account may run in an hour).
+
+**Example:** two people on your team ship two different projects to blog.example.com at the same moment. The first is the site's
+first ship, so it also saves your original theme and takes 40 seconds. The second person sees the failure screen after 30 seconds,
+presses Back, Run checks, then Ship it again. (In the Review's real test, the first of two such ships took 19 seconds, so the
+second simply waited and shipped.)
+
+1. **Keep it as built — the failure screen, then Run checks again. Nothing new to build; it happens only when two deploys reach one
+   site at the same moment and the first runs past 30 seconds. (RECOMMENDED)**
+2. Keep the check ready — the second stays on the Check screen with "Another deploy to this site is already running — try again in
+   a moment." under Ship it (as the hourly limit already does), and pressing Ship it again just works, without a new build. A small
+   new state in the wizard, its tests and a walk check, built in this story.
+
+**Ruled:** _(awaiting the owner)_
 
 ## Verification
 
@@ -585,6 +692,47 @@ sha):
 - **Not run at Dev, by the spec:** walk step 125 on production and T1 (written, `node --check` clean, `T1_WRITES=1`; the
   Review's, on its own in-session go), and the Vercel deployment and CI of the Dev head (read at Review — R-81's push is this
   phase's last act). T3 (Ghost 5) is retired (R-238); its half waits for DW-326 at Story 15.7.
+
+**Executed — Review (2026-11-27, Node 24):**
+- **CI and Vercel on the Dev head** (`22d9c9d4`, read with `GITHUB_TOKEN` / `VERCEL_TOKEN` in-process): CI run 46010822451 —
+  `check` (the full `pnpm keyboard`), `rls`, `deploy` all success; the Render matrix success; READY as
+  `dpl_Dhw1bjMrUzdDpxvZDKwa1VE6TpaF`. The control: an all-zero sha answers no runs.
+- **R-99 on production** (read-only, `SUPABASE_DB_POOLER_URL` in-process, on the owner's go): every column the new code reads is
+  there — `sites.url`, `sites.deploy_rate_limit_exempt`, `sites.user_id`, `deploys.accepted_at`/`site_id`/`user_id`,
+  `deploy_jobs.started_at`/`user_id`/`site_id`/`stage`/`project_id`; the control `deploys.no_such_column_control` absent. No
+  migration in the diff. `max_connections` 60; the pooler's config `pool_mode: transaction`, `default_pool_size` null (DW-408).
+- **Walk step 125 on production and T1, on the owner's go ("1. Go", up to three runs)**, a cut of steps 1–5 + 125 from a clean
+  worktree at `22d9c9d4`:
+  - run 1 VOID: started on Node 22 and stopped by the main session within its first minute; it had made account A alone (empty —
+    no project, no site), deleted by hand (users 27 → 26), nothing on T1.
+  - **run 2: 52 PASS, 1 FAIL.** Every 7.25 claim held: T1 on `casper`, no lock-test theme or binding at the start; (a) X and Y both
+    named `inflozo-lock-test` and compiled it, Y bound it and X — compiling again after the press (14:22:17.06 > 14:21:57.22),
+    uploading at 14:22:19.90 after Y's last edge 14:22:16.37 — bound `inflozo-lock-test-2`, both `done` with no error, T1 listing
+    both with `casper` live and Y's download equal to its manifest; (d) the first check flagged and `cancelled` with no deploys row
+    or object, the second at `awaiting_ship` (the first read at `compiling`); (b) 9 planted → the 10th shipped
+    (`inflozo-lock-test-3`), the 11th refused "…You can ship to ghost6.inflozo.com again in 20 minutes.", still `awaiting_ship`,
+    then exempt → shipped; (c) 2 real + 57 planted → the 60th started, the 61st refused "Your account has built 60 themes in the
+    last hour, … again in 60 minutes.", no job inserted; finally T1 back on `casper` (`racer`, `source`, `inflozo-ghost6` beside it,
+    every run theme deleted, `routes.yaml` 130 → 130 bytes), each account's objects gone, T1 disconnected on each, the three
+    accounts deleted, users 28 → 28, projects back; zero CSP violations. **The one FAIL: R-294's line was not on X's ending** (the
+    later ship, moved to `-2`) — patched (the frozen `shown` state), and the walk now checks it apart from the AC.
+- **Vercel's log line for the budget POST** (`vercel logs --json`, the token in the child's environment, never on argv):
+  `2026-11-27T14:23:59.784Z` POST `/projects/7426f9aa-…/deploy` on `dpl_Dhw1bjMr…`, level error: `deploy: compile budget reached
+  { user: 'e6ea8ee1-…', minutes: 60 }` — Z's id, the walk's noted POST.
+- **The lock recorder at 290 s on the production pooler** (two runs, each on its own in-session go): run A — H3 silent LOST (the key
+  free at 280 s, the COMMIT on a new session with `25P01`); run B — the silent holder KEPT it, H3k (beating) KEPT it and committed;
+  H1, H2, H4 held in both, every container row held in both. Both VOID by design (A on H3, B on a control written to expect the
+  loss), so MEASUREMENTS §92 carries a dated note with both runs' lines.
+- `pnpm check` — green on the patched tree (`apps/web` 1208 of 1208, the run's own count). Planted reversions, each red then
+  restored: Re-activate's deploy check; the flag's `twice`; the race fallback; the lock's one retry; both put-back key guards; the
+  429's own-codes filter; the route's log line; the frozen `shown`; a limit read inside `activateHeld`; no beat; a beat never cleared
+  (the test hangs).
+- Keyboard: `--grep "7\.25|7\.24 · \(f\)|7\.18b · the Review \(DW-378\)|7\.18b · DW-374"` — 7 passed, 1 failed: journeys
+  7.25 (a)–(e), 7.24 (f) and DW-378 green; the run's FIRST test (7.18b DW-374) failed at `open` (the canvas not painted in 5 s),
+  and alone with `--repeat-each 2` failed run 1 and passed run 2 at the same line, before any wizard interaction — cold start.
+- `git diff 6d2a6c7b HEAD --name-only -- supabase/migrations` — none; CI's `rls` job green on the Dev head (no schema changes here).
+- **Next, on the Review's own deploy:** walk step 125 again (the go's third run), with the patched 125a (the race control, R-294
+  apart, every page re-read printed) and 125d (the server's half, the flag counted).
 
 **The I/O matrix, row by row → the check that ran:**
 - One ship → every existing ship test in `deploy-run.test.ts`, now through the fake lock (held); `withSiteLock` uncontended

@@ -2,11 +2,11 @@
 // the key's text, the wait running out (55P03, 57014) as not held with the work never run, a throw from the work rethrown, a commit
 // lost after the work keeping the work's value with its log line, and the client ended on every path. The real thing on a real
 // Postgres and on the production pooler is `tools/probe/record-site-lock.mjs` (MEASUREMENTS §92).
-import { test } from 'node:test'
+import { mock, test } from 'node:test'
 import assert from 'node:assert/strict'
 import type { LockClient } from './server/ghost-admin/db.ts'
 import { STALLED_MS } from './server/deploy/run.ts'
-import { LOCK_WAIT_MS, withSiteLock, type SiteLockIo } from './server/site-lock.ts'
+import { KEEP_ALIVE_MS, LOCK_WAIT_MS, withSiteLock, type SiteLockIo } from './server/site-lock.ts'
 
 const S = '00000000-0000-4000-8000-0000000000bb'
 
@@ -16,6 +16,7 @@ function fake(answer: (text: string) => unknown = () => []) {
   const values: unknown[][] = []
   const logs: [string, unknown][] = []
   let ended = 0
+  let connects = 0
   let notice: (n: { code: string }) => void = () => {}
   const db = Object.assign(
     (strings: TemplateStringsArray, ...vs: unknown[]) => {
@@ -33,12 +34,13 @@ function fake(answer: (text: string) => unknown = () => []) {
   )
   const io: SiteLockIo = {
     connect: (on) => {
+      connects += 1
       notice = on as typeof notice
       return db as unknown as LockClient
     },
     log: (message, fields) => void logs.push([message, fields]),
   }
-  return { io, said, values, logs, ended: () => ended, notice: (code: string) => notice({ code }) }
+  return { io, said, values, logs, ended: () => ended, connects: () => connects, notice: (code: string) => notice({ code }) }
 }
 const pgError = (code: string) => Object.assign(new Error(code), { code })
 const LOCK = "select pg_advisory_xact_lock(hashtextextended('site:' || coalesce((select url from public.sites where id = $1), $2::text), 0))"
@@ -59,7 +61,7 @@ test('withSiteLock: begin, the three local settings, the lock keyed on the site\
   assert.deepEqual(f.logs, [])
 })
 
-test('withSiteLock: the wait run out — 55P03 (lock_timeout) or 57014 (statement_timeout) on the lock — is NOT HELD: the work never runs, the transaction rolled back, the client ended; any other failure is thrown (the control)', async () => {
+test('withSiteLock: the wait run out — 55P03 (lock_timeout) or 57014 (statement_timeout) on the lock — is NOT HELD, never retried: the work never runs, the transaction rolled back, the client ended; any other failure is tried once more on a fresh connection, then thrown (the control)', async () => {
   for (const code of ['55P03', '57014']) {
     const f = fake((text) => (text === LOCK ? pgError(code) : []))
     let ran = false
@@ -70,6 +72,7 @@ test('withSiteLock: the wait run out — 55P03 (lock_timeout) or 57014 (statemen
     assert.equal(ran, false, `${code}: the work never ran`)
     assert.deepEqual(f.said, ['begin', SETTINGS, LOCK, 'rollback'], code)
     assert.equal(f.ended(), 1, code)
+    assert.equal(f.connects(), 1, `${code}: a wait that ran out is never retried`)
   }
   const other = fake((text) => (text === LOCK ? pgError('08006') : []))
   let ran = false
@@ -77,10 +80,35 @@ test('withSiteLock: the wait run out — 55P03 (lock_timeout) or 57014 (statemen
     ran = true
   }, other.io), { code: '08006' })
   assert.equal(ran, false)
-  assert.equal(other.ended(), 1)
+  assert.deepEqual(other.said, ['begin', SETTINGS, LOCK, 'rollback', 'begin', SETTINGS, LOCK, 'rollback'], 'tried twice, on two connections')
+  assert.equal(other.connects(), 2)
+  assert.equal(other.ended(), 2, 'both connections ended')
   const unconnected = fake((text) => (text === 'begin' ? pgError('ECONNREFUSED') : []))
   await assert.rejects(withSiteLock(S, async () => 1, unconnected.io), { code: 'ECONNREFUSED' })
-  assert.equal(unconnected.ended(), 1)
+  assert.equal(unconnected.connects(), 2)
+  assert.equal(unconnected.ended(), 2)
+})
+
+test('withSiteLock (the Review, AD-20): a lock that could not be TAKEN the first time — the connection, not the wait — is taken on a fresh connection, and the work runs once', async () => {
+  let first = true
+  const f = fake((text) => {
+    if (text === 'begin' && first) {
+      first = false
+      return pgError('ECONNRESET')
+    }
+    return []
+  })
+  let runs = 0
+  const answer = await withSiteLock(S, async () => {
+    runs += 1
+    return 'shipped'
+  }, f.io)
+  assert.deepEqual(answer, { held: true, value: 'shipped' })
+  assert.equal(runs, 1)
+  assert.deepEqual(f.said, ['begin', 'rollback', 'begin', SETTINGS, LOCK, 'commit'])
+  assert.equal(f.connects(), 2)
+  assert.equal(f.ended(), 2, 'the failed connection ended, then the held one')
+  assert.deepEqual(f.logs, [])
 })
 
 test('withSiteLock: a throw from the work is rolled back and rethrown UNCHANGED — no commit, the client ended', async () => {
@@ -132,4 +160,40 @@ test('withSiteLock holds ONE connection of its own per hold — `db.ts`\' `lockS
   assert.match(lockSql, /ssl: \{ ca: SUPABASE_ROOT_CA, rejectUnauthorized: true \}/)
   assert.doesNotMatch(lockSql, /idle_timeout/, 'postgres.js ends an idle connection inside an open transaction')
   assert.doesNotMatch(lockSql, /client = /, 'a fresh client per hold, never the cached one')
+})
+
+test('withSiteLock (the Review, H3): the hold SPEAKS while the work runs — `select 1` every KEEP_ALIVE_MS, since a transaction left silent 280 s has lost its lock through the pooler (once in two runs, MEASUREMENTS §92) — and stops once the work ends, thrown or returned; the control: work shorter than a beat sends none', async () => {
+  assert.equal(KEEP_ALIVE_MS, 20_000)
+  mock.timers.enable({ apis: ['setInterval'] })
+  try {
+    const f = fake()
+    let finish = (_: string) => {}
+    const held = withSiteLock(S, () => new Promise<string>((r) => (finish = r)), f.io)
+    await new Promise((r) => setImmediate(r))
+    assert.deepEqual(f.said, ['begin', SETTINGS, LOCK])
+    mock.timers.tick(KEEP_ALIVE_MS)
+    mock.timers.tick(KEEP_ALIVE_MS)
+    assert.deepEqual(f.said.slice(3), ['select 1', 'select 1'], 'one beat each 20 s')
+    finish('shipped')
+    assert.deepEqual(await held, { held: true, value: 'shipped' })
+    mock.timers.tick(KEEP_ALIVE_MS * 3)
+    assert.deepEqual(f.said.slice(3), ['select 1', 'select 1', 'commit'], 'no beat after the work')
+    // a throw stops it too
+    const t = fake()
+    let fail = (_: Error) => {}
+    const thrown = withSiteLock(S, () => new Promise<string>((_, j) => (fail = j)), t.io)
+    await new Promise((r) => setImmediate(r))
+    mock.timers.tick(KEEP_ALIVE_MS)
+    fail(new Error('the work'))
+    await assert.rejects(thrown)
+    mock.timers.tick(KEEP_ALIVE_MS * 3)
+    assert.deepEqual(t.said.slice(3), ['select 1', 'rollback'])
+    // the control: a span shorter than a beat
+    const quick = fake()
+    await withSiteLock(S, async () => 'done', quick.io)
+    mock.timers.tick(KEEP_ALIVE_MS * 3)
+    assert.deepEqual(quick.said, ['begin', SETTINGS, LOCK, 'commit'])
+  } finally {
+    mock.timers.reset()
+  }
 })

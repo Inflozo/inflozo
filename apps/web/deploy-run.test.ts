@@ -1609,6 +1609,27 @@ test('7.25: Re-activate runs under the site\'s lock — the activation inside it
   assert.equal(v.deploys.get(vj.deploy_id as string)?.status, 'uploaded', 'the theme stays uploaded')
 })
 
+test('7.25 (the Review): a Re-activate press on a job whose deploy is NOT uploaded — live already, or a check that failed its gate — is never failed by a wait it should not have had: nothing claimed, nothing sent, under a lock never held; the control: an uploaded one is', async () => {
+  const w = world({})
+  const job = await begin(w)
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  assert.equal(w.jobs.get(job.id)?.stage, 'done')
+  assert.equal(w.deploys.get(job.deploy_id as string)?.status, 'live')
+  w.locking.mode = 'never'
+  const sent = w.calls.length
+  await activate({ jobId: job.id, userId: U }, w.io)
+  assert.equal(w.jobs.get(job.id)?.stage, 'done', 'a live job stays done')
+  assert.equal(w.jobs.get(job.id)?.error ?? null, null, 'no deploy_running written over it')
+  assert.equal(w.calls.length, sent, 'nothing sent')
+  // the control: the same press on an UPLOADED deploy is failed `deploy_running` by the wait (the test above)
+  const c = world({})
+  const cj = await begin(c)
+  await ship({ jobId: cj.id, userId: U, mode: 'upload' }, c.io)
+  c.locking.mode = 'never'
+  await activate({ jobId: cj.id, userId: U }, c.io)
+  assert.equal((c.jobs.get(cj.id)?.error as { code?: string } | null)?.code, 'deploy_running')
+})
+
 test('7.25: a failure inside the lock leaves it — the job failed as ours, the lock left, and the next holder of the site enters', async () => {
   const w = world({})
   const job = await begin(w)
@@ -1653,6 +1674,35 @@ test('7.25 (DW-373): a new Pre-flight FLAGS one of the same project × site stil
   assert.equal(w.jobs.get(second.id)?.stage, 'cancelled')
   assert.equal(w.bucket.size, 0, 'its object gone')
   assert.equal(w.jobs.get(third.id)?.stage, 'queued')
+  // the Review (2026-11-27): one that reached awaiting_ship between the read and the flag — `cancel()` refuses a clean resting
+  // check — is read again and abandoned as a resting one: cancelled, its deploy row and object gone, before the new row
+  const raced = await start({ projectId: P, siteId: S, userId: U }, w.io)
+  await preflight({ jobId: raced.id, userId: U }, w.io)
+  assert.equal(w.jobs.get(raced.id)?.stage, 'awaiting_ship')
+  const racedDeploy = w.jobs.get(raced.id)?.deploy_id as string
+  const resting = w.io.jobs.resting
+  w.io.jobs.resting = async (a) => (await resting(a)).map((j) => (j.id === raced.id ? { ...j, stage: 'checking' as const } : j))
+  const after = await start({ projectId: P, siteId: S, userId: U }, w.io)
+  w.io.jobs.resting = resting
+  assert.equal(w.jobs.get(raced.id)?.stage, 'cancelled', 'abandoned as a resting one')
+  assert.equal(w.deploys.has(racedDeploy), false, 'its deploys row gone')
+  assert.equal(w.bucket.size, 0, 'its object gone')
+  assert.equal(w.jobs.get(after.id)?.stage, 'queued')
+  // …and the flag's reads are retried once (AD-20): one failed read does not fail Run checks
+  const flaky = await start({ projectId: P, siteId: S, userId: U }, w.io)
+  await w.io.jobs.update(flaky.id, U, { stage: 'checking' })
+  const read = w.io.jobs.read
+  let failOnce = true
+  w.io.jobs.read = async (jid, u) => {
+    if (jid === flaky.id && failOnce) {
+      failOnce = false
+      throw Object.assign(new Error('database'), { infra: true, code: 'PGRST000' })
+    }
+    return read(jid, u)
+  }
+  await start({ projectId: P, siteId: S, userId: U }, w.io)
+  w.io.jobs.read = read
+  assert.equal(w.jobs.get(flaky.id)?.cancel_requested, true, 'flagged on the second try')
   // the control: another project's check is never touched
   const other = await w.io.jobs.insert({ project_id: P2, user_id: U, site_id: S })
   await w.io.jobs.update(other.id, U, { stage: 'checking' })
@@ -1705,7 +1755,8 @@ test('7.25 — R-295\'s compile budget at Run checks (`compileBudget`): 59 jobs 
 
 test('7.25: the way back is never counted — Re-activate, Cancel and the put-back ask no limit; the route asks `siteLimit` at Ship it and `compileBudget` at Run checks alone', () => {
   const run = readFileSync('server/deploy/run.ts', 'utf8')
-  for (const door of ['export async function activate(', 'export async function cancel(']) {
+  // the Review (2026-11-27): Re-activate's work is `activateHeld`, under the lock — its wrapper alone would test nothing
+  for (const door of ['export async function activate(', 'async function activateHeld(', 'export async function cancel(']) {
     const body = run.slice(run.indexOf(door), run.indexOf('\n}\n', run.indexOf(door)))
     assert.doesNotMatch(body, /siteLimit|compileBudget|limits\./, door)
   }

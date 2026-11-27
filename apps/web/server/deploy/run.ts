@@ -168,10 +168,11 @@ export type DeployIo = {
   limits: {
     /** the site record's address and FR-J11's exemption (`sites.deploy_rate_limit_exempt`, server-only), or null when gone */
     site: (a: { siteId: string; userId: string }) => Promise<{ url: string; exempt: boolean } | null>
-    /** `deploys.accepted_at` of the record's uploads Ghost accepted since `since` — Ship it's and Roll back's alike */
+    /** `deploys.accepted_at` of the record's uploads Ghost accepted since `since` — Ship it's and Roll back's alike; a version's row
+     *  carries its LATEST acceptance, so one version put back twice in the hour counts once */
     accepted: (a: { siteId: string; userId: string; since: string }) => Promise<string[]>
-    /** `deploy_jobs.started_at` of the account's jobs started since `since`, any site or none — every Pre-flight is a row and none is
-     *  ever deleted, and Story 7.26's export rides one */
+    /** `deploy_jobs.started_at` of the account's jobs started since `since`, any site or none — every Pre-flight is a row, none is
+     *  deleted while its project stands (a deleted project's jobs go with it: DW-409), and Story 7.26's export rides one */
     started: (a: { userId: string; since: string }) => Promise<string[]>
   }
   now: () => Date
@@ -591,12 +592,14 @@ export const abandon = (io: AbandonIo, job: JobRow): Promise<void> => clear(io, 
  *  site resting at `awaiting_ship` is ABANDONED first — cancelled, its deploy and object deleted. STORY 7.25 (DW-373): one still
  *  moving through Pre-flight is FLAGGED through `cancel()`, so it stops at its next edge and leaves nothing, exactly as after a
  *  Cancel — never handed back, since its results would be for inputs the customer has just changed. One that reached
- *  `awaiting_ship` between the read and the flag is abandoned as a resting one. A flagged job still counts in the budget: it
- *  compiled. */
+ *  `awaiting_ship` between the read and the flag is abandoned as a resting one. A flagged job still counts in the budget, as every
+ *  Pre-flight's row does, whether or not it got as far as compiling (the Review, 2026-11-27: one flagged at `queued` never does);
+ *  Ship it's stale re-make compiles on its own row again and is not counted twice — the site's limit bounds it. */
 export async function start(a: { projectId: string; siteId: string; userId: string }, io: DeployIo): Promise<JobRow> {
   for (const old of await twice(io, 'resting read', () => io.jobs.resting(a))) {
     if (old.stage === 'awaiting_ship') await clear(io, old, null)
-    else if (!(await cancel({ jobId: old.id, userId: old.user_id }, io))) {
+    // AD-20: the flag's reads are retried once, as every other read here (the Review, 2026-11-27)
+    else if (!(await twice(io, 'flag moving', () => cancel({ jobId: old.id, userId: old.user_id }, io)))) {
       const now = await twice(io, 'job read', () => io.jobs.read(old.id, old.user_id))
       if (now?.stage === 'awaiting_ship') await clear(io, now, null)
     }
@@ -835,6 +838,11 @@ async function linkRefusal(io: DeployIo, job: JobRow): Promise<DeployError | nul
 export async function activate(a: { jobId: string; userId: string }, io: DeployIo): Promise<void> {
   const job = await firstRead(io, a)
   if (job === null || job.deploy_id === null || (job.stage !== 'done' && job.stage !== 'failed')) return
+  // only an UPLOADED deploy is Re-activate's, as `activateHeld` asks again inside: a stray press on a live one, or on a check that
+  // failed its gate, is never failed `deploy_running` by a wait it should not have had (the Review, 2026-11-27). A read that fails
+  // twice leaves it to the work, which answers it as before
+  const deploy = await twice(io, 'deploy read', () => io.deploys.read(job.deploy_id as string, job.user_id)).catch(() => undefined)
+  if (deploy !== undefined && deploy?.status !== 'uploaded') return
   await underLock(io, job, () => activateHeld(a, io), false)
 }
 

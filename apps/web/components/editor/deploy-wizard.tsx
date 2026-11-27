@@ -519,6 +519,10 @@ export function DeployWizard({
   const [said, say] = useSaid()
   /** the row's standing when a press was sent — it is read until it has moved past it */
   const waitFor = useRef<string | null>(null)
+  /** R-294 (the Review of Story 7.25, 2026-11-27) — the ship state as D1a's box showed it when Run checks left Destination: the
+   *  ending compares the landed name with THAT, never with a page re-read since (which already knows the name it landed under,
+   *  and once its own binding is written says no theme is to be created at all) */
+  const shown = useRef<ShipState | undefined>(undefined)
   /** every stage start and ending the polite region has said for this job (DW-378: each stage `stage_timings` shows entered) */
   const heard = useRef(new Set<string>())
   const alive = useRef(true)
@@ -579,9 +583,11 @@ export function DeployWizard({
     try {
       const answer = await fetch(route, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(call), signal: AbortSignal.timeout(15_000) })
       if (answer.status === 429) {
-        // Story 7.25 — a limit: AD-24's envelope, its `message` the sentence this press says (when the minutes are)
-        const message = ((await answer.json().catch(() => null)) as { message?: unknown } | null)?.message
-        return { ok: false, status: 429, ...(typeof message === 'string' && message !== '' ? { message } : {}) }
+        // Story 7.25 — a limit: AD-24's envelope, its `message` the sentence this press says (when the minutes are). Only OUR two
+        // codes' — a 429 from anything in front of the route is never said word for word (the Review, 2026-11-27)
+        const body = (await answer.json().catch(() => null)) as { code?: unknown; message?: unknown } | null
+        const ours = (body?.code === 'deploy_rate_limited' || body?.code === 'compile_budget') && typeof body.message === 'string' && body.message !== ''
+        return { ok: false, status: 429, ...(ours ? { message: body.message as string } : {}) }
       }
       if (!answer.ok) return { ok: false, status: answer.status }
       const { job: id } = (await answer.json()) as { job?: unknown }
@@ -718,6 +724,7 @@ export function DeployWizard({
   /** Run checks: the editor's flush first — work it cannot send is work the compile would not see */
   const runChecks = async (): Promise<boolean> => {
     if (pressed !== null || site === null) return false
+    shown.current = ship
     setPressed('start')
     setRefused(null)
     const unsent = await flush()
@@ -1156,7 +1163,7 @@ export function DeployWizard({
   /** R-294 — both endings' one sentence when the theme landed under another name than D1a's box showed (`movedFrom`), in the
    *  ending's own helper type (extrapolated: no frame draws it) */
   const movedName = view?.deploy?.themeName ?? null
-  const shownName = movedFrom(ship, movedName)
+  const shownName = movedFrom(shown.current ?? ship, movedName)
   const movedLine = shownName === null || movedName === null ? null : (
     <p data-theme-moved className="text-ui-dense leading-[1.5] text-ink-soft [text-wrap:pretty]">{W.themeMoved(movedName, shownName)}</p>
   )

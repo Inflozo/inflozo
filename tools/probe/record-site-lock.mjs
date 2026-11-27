@@ -11,15 +11,19 @@
  *   - H2: a holder KILLED mid-hold (a child process holding the key, SIGKILLed — no goodbye on the wire, as a Vercel function
  *     killed past its budget) frees the key: a waiter takes it, and how long that took is recorded. The control: before the kill,
  *     a 2 s waiter gives up with `55P03` (the child really held it).
- *   - H3: a transaction left IDLE `H3_IDLE_S` seconds (150, the AC's — a typical span is ~13 s, the longest AD-11's 300) still
- *     holds its lock (the control: a 2 s waiter near the end gives up with `55P03`) and COMMITS, with no `25P01` notice (the
- *     reconnected-session warning `withSiteLock` reads as a lost lock). The role's own `statement_timeout` and
- *     `idle_in_transaction_session_timeout` are recorded, read before anything is set.
+ *   - H3 / H3k (the Review, 2026-11-27): two holders idle `H3_IDLE_S` seconds (290: the AC's 150 left a hold's real worst case
+ *     unproven — a waiter that waited `LOCK_WAIT_MS` still has 270 s of AD-11's 300, idle on this connection), one SILENT, one
+ *     beating `select 1` every `KEEP_ALIVE_MS` as `withSiteLock` does. The first 290 s run found the silent one's lock LOST on the
+ *     pooler (its key taken at 280 s, its COMMIT on a new session with `25P01`) and the second found it KEPT — an intermittent loss,
+ *     so the product beats. H3k: the beating holder still holds near the end (a 2 s waiter gives up with `55P03`, the row's own
+ *     control) and COMMITS with no `25P01`. The silent holder is asserted on the container (Postgres alone keeps it) and only
+ *     OBSERVED on the pooler, where it can go either way. The role's own
+ *     `statement_timeout` and `idle_in_transaction_session_timeout` are recorded, read before anything is set.
  *   - H4: `set_config('idle_in_transaction_session_timeout', …, true)` sets the idle ceiling: a holder with a 3 s ceiling left
  *     idle 8 s is ended — its key taken at once by another, and its transaction gone: its COMMIT refused, or landing on the
  *     fresh session postgres.js reconnects with Postgres' `25P01` warning (what `withSiteLock` reads as a lost lock). The control:
  *     the same holder with NO ceiling set, idle as long, still holds (a 2 s waiter gives up with `55P03`) and commits.
- * If H3 fails, `withSiteLock` must run `select 1` every 20 s while held; if H2 fails, H4 still bounds it; if both fail, STOP
+ * H3 failed (the Review), so `withSiteLock` runs `select 1` every 20 s while held (H3k); if H2 fails, H4 still bounds it; if both fail, STOP
  * AND SAY SO (the spec's Design Notes).
  *
  *   node tools/probe/record-site-lock.mjs --local    # a throwaway postgres:17 container: no network beyond it, writes nothing
@@ -56,9 +60,9 @@ const SECTION = 92
 const COMMAND = `node tools/probe/record-site-lock.mjs ${ARGS[0]}`
 const POSTGRES = createRequire(path.join(WEB, 'package.json')).resolve('postgres')
 const postgres = createRequire(path.join(WEB, 'package.json'))('postgres')
-const { LOCK_WAIT_MS } = await import(pathToFileURL(path.join(WEB, 'server', 'site-lock.ts')).href)
+const { KEEP_ALIVE_MS, LOCK_WAIT_MS } = await import(pathToFileURL(path.join(WEB, 'server', 'site-lock.ts')).href)
 const { STALLED_MS } = await import(pathToFileURL(path.join(WEB, 'server', 'deploy', 'run.ts')).href)
-const H3_IDLE_S = 150
+const H3_IDLE_S = 290
 const SHORT_MS = 2000
 
 class Void extends Error {}
@@ -189,30 +193,45 @@ async function half(where, target) {
     }
   }
 
-  // ── H3 ──
+  // ── H3 and H3k ── (the Review, 2026-11-27: H3 alone FAILED on the pooler at 280 s, so `withSiteLock` beats; both holders run at
+  // once on two keys — one silent, one speaking `select 1` every KEEP_ALIVE_MS as the product does — and are read at the same times)
   {
-    const key = probeKey()
-    const notices = []
-    const holder = connect(target, notices)
+    const holders = [{ name: 'H3', beat: false }, { name: 'H3k', beat: true }].map((h) => ({ ...h, key: probeKey(), notices: [] }))
+    for (const h of holders) h.db = connect(target, h.notices)
     try {
-      await holder`begin`
-      await settings(holder, STALLED_MS)
-      await lock(holder, key)
-      console.log(`    …  [${where}] H3 — holding ${H3_IDLE_S} s idle in its transaction`)
-      await sleep((H3_IDLE_S - 10) * 1000)
-      const still = await wait(target, key, SHORT_MS)
-      row(where, `H3 control — still held after ${H3_IDLE_S - 10} s idle (a 2 s waiter)`, '55P03', !still.held && still.code === '55P03', `held ${still.held}, code ${still.code ?? '—'}`)
-      await sleep(10_000 - SHORT_MS)
-      let committed = 'yes'
-      try {
-        await holder`commit`
-      } catch (e) {
-        committed = `no (${codeOf(e)})`
+      for (const h of holders) {
+        await h.db`begin`
+        await settings(h.db, STALLED_MS)
+        await lock(h.db, h.key)
+        if (h.beat) h.timer = setInterval(() => void h.db`select 1`.catch(() => {}), KEEP_ALIVE_MS)
       }
-      row(where, `H3 — the transaction left idle ${H3_IDLE_S} s with the lock, then COMMIT`, 'commits, no 25P01 notice', committed === 'yes' && !notices.includes('25P01'),
-        `committed ${committed}; notices [${notices.join(', ') || 'none'}]; role statement_timeout ${role.statement}, idle_in_transaction_session_timeout ${role.idle}`)
+      console.log(`    …  [${where}] H3/H3k — two holders idle ${H3_IDLE_S} s in their transactions, the second beating every ${KEEP_ALIVE_MS} ms`)
+      await sleep((H3_IDLE_S - 10) * 1000)
+      for (const h of holders) h.still = await wait(target, h.key, SHORT_MS)
+      await sleep(10_000 - SHORT_MS)
+      for (const h of holders) {
+        clearInterval(h.timer)
+        h.committed = 'yes'
+        try {
+          await h.db`commit`
+        } catch (e) {
+          h.committed = `no (${codeOf(e)})`
+        }
+      }
+      const [plain, beating] = holders
+      const got = (h) => `${h.still.held ? 'the key TAKEN by a 2 s waiter' : `held (waiter ${h.still.code ?? '—'})`} after ${H3_IDLE_S - 10} s; committed ${h.committed}; notices [${h.notices.join(', ') || 'none'}]`
+      const kept = (h) => !h.still.held && h.still.code === '55P03' && h.committed === 'yes' && !h.notices.includes('25P01')
+      // the silent holder: Postgres alone keeps it (the container, asserted). On the pooler it is OBSERVED, never asserted: of the
+      // Review's two 290 s runs (2026-11-27) it lost its lock in the first (the key taken at 280 s, its COMMIT on a new session with
+      // 25P01) and kept it in the second — an intermittent loss, not a fixed timeout, so it can be no one's control
+      if (where === 'local') row(where, `H3 — a SILENT transaction left idle ${H3_IDLE_S} s with the lock, then COMMIT`, 'held, commits, no 25P01', kept(plain), `${got(plain)}; role statement_timeout ${role.statement}, idle_in_transaction_session_timeout ${role.idle}`)
+      else row(where, `H3 (observed, not asserted) — a SILENT transaction left idle ${H3_IDLE_S} s`, 'either: it has lost its lock here once in two runs', true, `${kept(plain) ? 'KEPT' : 'LOST'}: ${got(plain)}; role statement_timeout ${role.statement}, idle_in_transaction_session_timeout ${role.idle}`)
+      row(where, `H3k — the same idle with \`select 1\` every ${KEEP_ALIVE_MS} ms (\`withSiteLock\`'s beat): still held (a 2 s waiter), then COMMIT`, '55P03, commits, no 25P01', kept(beating), got(beating))
     } finally {
-      await holder.end({ timeout: 5 }).catch(() => {})
+      for (const h of holders) {
+        clearInterval(h.timer)
+        await h.db.end({ timeout: 5 }).catch(() => {})
+      }
     }
   }
 
@@ -289,7 +308,8 @@ function pooler() {
   }
   if (!env.url) throw new Void('SUPABASE_DB_POOLER_URL is not in tools/probe/.env')
   const u = new URL(env.url)
-  SECRETS.push(env.url, decodeURIComponent(u.password), u.password, decodeURIComponent(u.username), u.username)
+  // an empty part is never a secret: `clean()` would split every line on '' (the Review, 2026-11-27)
+  SECRETS.push(...[env.url, decodeURIComponent(u.password), u.password, decodeURIComponent(u.username), u.username].filter((x) => x.length >= 4))
   SECRETS.sort((a, b) => b.length - a.length)
   const pem = /const SUPABASE_ROOT_CA = `([^`]+)`/.exec(fs.readFileSync(path.join(WEB, 'server', 'ghost-admin', 'db.ts'), 'utf8'))?.[1]
   if (!pem) throw new Void('no SUPABASE_ROOT_CA in apps/web/server/ghost-admin/db.ts')
@@ -304,19 +324,19 @@ const find = (where, prefix) => rows.find((r) => r.where === where && r.what.sta
 function section(roles, host, today) {
   const h2 = find('pooler', 'H2 — ')
   return [
-    `## ${SECTION}. The per-site advisory lock on Postgres 17 and on the production pooler — a transaction-scoped \`pg_advisory_xact_lock\` on its own \`max: 1\` connection: \`lock_timeout\` bounds the wait with \`55P03\`, a killed holder frees its key, an idle transaction holds and commits through Supavisor, and the local idle ceiling ends an abandoned holder · production pooler · ${today}`,
+    `## ${SECTION}. The per-site advisory lock on Postgres 17 and on the production pooler — a transaction-scoped \`pg_advisory_xact_lock\` on its own \`max: 1\` connection: \`lock_timeout\` bounds the wait with \`55P03\`, a killed holder frees its key, a SILENT idle transaction can lose its lock on Supavisor while one beating \`select 1\` every 20 s holds and commits, and the local idle ceiling ends an abandoned holder · production pooler · ${today}`,
     '',
-    `**Why.** Story 7.25's \`withSiteLock\` (\`apps/web/server/site-lock.ts\`) rests on four hypotheses (standing rule 1); the spec's Design Notes stop the story if H2 and H3 both fail. **Command.** \`${COMMAND}\` — the app's own driver (postgres.js through \`apps/web\`), the product's numbers (\`LOCK_WAIT_MS\` ${LOCK_WAIT_MS} ms, \`STALLED_MS\` ${STALLED_MS} ms) and statements, each connection as \`lockSql()\` opens it (\`max: 1\`, \`prepare: false\`, no \`idle_timeout\`; on the pooler the Supabase root \`db.ts\` pins). Every key a probe key naming no site; no table read or written. The pooler URL read in-process from tools/probe/.env and never printed.`,
+    `**Why.** Story 7.25's \`withSiteLock\` (\`apps/web/server/site-lock.ts\`) rests on four hypotheses (standing rule 1); the spec's Design Notes stop the story if H2 and H3 both fail, and owe a \`select 1\` keep-alive if H3 alone does — which it did, once in two runs. **Command.** \`${COMMAND}\` — the app's own driver (postgres.js through \`apps/web\`), the product's numbers (\`LOCK_WAIT_MS\` ${LOCK_WAIT_MS} ms, \`STALLED_MS\` ${STALLED_MS} ms) and statements, each connection as \`lockSql()\` opens it (\`max: 1\`, \`prepare: false\`, no \`idle_timeout\`; on the pooler the Supabase root \`db.ts\` pins). Every key a probe key naming no site; no table read or written. The pooler URL read in-process from tools/probe/.env and never printed.`,
     '',
     `**Where.** A throwaway \`postgres:17\` container (Postgres ${roles.local?.version}; the role's \`statement_timeout\` ${roles.local?.statement}, \`idle_in_transaction_session_timeout\` ${roles.local?.idle}), then the production transaction pooler \`${cell(host)}\` (Postgres ${roles.pooler?.version}; the \`postgres\` role's \`statement_timeout\` **${roles.pooler?.statement}**, \`idle_in_transaction_session_timeout\` **${roles.pooler?.idle}**).`,
     '',
-    '**The controls, each of which voids the run:** another key taken at once while one is held (H1 is the key, not the database); the key taken at once once its holder commits; the child holding its key before it is killed (a 2 s waiter gives up); the idle holder still holding near the end of its idle (H3); a holder with NO idle ceiling still holding after the same idle (H4).',
+    '**The controls, each of which voids the run:** another key taken at once while one is held (H1 is the key, not the database); the key taken at once once its holder commits; the child holding its key before it is killed (a 2 s waiter gives up); the beating holder still holding near the end of its idle (H3k, a 2 s waiter gives up); a holder with NO idle ceiling still holding after the same idle (H4). The SILENT holder on the pooler is observed, not asserted (H3).',
     '',
     ...tableOf(rows),
     '',
     `- **H1 holds**: a waiter on a held key gives up with \`55P03\` after \`lock_timeout\` — the product's 30 s — and is NOT HELD in \`withSiteLock\`'s reading; the work never runs.`,
     `- **H2 holds**: a holder killed with no goodbye on the wire frees its key${h2?.got ? ` (${cell(h2.got)})` : ''} — so a Ship it killed past AD-11's budget does not hold its site past it.`,
-    `- **H3 holds**: a transaction idle ${H3_IDLE_S} s keeps its lock and commits through Supavisor's transaction mode, with no \`25P01\` notice — so no \`select 1\` keep-alive is owed.`,
+    `- **H3 is not to be relied on through the pooler**: a SILENT transaction idle ${H3_IDLE_S} s has lost its lock there (the Review's first 290 s run, 2026-11-27: the key taken by another at 280 s, its COMMIT on a new session with \`25P01\`) and kept it (its second run), while Postgres alone keeps it (the container). An intermittent loss — the pooler, or the network between the recorder and it — so the Design Notes' remedy is built: **H3k holds** — the same idle with \`select 1\` every \`KEEP_ALIVE_MS\` (${KEEP_ALIVE_MS} ms), \`withSiteLock\`'s beat while the work runs, keeps the lock and commits with no \`25P01\`.`,
     `- **H4 holds**: \`set_config('idle_in_transaction_session_timeout', …, true)\` ends a holder idle past it, freeing its key — the belt under H2, set by \`withSiteLock\` to \`STALLED_MS\`.`,
     '- **What this does NOT say.** No product route ran and no `sites` row keyed a lock here: Ship it, the put-back and the switch under one lock on production and T1 are walk step 125\'s.',
   ].join('\n')
@@ -345,7 +365,7 @@ try {
   if (POOLER) {
     const target = pooler()
     roles.pooler = await half('pooler', target)
-    if (rows.some((r) => !r.ok)) throw new Void('a pooler row did not hold — STOP AND REPORT (the spec\'s Design Notes: H3 failing owes a keep-alive, H2 and H3 both failing stops the story)')
+    if (rows.some((r) => !r.ok)) throw new Void('a pooler row did not hold — STOP AND REPORT (the spec\'s Design Notes: H2 failing too stops the story; H3k failing means the beat does not keep the lock)')
     writeSection(SECTION, section(roles, target.host, new Date().toISOString().slice(0, 10)))
     console.log(`\n    MEASUREMENTS.md §${SECTION} written — every row held, behind its controls.`)
   } else {

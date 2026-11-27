@@ -8581,3 +8581,24 @@ tenant's lock is gone", where three null subqueries joined by `or` raised nothin
 - **H3 holds**: a transaction idle 150 s keeps its lock and commits through Supavisor's transaction mode, with no `25P01` notice — so no `select 1` keep-alive is owed.
 - **H4 holds**: `set_config('idle_in_transaction_session_timeout', …, true)` ends a holder idle past it, freeing its key — the belt under H2, set by `withSiteLock` to `STALLED_MS`.
 - **What this does NOT say.** No product route ran and no `sites` row keyed a lock here: Ship it, the put-back and the switch under one lock on production and T1 are walk step 125's.
+
+*(Story 7.25's Review, 2026-11-27 — a dated note; the record above is unchanged.)* **H3 does not always hold through the pooler at
+290 s, so `withSiteLock` beats.** The table's H3 is 150 s (the AC's); a hold can sit idle ~270 s (a 30 s wait, then the rest of
+AD-11's 300). Two runs of `node tools/probe/record-site-lock.mjs --pooler`, each on the owner's in-session go, `H3_IDLE_S` 290, the
+container half first (every container row held in both):
+- **Run A** (H3 alone, silent, as the table above runs it): `FAIL [pooler] H3 control — still held after 280 s idle (a 2 s waiter)
+  — held true, code —` and `FAIL [pooler] H3 — the transaction left idle 290 s with the lock, then COMMIT — committed yes; notices
+  [25P01]; role statement_timeout 2min, idle_in_transaction_session_timeout 0`: the key was free at 280 s and the holder's COMMIT
+  landed on a new session. On the container the same hold kept it (`held false, code 55P03` at 280 s; committed, no notice). VOID,
+  nothing written.
+- **Run B** (two holders at once on two keys — one silent, one running `select 1` every `KEEP_ALIVE_MS`, 20000 ms, as
+  `withSiteLock` now does): `FAIL [pooler] H3 control — a SILENT transaction left idle 290 s loses its lock on the pooler (why
+  the hold beats) — held (waiter 55P03) after 280 s; committed yes; notices [none]` and `PASS
+  [pooler] H3k — the same idle with select 1 every 20000 ms: still held (a 2 s waiter), then COMMIT — held (waiter 55P03) after 280
+  s; committed yes; notices [none]`. H1, H2 and H4 held again on both halves. VOID as designed then (the silent holder was written as
+  a control that must LOSE on the pooler, and it did not), so nothing was written.
+- **So:** a silent idle transaction has lost its lock through the pooler once in two runs at 290 s, and kept it once — an
+  intermittent loss (the pooler, or the network between this machine and it), never a fixed timeout; the beating one held. The
+  Design Notes' remedy is built: `withSiteLock` runs `select 1` every `KEEP_ALIVE_MS` while its work runs. The recorder now asserts
+  the silent holder on the container only and records it on the pooler as an observation, so its next `--pooler` run rewrites this
+  section with H3k in the table.
