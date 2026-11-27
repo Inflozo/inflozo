@@ -9973,6 +9973,9 @@ dying in the browser is the harness's (DW-404)
 **And** *(given an owner by Story 7.24's Review, 2026-11-27)* the phone card's journey 7.23c (e), "a lost answer that LANDED",
 waits for the confirm's check to end and Cancel to hold focus again after its new History header is set, before it presses Roll
 back — it failed once in CI with focus never on the card's heading, 4 of 4 on a local re-run (DW-406)
+**And** *(given an owner by Story 7.24's Review, 2026-11-27)* walk step 121's History drawer presses that timed out on production
+at a different press in each of three runs (a Roll back's click twice, the drawer's loading once) are classified from Vercel's
+request rows for the `history` route at the stop — a slow or missing answer reopens it as a product defect (DW-407)
 
 **Owner test:** none (automated). · **Verification:** production stack, T1–T3 (R-82).
 

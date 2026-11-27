@@ -12178,6 +12178,11 @@ async function main() {
         const shaF113 = sha113(deployF113?.artifact_path ? await object113(deployF113.artifact_path) : null)
         await until113(() => wiz113(pb), restingClean113, 30000)
         await pb.locator('#deploy-ship').click()
+        // Story 7.24's review: since Story 7.20a a site record's FIRST upload captures its live theme, which reads Ghost's theme list
+        // and so needs the staff token — 113a answered Not now, so Ship it rests on B12b (`snapshot_needs_token`, 117c's case) and
+        // Deploy without a snapshot ships it. Later ships find the binding and capture nothing
+        const restF113 = await until113(() => jobById113(jobF113?.id), (j) => ['done', 'failed'].includes(j?.stage) || j?.error?.code === 'snapshot_needs_token', 120000)
+        if (restF113?.error?.code === 'snapshot_needs_token') await pb.locator('#deploy-without').click()
         const endF113 = await until113(() => jobById113(jobF113?.id), (j) => ['done', 'failed'].includes(j?.stage), 300000)
         const v1F113 = await deploy113(jobF113?.deploy_id)
         if (uploaded113(v1F113)) writes113.push('theme_upload')
@@ -17326,7 +17331,8 @@ async function main() {
 
         // ── 124c — Y renamed: the slug and the name hold; a second Deploy only is 2.0.0 under the same name ──
         await handBack124(Y)
-        await Y.pg.goto(at('/projects'), { waitUntil: 'load' })
+        // Projects is the app's root (`(dashboard)`), never `/projects` — which only prefixes a project's own routes
+        await Y.pg.goto(at('/'), { waitUntil: 'load' })
         await Y.pg.getByRole('button', { name: 'Options for Name test', exact: true }).click()
         await Y.pg.locator('[popover]:popover-open').getByRole('button', { name: 'Rename', exact: true }).click()
         await Y.pg.locator(`#rename-${Y.project}`).fill('Renamed test')

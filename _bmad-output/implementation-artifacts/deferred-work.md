@@ -10964,3 +10964,26 @@ owner: Story 15.1 (the E2E suite). The test's second half re-opens the card and 
   `setExtraHTTPHeaders`, as `phoneConfirm` does before its first press.
 location: `tools/keyboard/journey.spec.mjs` (7.23c (e), its "lost answer that LANDED" half)
 reason: one sighting, untouched code, green on re-run; the product path it guards is unchanged by this story.
+
+### DW-407: walk step 121's History drawer presses time out on production, at a different press each run
+
+plain: The automatic production test of Roll back (step 121) stopped three times in a row at a different moment in the History
+  drawer: once a Roll back button could not be pressed, once another, once the drawer did not finish loading in a second window.
+  Everything before each stop passed and the test put the test site back each time. It may be the test's browser, or the drawer
+  sometimes being slow on production; nobody has seen it by hand.
+status: open
+severity: medium
+origin: Story 7.24's Review (2026-11-27), three runs of a cut (steps 1–5 + 121) from a clean worktree at `5d5d521f` (READY as
+  `dpl_Bb2JKkQDh5zZmoyJuofVdWninqkg`) on the owner's go: run 1 75 PASS, stopped in 121i's last control (`putBack121` to v3:
+  `locator.click` 30 s); run 2 72 PASS, stopped in 121i at the Roll back to v2 over the hand edit (`locator.click` 30 s); run 3 65
+  PASS, stopped in 121g (`openDrawer121` on the second, read-only session: the drawer's `[data-history-loading]` never cleared in
+  20 s). Step 121 had not run since Story 7.23a's Review; 7.23b and 7.23c both changed the drawer since. Story 7.24 changes nothing
+  on that path, and its own part of 121 — the theme named `inflozo-rollback-test-2` beside the kept plant's binding — held in all
+  three runs (121a–121h). T1 was put back and the account deleted each time.
+owner: Story 15.1 (the E2E suite) — reopen as a product defect if Vercel's request rows show the History read (or the put-back)
+  answering slowly or not at all at the stop: on the next sighting, read `npx vercel logs` / the request-logs rows for the
+  `history` route in the stop's minute before touching the walk, and record the failing locator (the walk prints only the error's
+  first line; a debug copy that prints the stack is in this review's Verification).
+location: `tools/probe/run-verify-editor.cjs` (step 121's `openDrawer121`, `putBack121`) · `apps/web/components/editor/deploy-history.tsx`
+reason: the Review's three runs under the owner's go were spent; the path is 7.23's and unchanged here, and the drawer passed its
+  keyboard journeys in CI on this head.

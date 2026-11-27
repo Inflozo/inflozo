@@ -314,7 +314,7 @@ and tokens:
 
 *Story 7.24's Review (2026-11-27): five layers — Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
 verifier (in the main session, on the owner's go) — then walk step 124 and the re-expected steps on production and T1
-(Verification). One question for the owner; one item deferred. Each patch is Spec Change Log 7–14.*
+(Verification). One question for the owner; two items deferred. Each patch is Spec Change Log 7–16.*
 
 - [ ] [Review][Decision] A name that moves after Destination showed it is never said — Pre-flight's fresh held read, or Ship it's
   re-make after a name was claimed meanwhile, can upload `-3` while D1a's box said `-2` and "permanent"; no later screen names the
@@ -336,8 +336,14 @@ verifier (in the main session, on the owner's go) — then walk step 124 and the
   `EXPERIENCE.md`, `epic-7-context.md`]
 - [x] [Review][Patch] The owner's test kept accounts A and B, whose bindings would hold the name for every later account and refuse
   walk step 124 [this spec, After the test]
+- [x] [Review][Patch] Walk 124c and the owner's step 5 went to `/projects`, which is not the Projects page — found by 124's first
+  run on production [`tools/probe/run-verify-editor.cjs` 124c · this spec, step 5]
+- [x] [Review][Patch] Walk 113f waited for a `done` B12b never lets come (stale since 7.20a: 113a declines the token)
+  [`tools/probe/run-verify-editor.cjs` 113f]
 - [x] [Review][Defer] Journey 7.23c (e) failed once in CI on the Dev head [`tools/keyboard/journey.spec.mjs` 7.23c (e)] — deferred,
   pre-existing (DW-406)
+- [x] [Review][Defer] Walk 121 stopped at a different History drawer press in each of three runs; 7.24's part of it held
+  [`tools/probe/run-verify-editor.cjs` step 121] — deferred, pre-existing path (DW-407)
 
 ## Spec Change Log
 
@@ -403,6 +409,15 @@ in the main session). Patched, each outside the frozen block:
     name wraps. The Code Map's "re-expect `read.test.ts:94`" was a wrong premise (`:92` builds `inflozo-other`); Dev added `:96`.
 14. **After the owner's test** Claude also deletes accounts A and B: their bindings at T1's address would otherwise hold
     `inflozo-name-test` and `-2` for every later account and refuse walk step 124's start.
+15. **The Projects page is the app's root, not `/projects`** (found by walk step 124's first run on production: 124c timed out on
+    "Options for Name test", because `/projects` only prefixes a project's own routes). 124c goes to `at('/')`, and the owner's step
+    5 gives `https://app.inflozo.com/`.
+16. **Walk step 113f had been stale since Story 7.20a** (found by its first run since then, here): 113a answers the Safety net
+    with Not now, and since 7.20a a site record's first upload captures its live theme, which needs the staff token — so Ship it
+    rests on B12b (`snapshot_needs_token`, 117c's case) and 113f waited for a `done` that never came, skipping 113g–113i. 113f now
+    answers B12b with Deploy without a snapshot when it appears; later ships find the binding and capture nothing. Not this
+    story's defect; this story's own parts of 113 (the name read through `productThemeName`, `chipNew(1)` at 113c and 113f) passed
+    on the first run.
 
 Dismissed, with the reason: the editor's held read while bound (Always names it beside the ship reads, which it runs parallel to);
 the harness and journeys writing `-2` literally (expected values); the walk's own copy of the held read (an independent observer
@@ -496,7 +511,7 @@ You sign in only as **B**.
    - the chip reads **v2**.
 
    Close it.
-5. **URL:** `https://app.inflozo.com/projects`. **Screen:** Projects. **Do:** on "Name test", open its menu, choose **Rename**,
+5. **URL:** `https://app.inflozo.com/`. **Screen:** Projects. **Do:** on "Name test", open its menu, choose **Rename**,
    and save. **Type:** `Renamed test`. **See:** the card reads "Renamed test".
 6. **URL:** `https://app.inflozo.com/projects/<B's project id>`. **Do:** press **Ship it**. **See:** still `inflozo-name-test-2`.
    Close it.
@@ -576,3 +591,29 @@ step 124's start guard can run).
   the caller's `disconnected_at` filter removed (`held-names.test.ts` 2 failed), `newTheme: bound === null` restored (`read.test.ts`
   1 failed), `themeRow &&` removed from the pill (journey 7.24 (e) failed), `truncate` restored on the name (the floor's six rows
   failed); green restored each time. `--grep "7\.24"`: 11 passed.
+- **CI on the Review head `5d5d521f` green:** run 45951363094 — `check` (the full `pnpm keyboard` with journey 7.24 (e) and the
+  inverted floor among it, then `pnpm check` and `pnpm build`), `rls` and `deploy`; the Render matrix green. **Vercel READY** as
+  `dpl_Bb2JKkQDh5zZmoyJuofVdWninqkg` from `5d5d521f` on `app.inflozo.com`. (A local whole `pnpm keyboard` run beside another
+  session's load — 4 cores at load 20 — voided itself on unrelated canvas journeys and was stopped; CI's is the record.)
+- **The deployed walk, from a detached worktree at `5d5d521f`** (node_modules hard-linked, `tools/probe/.env` symlinked, keys
+  read in-process by name), each step as a cut — steps 1–5, then the one step, then the walk's `finally` — under `T1_WRITES=1`:
+  - **Step 124, run 1: 48 PASS, 1 FAIL** — (a) and (b) held: X's Destination `inflozo-name-test` with the pill, the permanence line
+    alone and "new theme · v1" (the control: no suffix while free), X's Deploy only bound it and T1 listed it unused; Y's
+    Destination `inflozo-name-test-2` with the suffix sentence before the permanence sentence and the pill, Y's Deploy only bound
+    `-2`, T1 listed both, casper live, and X's files on T1 still equal X's manifest. (c) stopped at Projects: the walk went to
+    `/projects`, which is not the Projects page (Spec Change Log 15). T1 put back, both accounts deleted, counts back.
+  - **Step 124, run 2 (the fix, a cut from the patched walk): 50 PASS, 0 FAIL** — (a) and (b) again, and (c): Y renamed "Renamed
+    test" on Projects, its slug read back `name-test`; Destination's "Theme" row naming `inflozo-name-test-2` with no line, no pill
+    and the chip "v2"; a second Deploy only `2.0.0` under `-2`, the binding unchanged, exactly `inflozo-name-test` and `-2` on T1,
+    casper live; finally T1 put back (casper active, both deleted, `routes.yaml` 130 → 130 bytes), both accounts' objects gone, T1
+    disconnected on each, both deleted, users and projects counted back, zero CSP violations. **The criteria "Two accounts, one
+    Ghost, really" and "The name holds" are met on production and T1.**
+  - **Steps 119, 120, 122, 123 (re-expected through `productThemeName`): 60, 60, 66, 58 PASS, 0 FAIL**, each first time — their
+    throwaways named `inflozo-drift-test-2`, `-history-test-2`, `-restore-test-2`, `-phone-test-2` beside the kept plants'
+    bindings, the exact case the re-expectation was for.
+  - **Step 113:** run 1 stopped at 113f on B12b (stale since 7.20a — Spec Change Log 16), after its 7.24 parts held (the name read
+    once linked, `chipNew(1)` at 113c and 113f); run 2, patched: **83 PASS, 0 FAIL**, T1 put back.
+  - **Step 121:** 75, 72 and 65 PASS with one stop each, at a different History drawer press every run (DW-407); its 7.24 part — the
+    name `inflozo-rollback-test-2` through 121a–121h — held in all three. The go's three runs are spent.
+  - T1 read back after the last run: `casper` active; `racer`, `source` and the owner's `inflozo-ghost6`; nothing of the walk's.
+  - **Ghost 5's half** (T3, R-238) stays postponed to DW-326's pass at Story 15.7.
