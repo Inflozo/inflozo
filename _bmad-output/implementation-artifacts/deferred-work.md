@@ -10958,12 +10958,15 @@ origin: Story 7.24's Review (2026-11-27): CI run 45941413602 on the Dev head `96
   passed and this one failed (`journey.spec.mjs:12344`, `expect(cardHeading(page)).toBeFocused()`, "inactive" 34 times, the test
   16.0 s against 2–6 s locally), so `deploy` never ran. Story 7.24 touches no file on that path (the phone card and its History
   reads). `bash tools/keyboard/run-keyboard-gate.sh --grep "7.23c · the phone" --repeat-each 4` (Node 24.18.1): 28 passed.
+  **Second sighting, Story 7.24's Deploy (2026-11-27):** CI run 45965505901 on `31103d2a` (a spec-and-board-only push), the same
+  line `journey.spec.mjs:12344` ("inactive" 34 times, 16.0 s), 399 passed; `deploy` skipped, harmlessly (nothing to publish). CI
+  keeps no trace for the keyboard gate (the run has no artifacts), so the next sighting's trace needs an upload step first.
 owner: Story 15.1 (the E2E suite). The test's second half re-opens the card and presses Roll back with a new History header set
   just before the press; a slow CI machine may let the re-read land before the header or the press land before the confirm's
   Cancel is focused. Next sighting: keep the trace, and wait for the confirm's check to end and Cancel to hold focus again after
   `setExtraHTTPHeaders`, as `phoneConfirm` does before its first press.
 location: `tools/keyboard/journey.spec.mjs` (7.23c (e), its "lost answer that LANDED" half)
-reason: one sighting, untouched code, green on re-run; the product path it guards is unchanged by this story.
+reason: two sightings, both in CI on untouched code, green on re-run; the product path it guards is unchanged by Story 7.24.
 
 ### DW-407: walk step 121's History drawer presses time out on production, at a different press each run
 

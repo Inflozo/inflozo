@@ -429,6 +429,14 @@ in the main session). Patched, each outside the frozen block:
     with the shown name — red with the line removed from either ending. No walk step: staging the race needs a third account's
     upload inside the minute; its parts are each proven — the re-resolve (`deploy-run.test.ts`), the route's `themeName` on
     production (walk 113d, 124), the sentence (journey (f)).
+18. **Deploy's two corrections to the owner's test.** (a) Step 7's Ghost Admin path, read in Ghost 6.58.0's own admin bundle (the
+    npm tarball, `core/built/admin/assets/`): `#/settings/design/edit` is the Customize modal and carries no "Change theme"
+    button (the bundle's one "Change theme" there is the breadcrumb inside a theme's preview); the button lives on Settings' Theme
+    group (`settings-*.js`: `children:"Change theme"`, `navid:"theme"`) and opens the route `design/change-theme` (`index-*.js`),
+    whose tabs are "Official themes" (the default) and "Installed", the active row reading " — Active" in green
+    (`design-and-theme-modal-*.js`). Step 7 now opens `#/settings/design/change-theme` and chooses Installed. (b) B's address is
+    `umngkmr+names724b2@gmail.com`: the plant's guard refused `umngkmr+names724b@gmail.com` because production already held it
+    (created 2026-11-27 04:49 UTC by one sign-in, eight minutes after the Dev push; no project, site or binding), left untouched.
 
 Dismissed, with the reason: the editor's held read while bound (Always names it beside the ship reads, which it runs parallel to);
 the harness and journeys writing `-2` literally (expected values); the walk's own copy of the held read (an independent observer
@@ -497,17 +505,19 @@ when the deploy's theme name differs from the one D1a's box showed. Built in thi
 
 ## Owner's manual test
 
-**Before you start:** on your go, Deploy plants two new Free test accounts, both connected to T1 (`ghost6.inflozo.com`):
+**Before you start:** Deploy planted two new Free test accounts on your go (2026-11-27, about 2:53 PM your time), both connected
+to T1 (`ghost6.inflozo.com`):
 - **A**, `umngkmr+names724a@gmail.com`: a project **"Name test"**, already shipped to T1 with Deploy only. T1 keeps Casper live,
   and A's theme `inflozo-name-test` sits on T1 unused.
-- **B**, `umngkmr+names724b@gmail.com`: its own project **"Name test"**, linked to T1, nothing shipped. T1's Staff Access Token is
-  already stored for it (through Manage keys) and its backup confirmed, so its wizard has four steps.
+- **B**, `umngkmr+names724b2@gmail.com` (note the **b2**: `umngkmr+names724b` already existed, made by a sign-in at 10:19 AM today,
+  empty): its own project **"Name test"**, linked to T1, nothing shipped. T1's Staff Access Token is already stored for it (through
+  Manage keys) and its backup confirmed, so its wizard has four steps.
 
 You sign in only as **B**.
 
 1. **URL:** `https://app.inflozo.com/sign-in`. **Screen:** Sign in. **Do:** sign in with B's address and open the link that
-   arrives. **Type:** `umngkmr+names724b@gmail.com`. **See:** your Projects page with "Name test".
-2. **URL:** `https://app.inflozo.com/projects/<B's project id — Deploy fills it in>`. **Screen:** the editor. **Do:** press
+   arrives. **Type:** `umngkmr+names724b2@gmail.com`. **See:** your Projects page with "Name test".
+2. **URL:** `https://app.inflozo.com/projects/c42d49e0-d0c3-4327-9103-b31eebe6d92d`. **Screen:** the editor. **Do:** press
    **Ship it**. **Type:** nothing. **See:**
    - "Ship it" with a small **first deploy** pill beside it;
    - the ghost6.inflozo.com card, Connected;
@@ -515,9 +525,11 @@ You sign in only as **B**.
      on ghost6.inflozo.com by another Inflozo project, so this one gets its own name. This name is permanent for
      ghost6.inflozo.com. Renaming the project later changes its name in Inflozo only.";
    - at the bottom, **new theme · v1** and **Run checks**.
-3. **URL:** the same page. **Do:** choose **Deploy only**, press **Run checks**, wait for the checks to pass, then press **Ship
-   it**. **See:** the ending saying the theme is on your site but not live. Reload `https://ghost6.inflozo.com`: still Casper.
-4. **URL:** the same page. **Do:** close the wizard and press **Ship it** again. **See:**
+3. **URL:** `https://app.inflozo.com/projects/c42d49e0-d0c3-4327-9103-b31eebe6d92d` (the same page). **Do:** choose **Deploy
+   only**, press **Run checks**, wait for the checks to pass, then press **Ship it**. **See:** the ending saying the theme is on
+   your site but not live. Reload `https://ghost6.inflozo.com`: still Casper.
+4. **URL:** `https://app.inflozo.com/projects/c42d49e0-d0c3-4327-9103-b31eebe6d92d` (the same page). **Do:** close the wizard and
+   press **Ship it** again. **See:**
    - no pill;
    - the box reads **Theme** … `inflozo-name-test-2`, with no line under it;
    - the chip reads **v2**.
@@ -525,15 +537,16 @@ You sign in only as **B**.
    Close it.
 5. **URL:** `https://app.inflozo.com/`. **Screen:** Projects. **Do:** on "Name test", open its menu, choose **Rename**,
    and save. **Type:** `Renamed test`. **See:** the card reads "Renamed test".
-6. **URL:** `https://app.inflozo.com/projects/<B's project id>`. **Do:** press **Ship it**. **See:** still `inflozo-name-test-2`.
-   Close it.
-7. **URL:** `https://ghost6.inflozo.com/ghost/#/settings/design/edit` (Deploy checks this path and the button's name in Ghost's
-   admin source). **Screen:** Ghost Admin, Design & branding. **Do:** sign in to Ghost as yourself, then press **Change theme**.
-   **See:** among the installed themes, both `inflozo-name-test` and `inflozo-name-test-2`, with Casper still active.
+6. **URL:** `https://app.inflozo.com/projects/c42d49e0-d0c3-4327-9103-b31eebe6d92d`. **Do:** press **Ship it**. **See:** still
+   `inflozo-name-test-2`. Close it.
+7. **URL:** `https://ghost6.inflozo.com/ghost/#/settings/design/change-theme` (checked in Ghost 6.58.0's admin source at Deploy:
+   this is the theme list, the one **Settings → Theme → Change theme** opens). **Screen:** Ghost Admin, the theme list. **Do:** sign
+   in to Ghost as yourself, then choose the **Installed** tab. **See:** `inflozo-name-test` and `inflozo-name-test-2` both in the
+   list, and Casper still the one marked **Active** in green.
 
 **After the test:** say "passed", or list what you saw. On your go, Claude then deletes both test themes from T1, which stays on
-Casper, and deletes the two test accounts A and B (their bindings go with them, so a later "Name test" on T1 is free again and walk
-step 124's start guard can run).
+Casper, and deletes the test accounts A and B (their bindings go with them, so a later "Name test" on T1 is free again and walk
+step 124's start guard can run) — and the empty `umngkmr+names724b@gmail.com` too, if you want it gone.
 
 ## Verification
 
@@ -642,3 +655,40 @@ that landed (the real-infra control for the new line), for the run on the ruling
   the deletion took the site record with it. Read back afterwards: T1 on `casper` with only `racer`, `source` and the owner's
   `inflozo-ghost6`; production at T1's address 14 site records (one disconnected) as before the run, no `inflozo-name-test*`
   binding, 27 users and no `editor-harness` throwaway left.
+
+**Executed — Deploy (2026-11-27, Node 24; keys by their variable names, read in-process, never on argv, no value printed; the
+production and T1 writes on the owner's in-session go, "1. Go (RECOMMENDED)", up to 3 runs, run in the main session):**
+- **Deployment: `dpl_HFdZmBsBUKazFDZNeG5EZnaufiFx`** (`inflozo-jwi3vtuf9-umangkagathara.vercel.app`), READY, target production,
+  built from `e6774be1` (R-294's commit, the story's last app change), aliased to `app.inflozo.com`, `inflozo.com` and
+  `www.inflozo.com` (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`, `v6/deployments` and `v13/deployments/{id}`);
+  `https://app.inflozo.com/sign-in` and `https://inflozo.com/` answer 200. CI on `e6774be1` green (run 45961847930, above).
+- **The Review's last commit `31103d2a` did not deploy, and needs not:** `git diff --stat e6774be1 31103d2a` is this spec and the
+  board only. Its CI run 45965505901 (`GITHUB_TOKEN`, read only): `rls` green, `check` red at `pnpm keyboard` — 399 passed, journey
+  7.23c (e) failed at `journey.spec.mjs:12344` with focus never on the card's heading, the same line as DW-406's first sighting
+  (recorded there as its second) — so `deploy` skipped; the Render matrix (45965505873) green.
+- **Schema: none.** The story changes no table and has no Schema phase (R-99): `git diff --stat 09a3c768 e6774be1 -- supabase` is
+  empty, so there is no migration to apply and no RLS gate to re-run (CI's `rls` green on both commits above).
+- **Before the plant, read only:** T1's themes with `GHOST6_STAFF_ACCESS_TOKEN` (`GET themes/`, 200): `casper*`, `racer`, `source`,
+  `inflozo-ghost6` — no `inflozo-name-test*`.
+- **The owner's test plant** — walk step 124's `STEP124_PLANT=<a>,<b>` with `T1_WRITES=1`, as a cut copy (steps 1–5, then 124, then
+  the walk's `finally`) from a clean detached worktree at the deployed `e6774be1` (`tools/probe/.env` linked in, never copied), the
+  launcher reading `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN` and `VERCEL_TEAM_ID` in-process and the step its own
+  `GHOST6_*` keys; the walk confirmed Vercel serving its HEAD before it started:
+  - **Run 1 of 3: 1 FAIL, 43 PASS, nothing written** — the plant's guard refused `umngkmr+names724b@gmail.com` as not new (production
+    held it: created 04:49 UTC today by one sign-in, no project, site or binding). T1 read back on `casper` unchanged, users 27 → 27,
+    projects 19 → 19. Spec Change Log 18 (b).
+  - **Run 2 of 3, B as `umngkmr+names724b2@gmail.com`: 0 FAIL, 45 PASS** (two `stall` notes, steps 1–5's page loads retried once):
+    T1 on `casper` at the start with no `inflozo-name-test*` theme or binding at its address; A (`umngkmr+names724a@gmail.com`) through
+    (a): Destination `inflozo-name-test` with the pill, the permanence line alone and "new theme · v1", then Deploy only — D2f with no
+    R-294 line, v1 `uploaded`, A's binding `inflozo-name-test`, T1 listing it unused, casper live; B connected through the wizard,
+    "Name test" (`c42d49e0-d0c3-4327-9103-b31eebe6d92d`) linked, the staff token stored through Manage keys and Backup confirmed
+    (`credentials_present` admin, staff, content); **B's Destination read back: the pill "first deploy", "Theme to be created"
+    naming `inflozo-name-test-2` with the suffix sentence then the permanence sentence**; the step-1 throwaways deleted, users
+    27 → 29 and projects 19 → 21 (two each kept by the plant), zero CSP violations.
+- **Read back afterwards, GET only** (`GHOST6_STAFF_ACCESS_TOKEN`, `SUPABASE_SECRET_KEY`): T1's themes `casper*`, `racer`, `source`,
+  `inflozo-ghost6`, `inflozo-name-test`; A on `free`, "Name test" linked to a connected `https://ghost6.inflozo.com`, bound to
+  `inflozo-name-test`; B on `free`, "Name test" (slug `name-test`) linked to its own connected `https://ghost6.inflozo.com`, no
+  binding; the earlier `umngkmr+names724b@gmail.com` still empty.
+- **Step 7's Ghost Admin path** read in Ghost 6.58.0's admin bundle (`registry.npmjs.org/ghost/-/ghost-6.58.0.tgz`, read only) and
+  corrected: Spec Change Log 18 (a).
+- **The owner's test (R-80): pending.**
