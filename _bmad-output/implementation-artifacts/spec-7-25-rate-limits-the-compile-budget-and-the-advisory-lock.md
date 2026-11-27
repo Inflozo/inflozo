@@ -731,8 +731,22 @@ sha):
   7.25 (a)–(e), 7.24 (f) and DW-378 green; the run's FIRST test (7.18b DW-374) failed at `open` (the canvas not painted in 5 s),
   and alone with `--repeat-each 2` failed run 1 and passed run 2 at the same line, before any wizard interaction — cold start.
 - `git diff 6d2a6c7b HEAD --name-only -- supabase/migrations` — none; CI's `rls` job green on the Dev head (no schema changes here).
-- **Next, on the Review's own deploy:** walk step 125 again (the go's third run), with the patched 125a (the race control, R-294
-  apart, every page re-read printed) and 125d (the server's half, the flag counted).
+- **The Review's deploy:** CI run 46025376223 green on `bf039423` (`check` with the full `pnpm keyboard`, `rls`, `deploy`), the
+  Render matrix green; READY as `dpl_GnNNa2Sxo8g4TDqPvUM3gPAmVgVh`.
+- **Walk step 125 run 3 (the go's third), from a clean worktree at `bf039423`: 54 PASS, 1 FAIL.** (a) the race control held — the
+  two POSTs 8 ms apart, both before the earlier ship ended (16:05:05.01); Y bound `inflozo-lock-test`, X compiled again after the
+  press (16:05:05.55) and uploaded after Y's last edge (16:05:08.56 > 16:05:05.01) as `inflozo-lock-test-2`, both `done`, T1 listing
+  both with `casper` live, Y's download equal to its manifest; **R-294's line now on X's ending and not on Y's** — and the
+  re-reads it printed show why run 2 lost it: both pages fetched `/projects/:id`, `/` and `/projects/:id/settings` as RSC at
+  16:05:10, right after the endings, replacing the ship state the old comparison read. (d) the first check FLAGGED at `compiling`
+  (`cancel_requested` true) and `cancelled`, the second POST 202 and resting at `awaiting_ship`, the only new deploys row and object
+  the second's. (b) 9 planted → the 10th shipped, the 11th refused "…again in 20 minutes." resting, exempt → shipped. (c) 59 → the
+  60th started; **the FAIL: the 61st Run checks said the infrastructure sentence** — and Vercel holds no request row for that press,
+  no budget log line, and no job was inserted: the request died in the browser (DW-404's harness class, its sighting recorded). The
+  refusal itself is run 2's (the server's 429 and its log line on production), the wizard's reading of our 429 envelope on this head
+  is 125b's real 429 and journey 7.25 (a) in CI. Finally T1 back on `casper` (`routes.yaml` 130 → 130 bytes, every run theme
+  deleted), each account's objects gone, T1 disconnected on each, the three accounts deleted, users 28 → 28, projects 21 → 21; zero
+  CSP violations. The go's runs are spent; 125c's press is not re-run without a new one.
 
 **The I/O matrix, row by row → the check that ran:**
 - One ship → every existing ship test in `deploy-run.test.ts`, now through the fake lock (held); `withSiteLock` uncontended

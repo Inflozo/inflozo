@@ -10931,6 +10931,11 @@ origin: Story 7.23a's Review (2026-11-25): walk step 121 run 2 on `35dd0275` sto
   `650c8899` at "ship 2 ended awaiting_ship". Vercel's request rows each time: the Pre-flight's POST 202 and its GETs, then NO Ship it
   POST, while the page's lock beats kept arriving every 15 s. The same presses passed in the other three runs. A debug copy that
   recorded and re-pressed a silent press never met one in its run.
+sighting: Story 7.25's Review (2026-11-27), walk step 125 run 3 on `bf039423` (`dpl_GnNNa2Sx…`): 125c's 61st **Run checks** press
+  filled the refusal line with the infrastructure sentence within 20 s, and Vercel holds NO request row for it (the rows around it,
+  16:05:58–16:06:40, carry the 60th's POST at 16:06:12 and the page's GETs, then nothing to `/deploy`), no
+  `deploy: compile budget reached` line, and no job was inserted — the request died in the browser: this entry's harness class, now
+  on a second press. The same refusal reached the route and was said in run 2 on `22d9c9d4`.
 owner: Story 15.1 (the E2E suite): the committed walk now records a 20-second silence after the press — the button's state, the
   refusal caption (`#deploy-refused`, which a fetch failing in the browser fills with the infrastructure sentence) and a
   screenshot — so the next sighting says whether the click was swallowed (the product: a press that does nothing) or the request
